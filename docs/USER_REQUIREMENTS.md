@@ -41,3 +41,4 @@
 - Track CodeWithKris project metrics separately from the Gradagig Website project and do not mix their commits, lines, hours, or effort data.
 - Provide a CodeWithKris-only Project Metrics page for the Gradagig CodeWithKris Page link.
 - Close the CodeWithKris project with documentation updated, local validation completed, and the final changes published separately from Gradagig Website.
+- Keep the CodeWithKris-only Project Metrics page available at its production URL when the Vite app is deployed.

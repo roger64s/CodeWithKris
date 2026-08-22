@@ -51,6 +51,7 @@ Estimated active work window: approximately 2 hours 40 minutes, from the first C
 - Production deployment: Vercel production site is live at https://codewithkris.vercel.app
 - Closeout validation: `npm run build` and `npm run lint` passed on 2026-08-22.
 - The phase-layout, replacement-image, workspace, and metrics-document changes are included in the closeout release.
+- The Vite build emits `docs/charts.html` into production output so the Gradagig CodeWithKris metrics link does not return 404.
 - Production MFCC/MLP/Softmax inference, Supabase Auth/RLS, external channel adapters, community features, and employer workflows remain future phases.
 
 ## Separation Rule
