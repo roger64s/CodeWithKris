@@ -33,7 +33,11 @@
 - Show all three phases in the prototype demo with a lightweight selectable coding mission that can be expanded later.
 - Group Phase 1, Phase 2, and Phase 3 tasks behind a left-side phase menu instead of showing every task in one page.
 - Increase the CodeWithKris app header logo size for the overall page layout.
+- Reduce excess top spacing across the authenticated app pages while keeping the larger logo visible.
 - Audit project assets and third-party materials for copyright, licensing, attribution, and publication permission before commercial release.
 
 ## Closeout
 - Phase-based navigation and the enlarged app logo were validated locally and are ready for publication.
+- Track CodeWithKris project metrics separately from the Gradagig Website project and do not mix their commits, lines, hours, or effort data.
+- Provide a CodeWithKris-only Project Metrics page for the Gradagig CodeWithKris Page link.
+- Close the CodeWithKris project with documentation updated, local validation completed, and the final changes published separately from Gradagig Website.

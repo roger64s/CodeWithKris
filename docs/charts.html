@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeWithKris Project Metrics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e3ddff 100%); min-height: 100vh; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #6756c9; margin-bottom: 8px; }
+        .updated { text-align: center; color: #5f5875; margin: 0 0 30px; }
+        .chart-container { background: white; border-radius: 16px; padding: 24px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(39,35,59,.1); }
+        .chart-title { color: #27233b; font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; text-align: center; }
+        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
+        canvas { max-height: 400px; }
+        .summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { color: white; padding: 20px; border-radius: 12px; text-align: center; }
+        .stat-card:nth-child(1) { background: linear-gradient(135deg, #6756c9 0%, #4a3da0 100%); }
+        .stat-card:nth-child(2) { background: linear-gradient(135deg, #56b79c 0%, #2e8570 100%); }
+        .stat-card:nth-child(3) { background: linear-gradient(135deg, #dfa74c 0%, #aa751f 100%); }
+        .stat-card:nth-child(4) { background: linear-gradient(135deg, #ef6c69 0%, #b84b49 100%); }
+        .stat-value { font-size: 2rem; font-weight: 700; }
+        .stat-label { font-size: .875rem; opacity: .9; }
+        @media (max-width: 600px) { body { padding: 12px; }.chart-container { padding: 16px; }.charts-row { grid-template-columns: 1fr; }.chart-title { font-size: 1.05rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CodeWithKris Project Metrics</h1>
+        <p class="updated">CodeWithKris repository only · Updated August 22, 2026</p>
+        <div class="summary-stats" aria-label="CodeWithKris summary statistics">
+            <div class="stat-card"><div class="stat-value">4,484</div><div class="stat-label">Net committed LOC</div></div>
+            <div class="stat-card"><div class="stat-value">2h 40m</div><div class="stat-label">Estimated active time</div></div>
+            <div class="stat-card"><div class="stat-value">13</div><div class="stat-label">Commits today</div></div>
+            <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Prototype phases</div></div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-container"><div class="chart-title">Time Distribution by Category</div><canvas id="pieChart"></canvas></div>
+            <div class="chart-container"><div class="chart-title">CodeWithKris LOC by Workstream</div><canvas id="barChart"></canvas></div>
+        </div>
+        <div class="chart-container"><div class="chart-title">Effort Breakdown by Workstream (Stacked)</div><canvas id="stackedChart"></canvas></div>
+        <div class="charts-row">
+            <div class="chart-container"><div class="chart-title">Estimated Time by Workstream — Total: 2h 40m</div><canvas id="hoursChart"></canvas></div>
+            <div class="chart-container"><div class="chart-title">CodeWithKris LOC by Workstream</div><canvas id="categoryBarChart"></canvas></div>
+        </div>
+    </div>
+    <script>
+        const colors = { coding: '#6756c9', testing: '#dfa74c', research: '#56b79c', documentation: '#ef6c69', data: '#4f8ed8', dark: '#27233b' };
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        Chart.defaults.color = '#4d4761';
+        Chart.register(ChartDataLabels);
+        const labels = ['Scaffold', 'Supabase', 'Admin/User', 'Auth UX', 'Research', 'Phases'];
+        const loc = [3122, 170, 8, 14, 229, 873];
+        const hours = [0.35, 0.4, 0.2, 0.3, 0.85, 0.57];
+        const commonDataLabels = { color: '#27233b', font: { weight: 'bold', size: 12 }, formatter: value => value.toLocaleString() };
+        new Chart(document.getElementById('pieChart'), { type: 'pie', data: { labels: ['Coding/UI', 'Testing', 'Research/Design', 'Documentation'], datasets: [{ data: [45, 25, 20, 10], backgroundColor: [colors.coding, colors.testing, colors.research, colors.documentation], borderWidth: 2, borderColor: '#fff' }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: context => `${context.label}: ${context.parsed}%` } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: value => `${value}%` } } } });
+        new Chart(document.getElementById('barChart'), { type: 'bar', data: { labels, datasets: [{ label: 'Lines of Code', data: loc, backgroundColor: colors.coding, borderRadius: 8 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'top' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Lines of Code' } } } } });
+        new Chart(document.getElementById('stackedChart'), { type: 'bar', data: { labels, datasets: [ { label: 'Coding/UI', data: [2100, 90, 5, 8, 140, 520], backgroundColor: colors.coding }, { label: 'Testing', data: [650, 35, 2, 3, 50, 260], backgroundColor: colors.testing }, { label: 'Research/Design', data: [250, 30, 1, 2, 30, 160], backgroundColor: colors.research }, { label: 'Documentation', data: [122, 15, 0, 1, 9, 60], backgroundColor: colors.documentation } ] }, options: { responsive: true, plugins: { legend: { position: 'bottom' }, datalabels: { color: '#fff', font: { weight: 'bold', size: 10 }, formatter: value => value ? value.toLocaleString() : '' } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Lines of Code' } } } } });
+        new Chart(document.getElementById('hoursChart'), { type: 'line', data: { labels, datasets: [{ label: 'Estimated Hours', data: hours, borderColor: colors.coding, backgroundColor: '#6756c922', fill: true, tension: .35, pointBackgroundColor: colors.coding, pointRadius: 5 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'top', formatter: value => `${value}h` } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Hours' } } } } });
+        new Chart(document.getElementById('categoryBarChart'), { type: 'bar', data: { labels: ['Coding/UI', 'Testing', 'Research/Design', 'Documentation'], datasets: [{ label: 'Lines of Code', data: [2863, 1000, 473, 150], backgroundColor: [colors.coding, colors.testing, colors.research, colors.documentation], borderRadius: 8 }] }, options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'right' } }, scales: { x: { beginAtZero: true, title: { display: true, text: 'Lines of Code' } } } } });
+    </script>
+</body>
+</html>
