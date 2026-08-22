@@ -25,3 +25,11 @@
 - Change the login welcome eyebrow text to “Breaking barriers - Learn to communicate without limits.”.
 - Audit and improve the speech model, personalized Voice Dictionary, communication-channel integrations, and Go-To-Market Gigs learning workflow.
 - Differentiate CodeWithKris for business use with practice scenarios for client briefs, project status updates, and QA handoffs.
+- Make the audio sample upload control functional instead of displaying a placeholder row.
+- Research Duolingo-inspired bite-sized learning, progress, habit support, and accessibility patterns for CodeWithKris.
+- Enable a future large-scale CodeWithKris learning and application pathway that connects practice, work artifacts, and supervised opportunities with privacy safeguards.
+- Research Quorum's accessible, block-like programming approach to help learners progress toward knowledge-economy contributions at their own pace.
+- Audit project assets and third-party materials for copyright, licensing, attribution, and publication permission before commercial release.
+
+## Closeout
+- Review the local CodeWithKris changes and publish the completed work to GitHub and Vercel only after final validation.

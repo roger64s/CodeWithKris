@@ -32,6 +32,82 @@ CodeWithKris should learn from that direction without becoming a smaller copy of
 
 The positioning should be: **CodeWithKris helps people communicate, practice real work situations, and build evidence for inclusive paid work.** It should not claim to replace speech therapy, diagnose a condition, or match Google's research scale.
 
+## Inspiration from Duolingo
+
+Duolingo's public login experience combines a low-friction start with a clear promise: short lessons, points, levels, real-world skills, personalized pacing, and friendly habit support. The product makes progress visible without making the learner wait for a large course or a perfect result.
+
+CodeWithKris can borrow the learning mechanics while keeping its own purpose and tone:
+
+- **Bite-sized missions:** one phone phrase, one client clarification, or one QA update per session.
+- **Visible progress:** show completed practice, work-readiness skills, saved artifacts, and a gentle weekly goal.
+- **Immediate feedback:** transcript review, a clearly labeled practice match, one suggested retry, and an optional human correction.
+- **Personalized path:** use the Voice Dictionary, selected work role, preferred channel, and learner pace to choose the next mission.
+- **Motivation without harm:** award points for showing up, completing a task, correcting a transcript, and helping a peer. Do not rank people by accent, disability, confidence, or model score.
+- **Accessible habit support:** opt-in reminders, pauseable streaks, reduced-motion mode, keyboard access, screen-reader announcements, and no punishment for missed days.
+- **Friendly identity:** Kris the Jumbo can provide short encouragement and context, but never pressure, diagnose, or impersonate a therapist or employer.
+
+### A CodeWithKris learning loop
+
+```text
+Choose a mission -> practice -> review and correct -> save a work artifact
+  ^                                                  |
+  +------- next mission adapts to progress ---------+
+```
+
+The current app already has practice templates, saved sessions, a dictionary, and a progress view. The next safe increment is to derive points and goals from those real events, then add a mission catalog and artifact model. Avoid hard-coded achievement totals that would make the experience look more complete than it is.
+
+## Enabling large-scale participation and applications
+
+To let millions of people learn, interact, and apply for CodeWithKris opportunities, separate the public learning funnel from private work data:
+
+1. **Public entry:** multilingual, mobile-first explanation, accessibility statement, sample mission, and a no-login preview.
+2. **Learner account:** Supabase Auth, profile preferences, consent, private dictionary, recordings, and progress owned by `user_id`.
+3. **Learning community:** moderated cohorts, optional peer practice, pseudonyms by default, reporting tools, and no public voice recordings.
+4. **Application:** a short accessible application with work interests, availability, support needs stated optionally, sample artifacts, and consent choices. Keep application review separate from recognition scores.
+5. **Opportunity matching:** skill and availability matching for supervised gigs, transparent task rates, human review, and a clear appeal path.
+
+For scale, keep the web client on a CDN, make the API stateless, move audio inference to queued workers, store audio in private object storage, use signed short-lived playback URLs, and add per-user rate limits. Use observability for latency and failures, not surveillance of disability or speech patterns. Partition analytics from personally identifiable data, encrypt secrets, and apply Supabase row-level security before opening the community or employer surfaces.
+
+The differentiator is therefore: **Euphonia-inspired personalization + Duolingo-inspired habit design + Grad-a-Gig work pathways.** CodeWithKris should help a person move from a first safe practice to a reviewed, useful contribution without pretending that gamification or transcription alone equals employability.
+
+## Inspiration from Quorum
+
+Quorum's site presents programming as **born accessible**, friendly, and evidence oriented. Its blocks-based editor, runnable online examples, accessible data visualizations, keyboard-oriented controls, and community/professional-development model are strong references for helping people enter programming without requiring a conventional text-editor-first experience.
+
+CodeWithKris should treat this as an accessible programming runway, not as a copy of Quorum:
+
+| Quorum inspiration | CodeWithKris adaptation |
+| --- | --- |
+| Blocks make program structure visible | Offer block-like task steps for brief -> clarify -> build -> test -> explain |
+| Online runnable examples | Provide small, safe browser workspaces with immediate output and reset |
+| Accessible charts and data science | Use real work datasets for cleaning, QA, tagging, and reporting missions |
+| Friendly, inclusive programming language | Use plain-language prompts, speech input, keyboard access, and optional visual blocks |
+| Community and professional development | Add moderated cohorts, peer review, mentors, and employer/cooperative pathways |
+
+### The CodeWithKris programming ladder
+
+1. **Arrange:** move accessible blocks to sequence a task or communication workflow.
+2. **Change:** edit values, labels, conditions, and examples using speech, keyboard, or touch.
+3. **Test:** run a small task, inspect accessible output, and identify one issue.
+4. **Explain:** produce a client-ready status note, QA report, or handoff using the learner's preferred communication channel.
+5. **Contribute:** submit a reviewed micro-gig artifact to a cooperative or employer workflow.
+
+This ladder lets learners contribute at their own pace while building the behaviors businesses need: following a brief, asking for clarification, checking work, documenting decisions, and accepting feedback. It also gives CodeWithKris a sharper business identity than a general speech app or a standalone programming language.
+
+### Accessibility requirements for a block-like experience
+
+- Every block must have a meaningful spoken label and text equivalent.
+- Support keyboard navigation, screen readers, switch access, touch, and voice commands for selection and movement.
+- Keep color supplementary; use text, shape, focus, and audio cues together.
+- Offer step-by-step mode, undo/redo, pause, replay, adjustable timing, and a no-pressure reset.
+- Never require speech recognition: every mission must be completable by typing, selecting, or assisted input.
+- Save checkpoints and learner-owned artifacts, not just completion points.
+- Test with people with varied speech, motor, visual, cognitive, and hearing access needs before scaling.
+
+### Business-ready example
+
+An employer can provide a structured accessibility QA brief. The learner receives block-like steps to open the checklist, inspect a page, record findings, retest a fix, and generate a handoff. CodeWithKris supports the communication and pacing; Quorum-like accessible programming patterns make the task logic inspectable; the cooperative workflow adds human review and transparent payment.
+
 ### Business-use product boundary
 
 The business version should provide three linked but separate surfaces:
@@ -205,3 +281,11 @@ For monetization, prefer a cooperative model with transparent task rates and no 
 4. Add channel adapters with confirmation and audit records.
 5. Build the Go-To-Market module and rubric-backed portfolio artifacts.
 6. Benchmark the model against representative, consented speech samples before describing it as accurate or real-time production speech recognition.
+
+## Closeout status - 2026-08-22
+
+- Implemented the functional audio-file upload flow against the existing recordings API.
+- Added business-focused practice templates for client briefs, project status updates, and QA handoffs.
+- Added research-informed guidance from Project Euphonia, Duolingo, and Quorum.
+- Added the copyright and licensing register; commercial release remains gated on owner permissions and asset provenance for supplied media.
+- Production MFCC/MLP/Softmax inference, Supabase Auth/RLS, channel delivery adapters, community features, and employer workflows remain future implementation phases.

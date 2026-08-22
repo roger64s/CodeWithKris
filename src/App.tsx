@@ -128,10 +128,12 @@ function App() {
   const [liveText, setLiveText] = useState(
     "Your words will appear here as you speak.",
   );
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "saved" | "error">("idle");
   const [isListening, setIsListening] = useState(false);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const recognition = useRef<SpeechRecognitionLike | null>(null);
+  const uploadInput = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!isRecording) return;
@@ -233,6 +235,24 @@ function App() {
     mediaRecorder.current?.stream.getTracks().forEach((track) => track.stop());
     mediaRecorder.current = null;
     setIsRecording(false);
+  };
+  const uploadAudio = async (file?: File) => {
+    if (!file) return;
+    setUploadStatus("uploading");
+    const form = new FormData();
+    form.append("audio", file, file.name);
+    form.append("template", selectedTemplate.title);
+    form.append("duration", "0");
+    try {
+      const saved = await api<Recording>("/api/recordings", {
+        method: "POST",
+        body: form,
+      });
+      setRecordings((current) => [saved, ...current]);
+      setUploadStatus("saved");
+    } catch {
+      setUploadStatus("error");
+    }
   };
   const toggleListening = () => {
     const speechWindow = window as Window & {
@@ -640,16 +660,41 @@ function App() {
                   : "Tap to start recording"}
               </span>
             </div>
-            <div className="upload-row">
+            <button
+              className="upload-row"
+              type="button"
+              onClick={() => uploadInput.current?.click()}
+              disabled={uploadStatus === "uploading"}
+            >
+              <input
+                ref={uploadInput}
+                type="file"
+                accept="audio/*,.ogg,.webm,.m4a,.wav,.mp3"
+                hidden
+                onChange={(event) => {
+                  void uploadAudio(event.target.files?.[0]);
+                  event.currentTarget.value = "";
+                }}
+              />
               <span className="upload-icon">↑</span>
               <span>
-                <strong>Upload an audio sample</strong>
+                <strong>
+                  {uploadStatus === "uploading"
+                    ? "Saving audio sample..."
+                    : uploadStatus === "saved"
+                      ? "Audio sample saved"
+                      : uploadStatus === "error"
+                        ? "Audio upload failed"
+                        : "Upload an audio sample"}
+                </strong>
                 <small>
-                  Audio upload can be connected to your secure storage next
+                  {uploadStatus === "error"
+                    ? "Choose another file or check the database connection"
+                    : "Choose an audio file to save to secure storage"}
                 </small>
               </span>
               <span>＋</span>
-            </div>
+            </button>
             <button
               className="primary-button"
               onClick={() => navigate("practice")}
