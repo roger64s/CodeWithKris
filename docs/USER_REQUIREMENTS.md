@@ -19,3 +19,6 @@
 - Persist dictionary words, recordings, and practice sessions through the Supabase backend and private storage.
 - Provide a demo Admin view with aggregate user statistics alongside the User practice view.
 - Publish the application to GitHub and deploy the production app to Vercel at https://codewithkris.vercel.app.
+
+## 2026-08-22 (Update)
+- Change the login welcome headline to “Speak freely. Connect effortlessly”.
