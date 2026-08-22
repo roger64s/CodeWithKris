@@ -297,7 +297,7 @@ function App() {
   const authScreen = (
     <main className="auth-layout">
       <section className="welcome-panel">
-        <span className="eyebrow">Speech practice, made personal</span>
+        <span className="eyebrow">Breaking barriers - Learn to communicate without limits.</span>
         <img
           className="brand-logo"
           src="/CodewithKris_logo.png"
