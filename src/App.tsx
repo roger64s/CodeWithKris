@@ -11,7 +11,7 @@ type Screen =
   | "dictionary"
   | "admin"
   | "volunteer";
-type Template = { icon: string; title: string; detail: string; color: string };
+type Template = { icon: string; title: string; detail: string; color: string; phase: 1 | 2 | 3 };
 type PracticeSession = {
   id: string;
   template: string;
@@ -44,44 +44,63 @@ const templates: Template[] = [
     title: "Phone conversations",
     detail: "Appointments, introductions, and professional calls",
     color: "coral",
+    phase: 1,
   },
   {
     icon: "02",
     title: "Shopping & ordering",
     detail: "Build confidence asking for what you need",
     color: "mint",
+    phase: 1,
   },
   {
     icon: "03",
     title: "Professional meetings",
     detail: "Clear workplace communication and presentations",
     color: "gold",
+    phase: 1,
   },
   {
     icon: "04",
     title: "Social interactions",
     detail: "Casual conversations and everyday connection",
     color: "lilac",
+    phase: 1,
   },
   {
     icon: "05",
     title: "Client briefs & requirements",
     detail: "Clarify scope, priorities, and acceptance criteria",
     color: "mint",
+    phase: 2,
   },
   {
     icon: "06",
     title: "Project status updates",
     detail: "Explain progress, blockers, and next steps clearly",
     color: "gold",
+    phase: 2,
   },
   {
     icon: "07",
     title: "QA handoffs",
     detail: "Report checks, findings, and fixes to a delivery team",
     color: "coral",
+    phase: 2,
+  },
+  {
+    icon: "08",
+    title: "Coding & pair programming",
+    detail: "Follow accessible steps, test a change, and explain the result",
+    color: "lilac",
+    phase: 3,
   },
 ];
+const phases = [
+  { number: 1, title: "Basic Communication", detail: "Build vocabulary and confidence for everyday conversations.", color: "mint" },
+  { number: 2, title: "Go-To-Market Skills", detail: "Practice client briefs, status updates, and QA handoffs.", color: "gold" },
+  { number: 3, title: "Learn Coding & Pair Programming", detail: "Use accessible task steps to make, test, and explain software changes.", color: "lilac" },
+] as const;
 const defaultWords = ["appointment", "conversation", "confidence"];
 const phraseFor = (template: Template) =>
   template.title === "Phone conversations"
@@ -118,6 +137,7 @@ function App() {
   const [authMode, setAuthMode] = useState<"register" | "signin">("signin");
   const [verificationSent, setVerificationSent] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
+  const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3>(1);
   const [words, setWords] = useState<string[]>(defaultWords);
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
@@ -326,6 +346,9 @@ function App() {
     count: sessions.filter((session) => session.template === template.title)
       .length,
   }));
+  const phaseTemplates = templates.filter(
+    (template) => template.phase === selectedPhase,
+  );
   const switchRole = () => {
     const nextRole = role === "user" ? "admin" : "user";
     setRole(nextRole);
@@ -544,16 +567,35 @@ function App() {
       </header>
       <div className="content-wrap">
         {screen === "templates" && (
-          <section className="page-content">
-            <div className="page-intro">
+          <section className="workspace-layout">
+            <aside className="phase-sidebar" aria-label="Learning phases">
+              <span className="section-kicker">Your pathway</span>
+              <h2>Three phases</h2>
+              <nav>
+                {phases.map((phase) => (
+                  <button
+                    className={`phase-nav-item ${selectedPhase === phase.number ? "active" : ""}`}
+                    key={phase.number}
+                    onClick={() => setSelectedPhase(phase.number)}
+                    aria-current={selectedPhase === phase.number ? "step" : undefined}
+                  >
+                    <span className={`phase-nav-number ${phase.color}`}>{phase.number}</span>
+                    <span>
+                      <strong>{phase.title}</strong>
+                      <small>{phase.detail}</small>
+                    </span>
+                  </button>
+                ))}
+              </nav>
+            </aside>
+            <div className="page-content phase-content">
+              <div className="page-intro">
               <span className="section-kicker">Communication to work readiness</span>
-              <h1>What would you like to work on?</h1>
-              <p>
-                Practice everyday conversations and the communication tasks that help you contribute to a real delivery team.
-              </p>
-            </div>
-            <div className="template-grid">
-              {templates.map((template) => (
+                <h1>{phases[selectedPhase - 1].title}</h1>
+                <p>{phases[selectedPhase - 1].detail} Choose a mission below to continue at your own pace.</p>
+              </div>
+              <div className="template-grid">
+              {phaseTemplates.map((template) => (
                 <button
                   key={template.title}
                   className={`template-item ${selectedTemplate.title === template.title ? "selected" : ""}`}
@@ -572,13 +614,14 @@ function App() {
                   <span className="item-arrow">↗</span>
                 </button>
               ))}
+              </div>
+              <button
+                className="outline-wide"
+                onClick={() => navigate("dictionary")}
+              >
+                My word dictionary <span>{words.length} words&nbsp; ＋</span>
+              </button>
             </div>
-            <button
-              className="outline-wide"
-              onClick={() => navigate("dictionary")}
-            >
-              My word dictionary <span>{words.length} words&nbsp; ＋</span>
-            </button>
           </section>
         )}
         {screen === "dictionary" && (

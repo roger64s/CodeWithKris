@@ -29,7 +29,11 @@
 - Research Duolingo-inspired bite-sized learning, progress, habit support, and accessibility patterns for CodeWithKris.
 - Enable a future large-scale CodeWithKris learning and application pathway that connects practice, work artifacts, and supervised opportunities with privacy safeguards.
 - Research Quorum's accessible, block-like programming approach to help learners progress toward knowledge-economy contributions at their own pace.
+- Include all three CodeWithKris prototype phases: Basic Communication, Go-To-Market Skills, and Learn Coding & Pair Programming.
+- Show all three phases in the prototype demo with a lightweight selectable coding mission that can be expanded later.
+- Group Phase 1, Phase 2, and Phase 3 tasks behind a left-side phase menu instead of showing every task in one page.
+- Increase the CodeWithKris app header logo size for the overall page layout.
 - Audit project assets and third-party materials for copyright, licensing, attribution, and publication permission before commercial release.
 
 ## Closeout
-- Review the local CodeWithKris changes and publish the completed work to GitHub and Vercel only after final validation.
+- Phase-based navigation and the enlarged app logo were validated locally and are ready for publication.
