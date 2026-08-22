@@ -23,3 +23,5 @@
 ## 2026-08-22 (Update)
 - Change the login welcome headline to “Speak freely. Connect effortlessly”.
 - Change the login welcome eyebrow text to “Breaking barriers - Learn to communicate without limits.”.
+- Audit and improve the speech model, personalized Voice Dictionary, communication-channel integrations, and Go-To-Market Gigs learning workflow.
+- Differentiate CodeWithKris for business use with practice scenarios for client briefs, project status updates, and QA handoffs.

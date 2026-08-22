@@ -63,6 +63,24 @@ const templates: Template[] = [
     detail: "Casual conversations and everyday connection",
     color: "lilac",
   },
+  {
+    icon: "05",
+    title: "Client briefs & requirements",
+    detail: "Clarify scope, priorities, and acceptance criteria",
+    color: "mint",
+  },
+  {
+    icon: "06",
+    title: "Project status updates",
+    detail: "Explain progress, blockers, and next steps clearly",
+    color: "gold",
+  },
+  {
+    icon: "07",
+    title: "QA handoffs",
+    detail: "Report checks, findings, and fixes to a delivery team",
+    color: "coral",
+  },
 ];
 const defaultWords = ["appointment", "conversation", "confidence"];
 const phraseFor = (template: Template) =>
@@ -508,10 +526,10 @@ function App() {
         {screen === "templates" && (
           <section className="page-content">
             <div className="page-intro">
-              <span className="section-kicker">Today&apos;s practice</span>
+              <span className="section-kicker">Communication to work readiness</span>
               <h1>What would you like to work on?</h1>
               <p>
-                Choose a familiar situation. There is no perfect way to sound.
+                Practice everyday conversations and the communication tasks that help you contribute to a real delivery team.
               </p>
             </div>
             <div className="template-grid">
