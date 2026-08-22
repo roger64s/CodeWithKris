@@ -50,3 +50,50 @@ h1, h2, p { margin: 0; } h1, h2 { color: var(--ink); font-weight: 700; letter-sp
 	.workspace-layout .template-icon { width: 42px; height: 42px; }
 	.workspace-layout .outline-wide { min-height: 44px; margin-top: 12px; }
 }
+@media (min-width: 701px) {
+	.record-shell, .practice-shell, .progress-shell, .dictionary-shell, .admin-shell { height: 100svh; min-height: 0; overflow: hidden; }
+	.record-wrap, .practice-wrap, .progress-wrap, .dictionary-wrap, .admin-wrap { width: 100%; max-width: none; height: calc(100svh - 204px); margin: 0; padding: 0; }
+	.record-wrap .practice-page, .practice-wrap .practice-page { display: grid; grid-template-columns: 1.15fr .85fr; gap: 10px 16px; width: min(calc(100% - 56px), 1000px); max-width: none; height: 100%; margin: 0 auto; padding: 8px 0 10px; }
+	.record-wrap .back-button, .practice-wrap .back-button { grid-column: 1 / -1; justify-self: start; }
+	.record-wrap .page-intro, .practice-wrap .page-intro { grid-column: 1 / -1; margin: 0; }
+	.record-wrap .page-intro h1, .practice-wrap .page-intro h1 { margin: 5px 0; font-size: 2.35rem; }
+	.record-wrap .page-intro p, .practice-wrap .page-intro p { font-size: .9rem; }
+	.record-wrap .record-stage { grid-row: 3 / 5; padding: 14px; }
+	.record-wrap .record-stage p { margin-top: 8px; font-size: 1rem; }
+	.record-wrap .record-button { width: 62px; height: 62px; margin: 12px 0 6px; border-width: 6px; font-size: 1.35rem; box-shadow: 0 0 0 5px white, 0 0 0 6px #f2e1e0; }
+	.record-wrap .upload-row { align-self: stretch; margin: 0; padding: 12px; }
+	.record-wrap .primary-button, .practice-wrap .primary-button { align-self: end; margin: 0; }
+	.practice-wrap .phrase-card { grid-column: 1; margin: 0; padding: 15px; }
+	.practice-wrap .phrase-card strong { margin-top: 7px; font-size: 1.05rem; }
+	.practice-wrap .listen-button { grid-column: 1; margin: 0; }
+	.practice-wrap .live-card { grid-column: 2; grid-row: 3 / 5; margin: 0; padding: 15px; }
+	.practice-wrap .live-card p { min-height: 38px; margin-top: 10px; font-size: .95rem; }
+	.practice-wrap .accuracy { grid-column: 1; margin: 0; }
+	.practice-wrap > .primary-button { grid-column: 2; }
+	.admin-wrap { padding: 8px 28px 10px; }
+	.admin-wrap .admin-page { display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: 10px 14px; width: min(100%, 1120px); max-width: none; height: 100%; margin: 0 auto; }
+	.admin-wrap .page-intro, .admin-wrap .stats-grid { grid-column: 1 / -1; margin: 0; }
+	.admin-wrap .page-intro h1 { margin: 5px 0; font-size: 2.35rem; }
+	.admin-wrap .page-intro p { max-width: 760px; font-size: .9rem; }
+	.admin-wrap .stats-grid > div { padding: 10px 14px; }
+	.admin-wrap .admin-section { align-self: start; min-width: 0; margin: 0; padding: 12px 16px; }
+	.admin-wrap .template-admin-section { display: grid; grid-template-columns: 1fr 1fr; align-content: start; column-gap: 16px; }
+	.admin-wrap .template-admin-section .section-row { grid-column: 1 / -1; }
+	.admin-wrap .admin-section h2 { font-size: 1.1rem; }
+	.admin-wrap .template-stat { grid-template-columns: minmax(0, 1fr) 70px; grid-template-rows: 1fr; column-gap: 8px; row-gap: 0; padding: 4px 0; }
+	.admin-wrap .template-stat > div:first-child { grid-column: 1; grid-row: 1; }
+	.admin-wrap .template-stat > .mini-track { grid-column: 2; grid-row: 1; }
+	.admin-wrap .template-stat strong { font-size: .78rem; }
+	.admin-wrap .template-stat small { font-size: .68rem; }
+	.admin-wrap .admin-activity { padding: 7px 0; }
+	.public-document { height: 100svh; min-height: 0; padding: 0; overflow: hidden; }
+	.document-header { height: 106px; padding-top: 6px; padding-bottom: 6px; }
+	.document-header .small-logo { width: 88px; height: 88px; }
+	.document-card { max-width: 1000px; height: calc(100svh - 126px); margin: 10px auto; padding: 22px 28px; overflow: hidden; }
+	.document-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+	.document-card h1 { margin: 6px 0 8px; font-size: 2rem; }
+	.document-card h2 { break-after: avoid; margin: 12px 0 4px; font-size: 1rem; }
+	.document-card p, .document-card li { font-size: .82rem; line-height: 1.4; }
+	.document-card ul { margin: 6px 0; }
+	.document-card .primary-button { min-height: 42px; margin-top: 12px; }
+}

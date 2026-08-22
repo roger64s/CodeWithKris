@@ -47,3 +47,4 @@
 - Open a user dashboard after sign-in, then show only the tasks relevant to the phase selected from the left menu.
 - Validate registration and sign-in credentials with Supabase Auth and provide a visible sign-out action.
 - Keep the sign-in button compact instead of stretching across the full form width.
+- Keep every desktop application and public-document screen within one browser viewport without page scrolling.

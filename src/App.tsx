@@ -599,44 +599,45 @@ function App() {
           Thank you for supporting CodeWithKris and the people who use it to
           build confidence in everyday communication.
         </p>
-        <h2>Our shared purpose</h2>
-        <p>
-          Volunteers help us improve accessible practice materials, test clear
-          communication journeys, and make every person feel heard.
-        </p>
-        <h2>What volunteers agree to</h2>
-        <ul>
-          <li>Treat every participant with dignity, patience, and respect.</li>
-          <li>
-            Keep personal information, recordings, and conversations private.
-          </li>
-          <li>
-            Give honest, constructive feedback about accessibility and ease of
-            use.
-          </li>
-          <li>Use CodeWithKris only for supportive, non-clinical practice.</li>
-        </ul>
-        <h2>Privacy and boundaries</h2>
-        <p>
-          Voice recordings and practice data belong to the participant. Do not
-          copy, download, share, or discuss them outside the approved
-          CodeWithKris process.
-        </p>
-        <h2>Agreement</h2>
-        <p>
-          By joining as a volunteer, you confirm that you understand these
-          expectations and will contact the CodeWithKris team if you have a
-          concern.
-        </p>
-        <button className="primary-button" onClick={() => navigate("signin")}>
-          Return to CodeWithKris <span>→</span>
-        </button>
+        <div className="document-columns">
+          <div>
+            <h2>Our shared purpose</h2>
+            <p>
+              Volunteers help us improve accessible practice materials, test clear
+              communication journeys, and make every person feel heard.
+            </p>
+            <h2>What volunteers agree to</h2>
+            <ul>
+              <li>Treat every participant with dignity, patience, and respect.</li>
+              <li>Keep personal information, recordings, and conversations private.</li>
+              <li>Give honest, constructive feedback about accessibility and ease of use.</li>
+              <li>Use CodeWithKris only for supportive, non-clinical practice.</li>
+            </ul>
+          </div>
+          <div>
+            <h2>Privacy and boundaries</h2>
+            <p>
+              Voice recordings and practice data belong to the participant. Do not
+              copy, download, share, or discuss them outside the approved
+              CodeWithKris process.
+            </p>
+            <h2>Agreement</h2>
+            <p>
+              By joining as a volunteer, you confirm that you understand these
+              expectations and will contact the CodeWithKris team if you have a
+              concern.
+            </p>
+            <button className="primary-button" onClick={() => navigate("signin")}>
+              Return to CodeWithKris <span>→</span>
+            </button>
+          </div>
+        </div>
       </article>
     </main>
   );
 
   const appScreen = (
-    <main className={`app-shell ${screen === "templates" ? "templates-shell" : ""}`}>
+    <main className={`app-shell ${screen}-shell`}>
       <header className="app-header">
         <button className="brand-button" onClick={() => navigate("templates")}>
           <img
@@ -659,7 +660,7 @@ function App() {
           </button>
         </div>
       </header>
-      <div className={`content-wrap ${screen === "templates" ? "workspace-wrap" : ""}`}>
+      <div className={`content-wrap ${screen}-wrap`}>
         {screen === "templates" && (
           <section className="workspace-layout">
             <aside className="phase-sidebar" aria-label="Learning phases">
@@ -973,7 +974,7 @@ function App() {
                   Your completed practices will appear here.
                 </div>
               ) : (
-                sessions.slice(0, 5).map((session) => (
+                sessions.slice(0, 3).map((session) => (
                   <div className="session-row" key={session.id}>
                     <div>
                       <small>
@@ -1023,7 +1024,7 @@ function App() {
                 <span>Dictionary words</span>
               </div>
             </div>
-            <div className="admin-section">
+            <div className="admin-section template-admin-section">
               <div className="section-row">
                 <h2>Practice templates</h2>
                 <span>Sessions by template</span>
@@ -1046,7 +1047,7 @@ function App() {
                 </div>
               ))}
             </div>
-            <div className="admin-section">
+            <div className="admin-section activity-admin-section">
               <div className="section-row">
                 <h2>Recent activity</h2>
                 <span>{sessions.length} total</span>
@@ -1057,7 +1058,7 @@ function App() {
                   user practice session to populate this demo.
                 </div>
               ) : (
-                sessions.slice(0, 8).map((session) => (
+                sessions.slice(0, 4).map((session) => (
                   <div className="admin-activity" key={session.id}>
                     <span className="activity-dot" />
                     <div>
