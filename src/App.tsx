@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import "./App.css";
+import { supabase } from "./supabase";
 
 type Screen =
   | "register"
@@ -136,8 +137,13 @@ function App() {
   const [role, setRole] = useState<"user" | "admin">("user");
   const [authMode, setAuthMode] = useState<"register" | "signin">("signin");
   const [verificationSent, setVerificationSent] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
-  const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3>(1);
+  const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3 | null>(null);
   const [words, setWords] = useState<string[]>(defaultWords);
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
@@ -164,6 +170,22 @@ function App() {
     return () => window.clearInterval(timer);
   }, [isRecording]);
   useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setScreen("templates");
+    });
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setScreen((current) =>
+          current === "signin" || current === "register" ? "templates" : current,
+        );
+      } else if (event === "SIGNED_OUT") {
+        setScreen((current) => current === "volunteer" ? current : "signin");
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+  useEffect(() => {
     Promise.all([
       api<{ word: string }[]>("/api/dictionary"),
       api<PracticeSession[]>("/api/sessions"),
@@ -186,6 +208,52 @@ function App() {
   }, []);
 
   const navigate = (next: Screen) => setScreen(next);
+  const authenticate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthError("");
+    if (!supabase) {
+      setAuthError("Authentication is not configured. Add the Supabase public URL and anon key.");
+      return;
+    }
+    setIsAuthenticating(true);
+    try {
+      if (authMode === "register") {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { full_name: fullName.trim() } },
+        });
+        if (error) throw error;
+        if (data.session) {
+          setSelectedPhase(null);
+          navigate("templates");
+        } else {
+          setVerificationSent(true);
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+        setSelectedPhase(null);
+        navigate("templates");
+      }
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Authentication failed. Try again.");
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+  const signOut = async () => {
+    await supabase?.auth.signOut({ scope: "local" });
+    setSelectedPhase(null);
+    setRole("user");
+    setAuthMode("signin");
+    setPassword("");
+    setAuthError("");
+    navigate("signin");
+  };
   const addWord = async () => {
     const word = newWord.trim().toLowerCase();
     if (!word || words.includes(word)) return;
@@ -420,22 +488,43 @@ function App() {
             </button>
           </>
         ) : (
-          <>
+          <form onSubmit={authenticate}>
             <>
               {authMode === "register" && (
                 <label>
                   Full name
-                  <input placeholder="Enter your full name" />
+                  <input
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    placeholder="Enter your full name"
+                    autoComplete="name"
+                    required
+                  />
                 </label>
               )}
             </>
             <label>
               Email address
-              <input type="email" placeholder="you@example.com" />
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+              />
             </label>
             <label>
               Password
-              <input type="password" placeholder="Choose a secure password" />
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Choose a secure password"
+                autoComplete={authMode === "register" ? "new-password" : "current-password"}
+                minLength={6}
+                required
+              />
             </label>
             {authMode === "register" && (
               <label>
@@ -451,31 +540,35 @@ function App() {
                 </select>
               </label>
             )}
+            {authError && <p className="auth-error" role="alert">{authError}</p>}
             <button
-              className="primary-button"
-              onClick={() =>
-                authMode === "register"
-                  ? setVerificationSent(true)
-                  : navigate("templates")
-              }
+              className={`primary-button ${authMode === "signin" ? "compact-signin" : ""}`}
+              type="submit"
+              disabled={isAuthenticating}
             >
-              {authMode === "register" ? "Create account" : "Sign in"}{" "}
+              {isAuthenticating
+                ? "Please wait"
+                : authMode === "register"
+                  ? "Create account"
+                  : "Sign in"}{" "}
               <span>→</span>
             </button>
             {authMode === "signin" && (
-              <button className="text-button">Forgot password?</button>
+              <button className="text-button" type="button">Forgot password?</button>
             )}
             <button
               className="secondary-button"
-              onClick={() =>
-                setAuthMode(authMode === "register" ? "signin" : "register")
-              }
+              type="button"
+              onClick={() => {
+                setAuthError("");
+                setAuthMode(authMode === "register" ? "signin" : "register");
+              }}
             >
               {authMode === "register"
                 ? "Back to existing user login"
                 : "New user? Create an account"}
             </button>
-          </>
+          </form>
         )}
         <button className="public-link" onClick={() => navigate("volunteer")}>
           Read the public Volunteer Agreement
@@ -543,7 +636,7 @@ function App() {
   );
 
   const appScreen = (
-    <main className="app-shell">
+    <main className={`app-shell ${screen === "templates" ? "templates-shell" : ""}`}>
       <header className="app-header">
         <button className="brand-button" onClick={() => navigate("templates")}>
           <img
@@ -560,18 +653,30 @@ function App() {
               ? `${weekSessions.length} this week`
               : "Start practicing"}
           </span>
+          <button className="signout-button" onClick={signOut}>Sign out</button>
           <button className="avatar" aria-label="Open profile">
             KR
           </button>
         </div>
       </header>
-      <div className="content-wrap">
+      <div className={`content-wrap ${screen === "templates" ? "workspace-wrap" : ""}`}>
         {screen === "templates" && (
           <section className="workspace-layout">
             <aside className="phase-sidebar" aria-label="Learning phases">
               <span className="section-kicker">Your pathway</span>
               <h2>Three phases</h2>
               <nav>
+                <button
+                  className={`phase-nav-item ${selectedPhase === null ? "active" : ""}`}
+                  onClick={() => setSelectedPhase(null)}
+                  aria-current={selectedPhase === null ? "page" : undefined}
+                >
+                  <span className="phase-nav-number dashboard-icon">⌂</span>
+                  <span>
+                    <strong>Dashboard</strong>
+                    <small>Your progress and learning pathway</small>
+                  </span>
+                </button>
                 {phases.map((phase) => (
                   <button
                     className={`phase-nav-item ${selectedPhase === phase.number ? "active" : ""}`}
@@ -589,38 +694,56 @@ function App() {
               </nav>
             </aside>
             <div className="page-content phase-content">
-              <div className="page-intro">
-              <span className="section-kicker">Communication to work readiness</span>
-                <h1>{phases[selectedPhase - 1].title}</h1>
-                <p>{phases[selectedPhase - 1].detail} Choose a mission below to continue at your own pace.</p>
-              </div>
-              <div className="template-grid">
-              {phaseTemplates.map((template) => (
-                <button
-                  key={template.title}
-                  className={`template-item ${selectedTemplate.title === template.title ? "selected" : ""}`}
-                  onClick={() => {
-                    setSelectedTemplate(template);
-                    navigate("record");
-                  }}
-                >
-                  <span className={`template-icon ${template.color}`}>
-                    {template.icon}
-                  </span>
-                  <span>
-                    <strong>{template.title}</strong>
-                    <small>{template.detail}</small>
-                  </span>
-                  <span className="item-arrow">↗</span>
-                </button>
-              ))}
-              </div>
-              <button
-                className="outline-wide"
-                onClick={() => navigate("dictionary")}
-              >
-                My word dictionary <span>{words.length} words&nbsp; ＋</span>
-              </button>
+              {selectedPhase === null ? (
+                <section className="dashboard-panel" aria-labelledby="dashboard-title">
+                  <div className="page-intro">
+                    <span className="section-kicker">User dashboard</span>
+                    <h1 id="dashboard-title">Your learning pathway</h1>
+                    <p>Build communication confidence, workplace readiness, and coding skills at your own pace.</p>
+                  </div>
+                  <div className="dashboard-stats">
+                    <div><strong>3</strong><span>Learning phases</span></div>
+                    <div><strong>8</strong><span>Practice missions</span></div>
+                    <div><strong>{weekSessions.length}</strong><span>Sessions this week</span></div>
+                  </div>
+                  <button className="outline-wide" onClick={() => navigate("progress")}>View my progress <span>→</span></button>
+                </section>
+              ) : (
+                <>
+                  <div className="page-intro">
+                    <span className="section-kicker">Communication to work readiness</span>
+                    <h1>{phases[selectedPhase - 1].title}</h1>
+                    <p>{phases[selectedPhase - 1].detail} Choose a mission below to continue at your own pace.</p>
+                  </div>
+                  <div className="template-grid">
+                    {phaseTemplates.map((template) => (
+                      <button
+                        key={template.title}
+                        className={`template-item ${selectedTemplate.title === template.title ? "selected" : ""}`}
+                        onClick={() => {
+                          setSelectedTemplate(template);
+                          navigate("record");
+                        }}
+                      >
+                        <span className={`template-icon ${template.color}`}>
+                          {template.icon}
+                        </span>
+                        <span>
+                          <strong>{template.title}</strong>
+                          <small>{template.detail}</small>
+                        </span>
+                        <span className="item-arrow">↗</span>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    className="outline-wide"
+                    onClick={() => navigate("dictionary")}
+                  >
+                    My word dictionary <span>{words.length} words&nbsp; ＋</span>
+                  </button>
+                </>
+              )}
             </div>
           </section>
         )}

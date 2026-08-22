@@ -12,14 +12,16 @@
 
 | Metric | Committed today | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 13 | 1 | 14 |
-| Text lines added | 4,691 | 0 | 4,691 |
-| Text lines deleted | 207 | 0 | 207 |
-| Net text-line change | 4,484 | 0 | 4,484 |
-| New binary/document assets | 1 | 3 | 4 |
-| Build status | Passed | Not applicable | Passed |
+| Commits | 14 | 1 | 15 |
+| Text lines added | 4,691 | 253 | 4,944 |
+| Text lines deleted | 207 | 78 | 285 |
+| Net text-line change | 4,484 | 175 | 4,659 |
+| New source files | 0 | 1 | 1 |
+| Build status | Passed | Passed | Passed |
 
-The committed line count includes the initial application scaffold and the later formatted React source. The closeout release adds the phase-layout styling, three replacement images, the workspace descriptor, and the project metrics documents. Binary assets are counted separately from text-line metrics.
+The final pending release adds the Supabase browser authentication client, dashboard-first phase flow, viewport-fitting layouts, sign-out, and compact sign-in action. Line metrics are CodeWithKris-only counts from the final Git text diff.
+
+[Open the interactive CodeWithKris project metrics](charts.html)
 
 ## Delivered Today
 
@@ -33,6 +35,10 @@ The committed line count includes the initial application scaffold and the later
 - Added the AI/ML accessibility audit and copyright/licensing register.
 - Added a visible three-phase pathway with phase-specific task grouping and left-side navigation.
 - Improved authenticated-page spacing and enlarged the application logo.
+- Added a dashboard-first post-login experience with phase-specific mission selection.
+- Added Supabase Auth credential validation, session restoration, email-verification registration, and sign-out.
+- Fitted the sign-in and initial authenticated dashboard into a desktop browser viewport without page scrolling.
+- Reduced the sign-in action to a compact, content-sized button.
 
 ## Effort Estimate
 
@@ -43,16 +49,17 @@ The committed line count includes the initial application scaffold and the later
 | Research and product design | 20% |
 | Documentation and release preparation | 10% |
 
-Estimated active work window: approximately 2 hours 40 minutes, from the first CodeWithKris implementation commit at 14:49 to the phase-layout commit at 17:29 local time. This is an estimate from Git timestamps, not a timesheet.
+Estimated active work window: approximately 3 hours 55 minutes across the implementation and final authentication/layout sessions. This is an estimate from Git timestamps and session activity, not a timesheet.
 
 ## Current State
 
-- Latest committed release: `3dd47f9 Group CodeWithKris tasks by learning phase`, followed by the closeout release
+- Latest committed release before this closeout: `ad9414f Fix production metrics page routing`.
 - Production deployment: Vercel production site is live at https://codewithkris.vercel.app
 - Closeout validation: `npm run build` and `npm run lint` passed on 2026-08-22.
-- The phase-layout, replacement-image, workspace, and metrics-document changes are included in the closeout release.
+- The dashboard, responsive layout, Supabase Auth, sign-out, and compact sign-in changes are included in this closeout release.
 - The Vite build emits `docs/charts.html` into production output so the Gradagig CodeWithKris metrics link does not return 404.
-- Production MFCC/MLP/Softmax inference, Supabase Auth/RLS, external channel adapters, community features, and employer workflows remain future phases.
+- Production sign-in requires `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel project settings.
+- Production MFCC/MLP/Softmax inference, Supabase RLS and per-user data ownership, external channel adapters, community features, and employer workflows remain future phases.
 
 ## Separation Rule
 

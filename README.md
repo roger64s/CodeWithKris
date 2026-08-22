@@ -35,4 +35,4 @@ See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rule
 
 Run `npm run dev` to start the React app and Supabase API together. The API runs on `http://127.0.0.1:8787` and the Vite client proxies `/api` requests to it.
 
-Create a Supabase project, run `supabase/schema.sql` in its SQL Editor, create `.env` from `.env.example`, and add the project URL and server-only service role key. The database is Supabase Postgres and recordings are stored in its private Storage bucket. Never expose or commit `SUPABASE_SERVICE_ROLE_KEY`; add the same values to Vercel environment variables when deploying an API.
+Create a Supabase project, run `supabase/schema.sql` in its SQL Editor, create `.env` from `.env.example`, and add the project URL and keys. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` enable browser sign-in and may contain only Supabase's public client credentials. The database is Supabase Postgres and recordings are stored in its private Storage bucket. Never expose or commit `SUPABASE_SERVICE_ROLE_KEY`; add the required values to Vercel environment variables when deploying.

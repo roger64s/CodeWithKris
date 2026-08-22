@@ -42,3 +42,8 @@
 - Provide a CodeWithKris-only Project Metrics page for the Gradagig CodeWithKris Page link.
 - Close the CodeWithKris project with documentation updated, local validation completed, and the final changes published separately from Gradagig Website.
 - Keep the CodeWithKris-only Project Metrics page available at its production URL when the Vite app is deployed.
+- Fit the desktop sign-in screen within one browser viewport without excess blank space or page scrolling.
+- Fit the initial authenticated templates screen within one desktop browser viewport without page scrolling.
+- Open a user dashboard after sign-in, then show only the tasks relevant to the phase selected from the left menu.
+- Validate registration and sign-in credentials with Supabase Auth and provide a visible sign-out action.
+- Keep the sign-in button compact instead of stretching across the full form width.
