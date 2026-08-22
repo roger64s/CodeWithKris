@@ -12,3 +12,7 @@
 - Use a clean, responsive, accessibility-first mobile UI with high-contrast text and oversized controls.
 - Keep the visual direction soft purple and indigo, adapted from the SpeechAssist wireframes.
 - Use the supplied Kris the Jumbo logo as the visible brand mark in the application.
+- Show existing-user Sign In first, with new-user signup available as a separate choice.
+- Require email verification as part of the new-user signup flow.
+- Provide a public Volunteer Agreement document formatted consistently with the website.
+- Keep the application content sized to fit mobile screens without unnecessary overflow.
