@@ -33,6 +33,6 @@ See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rule
 
 ## CodeWithKris development
 
-Run `npm run dev` to start the React app and SQLite API together. The API runs on `http://127.0.0.1:8787` and the Vite client proxies `/api` requests to it.
+Run `npm run dev` to start the React app and Supabase API together. The API runs on `http://127.0.0.1:8787` and the Vite client proxies `/api` requests to it.
 
-The database is created automatically at `data/codewithkris.db`. Audio files are stored in `data/audio/`. Both are local runtime data and are excluded from Git. Use `npm run dev:api` when starting the API separately.
+Create a Supabase project, run `supabase/schema.sql` in its SQL Editor, create `.env` from `.env.example`, and add the project URL and server-only service role key. The database is Supabase Postgres and recordings are stored in its private Storage bucket. Never expose or commit `SUPABASE_SERVICE_ROLE_KEY`; add the same values to Vercel environment variables when deploying an API.
