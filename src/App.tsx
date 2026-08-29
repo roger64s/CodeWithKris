@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
+import {
+  type UserRole,
+  BASE_USER_ROLES,
+  ADMIN_ROLE_OPTION,
+  ADMIN_EMAIL,
+  getRoleGreeting,
+} from "./components/UserRegistration";
 
 type Screen =
   | "register"
@@ -135,6 +142,7 @@ function similarity(expected: string, actual: string) {
 function App() {
   const [screen, setScreen] = useState<Screen>("signin");
   const [role, setRole] = useState<"user" | "admin">("user");
+  const [userRole, setUserRole] = useState<UserRole>("Student");
   const [authMode, setAuthMode] = useState<"register" | "signin">("signin");
   const [verificationSent, setVerificationSent] = useState(false);
   const [email, setEmail] = useState("");
@@ -161,6 +169,16 @@ function App() {
   const recognition = useRef<SpeechRecognitionLike | null>(null);
   const uploadInput = useRef<HTMLInputElement | null>(null);
 
+  const isEligibleForAdmin = email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+  const handleEmailChange = (newEmail: string) => {
+    setEmail(newEmail);
+    const eligible = newEmail.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    if (userRole === "CodeWithKris Administrator" && !eligible) {
+      setUserRole("Student");
+    }
+  };
+
   useEffect(() => {
     if (!isRecording) return;
     const timer = window.setInterval(
@@ -172,10 +190,18 @@ function App() {
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setScreen("templates");
+      if (data.session) {
+        const meta = data.session.user?.user_metadata;
+        if (meta?.role) setUserRole(meta.role as UserRole);
+        if (meta?.full_name) setFullName(meta.full_name);
+        setScreen("templates");
+      }
     });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        const meta = session.user?.user_metadata;
+        if (meta?.role) setUserRole(meta.role as UserRole);
+        if (meta?.full_name) setFullName(meta.full_name);
         setScreen((current) =>
           current === "signin" || current === "register" ? "templates" : current,
         );
@@ -218,10 +244,19 @@ function App() {
     setIsAuthenticating(true);
     try {
       if (authMode === "register") {
+        const finalRole: UserRole =
+          userRole === "CodeWithKris Administrator" && !isEligibleForAdmin
+            ? "Student"
+            : userRole;
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { data: { full_name: fullName.trim() } },
+          options: {
+            data: {
+              full_name: fullName.trim(),
+              role: finalRole,
+            },
+          },
         });
         if (error) throw error;
         if (data.session) {
@@ -508,7 +543,7 @@ function App() {
               <input
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => handleEmailChange(event.target.value)}
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
@@ -527,18 +562,38 @@ function App() {
               />
             </label>
             {authMode === "register" && (
-              <label>
-                Speech condition <span className="optional">optional</span>
-                <select defaultValue="">
-                  <option value="" disabled>
-                    Select a condition
-                  </option>
-                  <option>Stuttering</option>
-                  <option>Apraxia</option>
-                  <option>Dysarthria</option>
-                  <option>Prefer not to say</option>
-                </select>
-              </label>
+              <>
+                <label>
+                  User category / Role
+                  <select
+                    value={userRole}
+                    onChange={(event) => setUserRole(event.target.value as UserRole)}
+                  >
+                    {BASE_USER_ROLES.map((r) => (
+                      <option key={r.value} value={r.value}>
+                        {r.label} — {r.description}
+                      </option>
+                    ))}
+                    {isEligibleForAdmin && (
+                      <option value={ADMIN_ROLE_OPTION.value}>
+                        🛡️ {ADMIN_ROLE_OPTION.label} (Exclusive)
+                      </option>
+                    )}
+                  </select>
+                </label>
+                <label>
+                  Speech condition <span className="optional">optional</span>
+                  <select defaultValue="">
+                    <option value="" disabled>
+                      Select a condition
+                    </option>
+                    <option>Stuttering</option>
+                    <option>Apraxia</option>
+                    <option>Dysarthria</option>
+                    <option>Prefer not to say</option>
+                  </select>
+                </label>
+              </>
             )}
             {authError && <p className="auth-error" role="alert">{authError}</p>}
             <button
@@ -698,9 +753,11 @@ function App() {
               {selectedPhase === null ? (
                 <section className="dashboard-panel" aria-labelledby="dashboard-title">
                   <div className="page-intro">
-                    <span className="section-kicker">User dashboard</span>
-                    <h1 id="dashboard-title">Your learning pathway</h1>
-                    <p>Build communication confidence, workplace readiness, and coding skills at your own pace.</p>
+                    <span className="role-badge" data-role={userRole}>
+                      {userRole} Account
+                    </span>
+                    <h1 id="dashboard-title">{getRoleGreeting(userRole, fullName).headline}</h1>
+                    <p>{getRoleGreeting(userRole, fullName).message}</p>
                   </div>
                   <div className="dashboard-stats">
                     <div><strong>3</strong><span>Learning phases</span></div>
