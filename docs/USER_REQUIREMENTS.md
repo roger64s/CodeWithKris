@@ -48,3 +48,9 @@
 - Validate registration and sign-in credentials with Supabase Auth and provide a visible sign-out action.
 - Keep the sign-in button compact instead of stretching across the full form width.
 - Keep every desktop application and public-document screen within one browser viewport without page scrolling.
+
+## 2026-08-29
+- Provide user registration with selectable roles: Student, Woman/Carer, Investor, Mentor, Corporate, and Individual.
+- Add an exclusive "CodeWithKris Administrator" role category reserved solely for roger.s@gradagig.com.
+- Store the selected user role and render a role-specific dashboard greeting upon registration.
+
