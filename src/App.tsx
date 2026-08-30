@@ -5,9 +5,11 @@ import {
   type UserRole,
   BASE_USER_ROLES,
   ADMIN_ROLE_OPTION,
+  USER_ROLES,
   ADMIN_EMAIL,
   getRoleGreeting,
 } from "./components/UserRegistration";
+import { FinancialDashboard } from "./components/FinancialDashboard";
 
 type Screen =
   | "register"
@@ -18,6 +20,7 @@ type Screen =
   | "progress"
   | "dictionary"
   | "admin"
+  | "financials"
   | "volunteer";
 type Template = { icon: string; title: string; detail: string; color: string; phase: 1 | 2 | 3 };
 type PracticeSession = {
@@ -526,18 +529,17 @@ function App() {
         ) : (
           <form onSubmit={authenticate}>
             {authMode === "register" && (
-              <div className="role-selector-section">
-                <span className="role-selector-label">1. Choose your category</span>
-                <div className="role-chip-grid" role="radiogroup" aria-label="Select your role">
-                  {BASE_USER_ROLES.map((r) => {
-                    const isSelected = userRole === r.value;
-                    return (
+              userRole === null ? (
+                <div className="role-selector-section">
+                  <span className="role-selector-label">1. Choose your category</span>
+                  <div className="role-chip-grid" role="radiogroup" aria-label="Select your role">
+                    {BASE_USER_ROLES.map((r) => (
                       <button
                         key={r.value}
                         type="button"
                         role="radio"
-                        aria-checked={isSelected}
-                        className={`role-chip-btn ${isSelected ? "selected" : ""}`}
+                        aria-checked={false}
+                        className="role-chip-btn"
                         onClick={() => {
                           setUserRole(r.value);
                           setAuthError("");
@@ -547,28 +549,51 @@ function App() {
                         <span className="role-chip-icon">{r.icon}</span>
                         <span className="role-chip-title">{r.label}</span>
                       </button>
-                    );
-                  })}
-                  {isEligibleForAdmin && (
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={userRole === ADMIN_ROLE_OPTION.value}
-                      className={`role-chip-btn role-chip-admin ${
-                        userRole === ADMIN_ROLE_OPTION.value ? "selected" : ""
-                      }`}
-                      onClick={() => {
-                        setUserRole(ADMIN_ROLE_OPTION.value);
-                        setAuthError("");
-                      }}
-                      title={ADMIN_ROLE_OPTION.description}
-                    >
-                      <span className="role-chip-icon">{ADMIN_ROLE_OPTION.icon}</span>
-                      <span className="role-chip-title">{ADMIN_ROLE_OPTION.label}</span>
-                    </button>
-                  )}
+                    ))}
+                    {isEligibleForAdmin && (
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={false}
+                        className="role-chip-btn role-chip-admin"
+                        onClick={() => {
+                          setUserRole(ADMIN_ROLE_OPTION.value);
+                          setAuthError("");
+                        }}
+                        title={ADMIN_ROLE_OPTION.description}
+                      >
+                        <span className="role-chip-icon">{ADMIN_ROLE_OPTION.icon}</span>
+                        <span className="role-chip-title">{ADMIN_ROLE_OPTION.label}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="role-selected-banner">
+                  <div className="role-selected-info">
+                    <span className="role-selected-icon">
+                      {USER_ROLES.find((r) => r.value === userRole)?.icon || "👤"}
+                    </span>
+                    <div>
+                      <span className="role-selected-tag">Category</span>
+                      <strong className="role-selected-name">
+                        {USER_ROLES.find((r) => r.value === userRole)?.label || userRole}
+                      </strong>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="role-change-btn"
+                    onClick={() => {
+                      setUserRole(null);
+                      setAuthError("");
+                    }}
+                    title="Change category"
+                  >
+                    Change ↻
+                  </button>
+                </div>
+              )
             )}
             {/* Show inputs and submit button only when in signin mode OR when a role has been selected in register mode */}
             {(authMode === "signin" || userRole !== null) && (
@@ -608,7 +633,7 @@ function App() {
                     required
                   />
                 </label>
-                {authMode === "register" && (
+                {authMode === "register" && userRole === "Persons with Disabilities" && (
                   <label>
                     Speech condition <span className="optional">optional</span>
                     <select defaultValue="">
@@ -1161,13 +1186,25 @@ function App() {
             </div>
           </section>
         )}
+        {screen === "financials" && (
+          <section className="page-content" style={{ maxWidth: 1000, margin: "0 auto" }}>
+            <FinancialDashboard
+              currentUserRole={userRole || (role === "admin" ? "CodeWithKris Administrator" : "Student")}
+              userEmail={email}
+            />
+          </section>
+        )}
       </div>
       <nav className="bottom-nav" aria-label="Main navigation">
-        {(role === "admin"
+        {((role === "admin" ||
+          userRole === "Investor" ||
+          userRole === "CodeWithKris Administrator" ||
+          email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase())
           ? [
-              ["admin", "Admin", "▤"],
-              ["progress", "User view", "◎"],
               ["templates", "Practice", "▦"],
+              ["progress", "User view", "◎"],
+              ["admin", "Admin", "▤"],
+              ["financials", "Coop Equity", "⚖️"],
             ]
           : [
               ["templates", "Templates", "▦"],

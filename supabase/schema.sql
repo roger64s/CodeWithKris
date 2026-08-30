@@ -21,6 +21,146 @@ create table if not exists public.practice_sessions (
   accuracy integer not null check (accuracy between 0 and 100),
   created_at timestamptz not null default now()
 );
+
+-- Cooperative Sweat Equity & Financial Metrics (AMUL Model on L2)
+create table if not exists public.financial_metrics (
+  id uuid primary key default gen_random_uuid(),
+  period_label text not null,
+  total_equity_distributed numeric not null default 0,
+  treasury_balance_usd numeric not null default 0,
+  cooperative_dividends_pool numeric not null default 0,
+  contributors_count integer not null default 0,
+  l2_block_number bigint not null default 0,
+  created_at timestamptz not null default now()
+);
+
+-- Community Trust Cap Table & OVU (Outcome Valuation Unit) Contributions
+create table if not exists public.ovu_contributions (
+  id uuid primary key default gen_random_uuid(),
+  contributor_address text not null,
+  contributor_id uuid references auth.users(id) on delete set null,
+  task_id text not null,
+  tier text not null check (tier in ('Tier 1', 'Tier 2', 'Tier 3', 'Tier 4', 'Tier 5')),
+  base_ovu numeric not null,
+  reusability_bonus numeric not null default 0,
+  speed_bonus numeric not null default 0,
+  quality_penalty numeric not null default 0,
+  final_ovu numeric not null,
+  final_ovu_wei text not null,
+  period_id integer not null,
+  l2_tx_hash text,
+  calculated_at timestamptz not null default now()
+);
+
+alter table public.financial_metrics enable row level security;
+alter table public.ovu_contributions enable row level security;
+
+-- Only Grad-a-Gig Management & Authorized Investors can view financial metrics
+create policy "Allow management and investors view financial metrics"
+  on public.financial_metrics
+  for select
+  to authenticated
+  using (
+    (auth.jwt() -> 'user_metadata' ->> 'role') in ('CodeWithKris Administrator', 'Investor')
+    or
+    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
+  );
+
+-- Only Administrator can modify
+create policy "Allow only administrator write financial metrics"
+  on public.financial_metrics
+  for all
+  to authenticated
+  using (
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
+    or
+    (auth.jwt() ->> 'email') = 'roger.s@gradagig.com'
+  );
+
+-- OVU Contributions: Management & Investors can view all records; individual contributors can view their own
+create policy "Allow management and investors view all OVU records"
+  on public.ovu_contributions
+  for select
+  to authenticated
+  using (
+    (auth.jwt() -> 'user_metadata' ->> 'role') in ('CodeWithKris Administrator', 'Investor')
+    or
+    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
+    or
+    auth.uid() = contributor_id
+  );
+
+create policy "Allow only administrator insert/update OVU records"
+  on public.ovu_contributions
+  for all
+  to authenticated
+  using (
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
+    or
+    (auth.jwt() ->> 'email') = 'roger.s@gradagig.com'
+  );
+
+-- Sensitive Private Contributor Records (Raw PII, conditions, private notes)
+create table if not exists public.private_contributor_records (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  full_name text not null,
+  email text not null,
+  speech_condition text,
+  role text not null,
+  raw_contribution_details jsonb not null default '{}'::jsonb,
+  wallet_address text not null,
+  salt text not null,
+  data_integrity_proof_hash text not null,
+  anonymized_commitment text not null,
+  created_at timestamptz not null default now()
+);
+
+-- Public On-Chain Verified Proofs (Anonymous Ledger Mirror for L2 Testnet)
+create table if not exists public.onchain_audit_proofs (
+  id uuid primary key default gen_random_uuid(),
+  anonymized_commitment text not null,
+  data_integrity_proof_hash text not null,
+  public_points_total numeric not null,
+  period_id integer not null,
+  l2_tx_hash text,
+  l2_block_number bigint,
+  verified_at timestamptz not null default now()
+);
+
+alter table public.private_contributor_records enable row level security;
+alter table public.onchain_audit_proofs enable row level security;
+
+-- Strict Privacy: Contributors can ONLY view their own private record; Admin/Management can view all
+create policy "Allow contributors view own private record"
+  on public.private_contributor_records
+  for select
+  to authenticated
+  using (
+    auth.uid() = user_id
+    or
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
+    or
+    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
+  );
+
+create policy "Allow administrator manage private contributor records"
+  on public.private_contributor_records
+  for all
+  to authenticated
+  using (
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
+    or
+    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
+  );
+
+-- Public Audit Transparency: Anyone authenticated or anonymous can verify on-chain hashes
+create policy "Allow public read of anonymous onchain audit proofs"
+  on public.onchain_audit_proofs
+  for select
+  to anon, authenticated
+  using (true);
+
 insert into public.dictionary_words (word) values ('appointment'), ('conversation'), ('confidence') on conflict (word) do nothing;
 insert into storage.buckets (id, name, public) values ('voice-recordings', 'voice-recordings', false) on conflict (id) do nothing;
 -- The API uses the server-only service role key, so bucket access stays private.

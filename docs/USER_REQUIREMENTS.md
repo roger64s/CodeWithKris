@@ -59,6 +59,11 @@
 - Redesign category options into balanced squarish icon tiles arranged in a clean 5-column grid.
 - Streamline welcome panel width and logo sizing to eliminate excess blank space on login and registration screens.
 - Keep only "Create account" as the clean registration title without excess top kicker or subtitle text.
-- Progressive disclosure on registration: display category icon boxes first; only reveal credential input fields and submission action after a role is selected.
+- Progressive disclosure on registration: display category icon boxes first; once a category is selected, collapse the full icon grid into a compact selected category pill with a change button, and reveal credentials inputs.
+- Show the optional Speech Condition dropdown exclusively when "Persons with Disabilities" (PWD) is chosen; omit it for all other roles.
+- Implement the AMUL-inspired cooperative sweat-equity model with role weights (Mentor: 1.5x, PWD/Student/Carer: 1.2x) and EVM 18-decimal precision units.
+- Implement the OVU (Outcome Valuation Unit) Matrix with dynamic multipliers (+25% Reusability, +15% Speed, -30% Quality Penalty).
+- Implement Web Crypto API zero-knowledge-ready data hashing for privacy-preserving, anonymous on-chain L2 audit verification.
+- Implement the restricted Cooperative Financial & Equity Ledger with Row Level Security (RLS) policies for Grad-a-Gig Management and Authorized Investors.
 - Fit the registration card cleanly within the desktop viewport without vertical scrolling.
 

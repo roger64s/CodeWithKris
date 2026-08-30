@@ -298,6 +298,207 @@ h1, h2, p { margin: 0; } h1, h2 { color: var(--ink); font-weight: 700; letter-sp
   color: #991b1b;
 }
 
+/* Selected Category Banner (Replaces Grid) */
+.role-selected-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border: 1.5px solid #d5cbf7;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8f6fe 0%, #f1ecfc 100%);
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(103, 86, 201, 0.08);
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.role-selected-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.role-selected-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.role-selected-tag {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.role-selected-name {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--purple-dark);
+  line-height: 1.1;
+}
+.role-change-btn {
+  padding: 5px 12px;
+  border: 1px solid #c8bfe8;
+  border-radius: 20px;
+  background: white;
+  color: var(--purple-dark);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.role-change-btn:hover {
+  border-color: var(--purple);
+  background: var(--purple);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Financial Dashboard & Sweat-Equity Cooperative Ledger */
+.financial-portal {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.financial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.financial-tabs {
+  display: flex;
+  gap: 8px;
+}
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: white;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tab-btn:hover {
+  border-color: var(--purple);
+  background: #faf8ff;
+}
+.tab-btn.active {
+  border-color: var(--purple);
+  background: var(--purple);
+  color: white;
+  box-shadow: 0 4px 12px rgba(103, 86, 201, 0.25);
+}
+.coop-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.88rem;
+}
+.coop-table th {
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+.coop-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f1eff8;
+  color: var(--ink);
+}
+.badge-verified {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #dcfce7;
+  color: #15803d;
+}
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .calculator-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.calculator-card, .calculation-result-card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: white;
+}
+.result-payload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.payload-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.payload-code {
+  font-family: monospace;
+  font-size: 0.75rem;
+  background: #f1eff8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--purple-dark);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tx-success-banner {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #e8f7f1;
+  border-left: 4px solid var(--mint);
+  color: #1b6351;
+  font-size: 0.82rem;
+}
+.l2-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.l2-spec-box {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #faf8ff;
+}
+.spec-title {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.spec-val {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--purple-dark);
+}
+
+
 @media (max-width: 540px) {
   .role-chip-grid {
     grid-template-columns: repeat(3, 1fr);
