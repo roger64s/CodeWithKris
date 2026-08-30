@@ -78,4 +78,6 @@
 - Base OVU calculation on the user's assigned stakeholder category and OVU tier/modifiers, not their registration role; retain the category percentage as a cap-table pool classification rather than an OVU multiplier.
 - Record Roger's USD 2,500+ documented operating investment without inventing a split across tax, accounting, GitHub Copilot, and related costs; support later receipt-level itemization.
 - Fit the registration card cleanly within the desktop viewport without vertical scrolling.
+- Keep CodeWithKris functional in Vercel production with its registration, contribution, investment, stakeholder-assignment, and RLS schema deployed to Supabase.
+- Maintain final project documentation and effort charts before closing the workspace.
 

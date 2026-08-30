@@ -12,10 +12,10 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 23 | 1 closeout | 24 after publication |
-| Text lines added | 7,347 | 928 | 8,275 |
-| Text lines deleted | 677 | 351 | 1,028 |
-| Net text-line change | 6,670 | 577 | 7,247 |
+| Commits | 25 | 1 closeout | 26 after publication |
+| Text lines added | 8,291 | 64 | 8,355 |
+| Text lines deleted | 1,054 | 45 | 1,099 |
+| Net text-line change | 7,237 | 19 | 7,256 |
 | New source files | 5 | 0 | 5 |
 | Build status | Passed | Passed | Passed |
 
@@ -57,6 +57,9 @@ xychart-beta
 - Documented Roger's USD 2,500+ operating investment as a minimum pending receipt-level allocation rather than inventing an expense breakdown.
 - Bound new records to the authenticated Supabase user ID and email while restricting aggregate reporting to management and authorized investors.
 - Added management-controlled stakeholder assignments and based OVU calculations on the assigned cap-table category rather than the registration role.
+- Applied the contribution, investment, stakeholder-assignment, signup-trigger, and RLS schema to production Supabase.
+- Backfilled the existing founder account into Founders & Core Operating Team and configured Community Trust defaults for future registrations.
+- Deployed and verified the functional application on Vercel, then removed the temporary schema endpoint and token.
 - Audited all desktop application and document screens within a single viewport without document or nested scrolling.
 
 ## Effort Estimate
@@ -68,7 +71,7 @@ xychart-beta
 | Research and product design | 9% |
 | Documentation and release preparation | 5% |
 
-Estimated active work window: approximately 8 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, L2 privacy hashing, and browser-audit sessions. This is an estimate from Git timestamps and session activity, not a timesheet.
+Estimated active work window: approximately 9 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, Supabase deployment, Vercel verification, L2 privacy hashing, and browser-audit sessions. This is an estimate from Git timestamps and session activity, not a timesheet.
 
 ## Current State
 
@@ -78,7 +81,8 @@ Estimated active work window: approximately 8 hours across implementation, authe
 - The all-pages no-scroll layouts and 12-screen browser audit are included in this release.
 - The Vite build emits `docs/charts.html` into production output so the Gradagig CodeWithKris metrics link does not return 404.
 - Production sign-in requires `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel project settings.
-- The new contribution, investment, stakeholder assignment, and RLS schema is implemented locally but must be applied to the linked remote Supabase project before persistent production tracking is available.
+- The contribution, investment, stakeholder-assignment, signup-trigger, and RLS schema is deployed to production Supabase; persistent tracking is ready for authenticated production use.
+- Production verification found 3 baseline contribution records, 1 documented investment record, and the founder account assigned to Founders & Core Operating Team.
 - The preview URL `codewithkris-roger-e1a3.vercel.app` is protected by Vercel Authentication; anonymous production checks use the public alias.
 
 ## Separation Rule

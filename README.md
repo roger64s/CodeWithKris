@@ -1,38 +1,28 @@
-# React + TypeScript + Vite
+# CodeWithKris
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+CodeWithKris is an accessibility-first voice practice, work-readiness, and cooperative contribution platform for people with disabilities, students, carers, mentors, and partner organizations.
 
-Currently, two official plugins are available:
+## Production
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Application: https://codewithkris.vercel.app
+- Hosting: Vercel production deployment
+- Authentication, database, RLS, ledger, and storage: Supabase
+- Status: Functional and verified on 2026-08-30
 
-## React Compiler
+## Key capabilities
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Supabase registration and authentication with role-specific dashboards.
+- Voice practice, recordings, dictionary, progress, and phased learning missions.
+- Authenticated effort-hours and financial-investment registers.
+- Client Code, Project Code, effort category, department allocation, and evidence tracking.
+- Management-controlled stakeholder assignments for cap-table pool classification.
+- OVU tier calculation with reusability, speed, and quality modifiers.
+- RLS-protected private records and anonymous L2 audit-proof preparation.
 
-## Expanding the Oxlint configuration
+## Local development
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Run `npm run dev` to start the React app and API together. The API runs on `http://127.0.0.1:8787`, and the Vite client proxies `/api` requests to it.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+Create `.env` from `.env.example` and add the project URL and keys. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` enable browser sign-in and may contain only Supabase public client credentials. Never expose or commit service-role, database, or signing secrets.
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
-
-## CodeWithKris development
-
-Run `npm run dev` to start the React app and Supabase API together. The API runs on `http://127.0.0.1:8787` and the Vite client proxies `/api` requests to it.
-
-Create a Supabase project, run `supabase/schema.sql` in its SQL Editor, create `.env` from `.env.example`, and add the project URL and keys. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` enable browser sign-in and may contain only Supabase's public client credentials. The database is Supabase Postgres and recordings are stored in its private Storage bucket. Never expose or commit `SUPABASE_SERVICE_ROLE_KEY`; add the required values to Vercel environment variables when deploying.
+The production Supabase schema in `supabase/schema.sql` has been applied. It is repeatable and includes RLS policies, contribution and investment records, stakeholder assignments, private audit records, and signup triggers.

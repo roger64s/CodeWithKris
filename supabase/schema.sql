@@ -122,6 +122,29 @@ create trigger assign_default_stakeholder_after_signup
   after insert on auth.users
   for each row execute function public.assign_default_stakeholder_category();
 
+-- Backfill users registered before the assignment trigger was introduced.
+insert into public.user_stakeholder_assignments (
+  user_id,
+  stakeholder_category,
+  assignment_source,
+  assignment_notes
+)
+select
+  id,
+  case
+    when lower(email) = 'roger.s@gradagig.com'
+      then 'Founders & Core Operating Team'
+    else 'Community & Ecosystem Trust'
+  end,
+  'automatic_default',
+  case
+    when lower(email) = 'roger.s@gradagig.com'
+      then 'Founder assignment backfilled during stakeholder migration.'
+    else 'Temporary Community Trust assignment pending management review.'
+  end
+from auth.users
+on conflict (user_id) do nothing;
+
 -- Human-readable contribution register. Values remain null until management verifies them.
 create table if not exists public.contribution_records (
   id uuid primary key default gen_random_uuid(),
