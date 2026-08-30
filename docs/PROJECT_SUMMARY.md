@@ -12,10 +12,10 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 23 | 0 | 23 |
-| Text lines added | 7,265 | 0 | 7,265 |
-| Text lines deleted | 602 | 0 | 602 |
-| Net text-line change | 6,663 | 0 | 6,663 |
+| Commits | 23 | 1 closeout | 24 after publication |
+| Text lines added | 7,347 | 928 | 8,275 |
+| Text lines deleted | 677 | 351 | 1,028 |
+| Net text-line change | 6,670 | 577 | 7,247 |
 | New source files | 5 | 0 | 5 |
 | Build status | Passed | Passed | Passed |
 
@@ -32,9 +32,9 @@ pie title Effort Distribution by Category
 ```mermaid
 xychart-beta
     title "Lines of Code by Workstream"
-    x-axis ["Scaffold", "Supabase", "Admin/User", "Auth", "Research", "Phases", "Docs", "Roles", "Coop/OVU"]
+    x-axis ["Scaffold", "Supabase", "Admin/User", "Auth", "Research", "Phases", "Docs", "Roles", "Coop/OVU", "Ledger"]
     y-axis "Lines of Code" 0 --> 3500
-    bar [3122, 170, 8, 232, 229, 873, 79, 488, 1462]
+    bar [3122, 170, 8, 232, 229, 873, 79, 488, 1462, 570]
 ```
 
 ## Delivered Today
@@ -51,6 +51,12 @@ xychart-beta
 - Implemented the Outcome Valuation Unit (OVU) Matrix with base tiers and dynamic bonuses/penalties (+25% Reusability, +15% Speed, -30% Quality Penalty).
 - Implemented Web Crypto API SHA-256 data hashing for privacy-preserving, zero-knowledge on-chain L2 testnet audit proof generation.
 - Added Supabase Row Level Security (RLS) policies protecting sensitive financial metrics, cap table records, and PII while allowing public transparency for on-chain audit hashes.
+- Removed fabricated treasury, dividend, contributor, and L2 figures from the cooperative dashboard.
+- Added a contribution ledger seeded with Roger's founder/platform work, Abhinaya's logo design, and Josy Chow's PwD ambassador audio recordings, with unverified hours and OVUs explicitly left pending.
+- Added separate authenticated workflows for categorized effort hours and financial investments, including Client Code, Project Code, department allocation, evidence, supplier, currency, and receipt references.
+- Documented Roger's USD 2,500+ operating investment as a minimum pending receipt-level allocation rather than inventing an expense breakdown.
+- Bound new records to the authenticated Supabase user ID and email while restricting aggregate reporting to management and authorized investors.
+- Added management-controlled stakeholder assignments and based OVU calculations on the assigned cap-table category rather than the registration role.
 - Audited all desktop application and document screens within a single viewport without document or nested scrolling.
 
 ## Effort Estimate
@@ -62,16 +68,17 @@ xychart-beta
 | Research and product design | 9% |
 | Documentation and release preparation | 5% |
 
-Estimated active work window: approximately 6 hours 15 minutes across implementation, authentication, layout, role management, cooperative finance, L2 privacy hashing, and browser-audit sessions. This is an estimate from Git timestamps and session activity, not a timesheet.
+Estimated active work window: approximately 8 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, L2 privacy hashing, and browser-audit sessions. This is an estimate from Git timestamps and session activity, not a timesheet.
 
 ## Current State
 
-- Latest closeout release includes full cooperative sweat-equity, OVU calculation matrix, Web Crypto audit hashing, and responsive role registration.
+- Latest closeout release includes authenticated effort and expense tracking, stakeholder-category OVU calculation, Web Crypto audit hashing, and responsive role registration.
 - Production deployment: Vercel production site is live at https://codewithkris.vercel.app
 - Closeout validation: `npm run build` passed cleanly with Vite and TypeScript.
 - The all-pages no-scroll layouts and 12-screen browser audit are included in this release.
 - The Vite build emits `docs/charts.html` into production output so the Gradagig CodeWithKris metrics link does not return 404.
 - Production sign-in requires `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel project settings.
+- The new contribution, investment, stakeholder assignment, and RLS schema is implemented locally but must be applied to the linked remote Supabase project before persistent production tracking is available.
 - The preview URL `codewithkris-roger-e1a3.vercel.app` is protected by Vercel Authentication; anonymous production checks use the public alias.
 
 ## Separation Rule

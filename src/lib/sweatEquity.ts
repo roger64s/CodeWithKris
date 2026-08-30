@@ -62,36 +62,149 @@ export function calculateSweatEquity(input: ContributionInput): SweatEquityPaylo
   };
 }
 
-export interface FinancialMetric {
+export type ContributionStatus = "unvalued" | "valued" | "verified";
+export type EffortCategory =
+  | "Product Design"
+  | "Development"
+  | "Testing / QA"
+  | "Marketing"
+  | "Web Design"
+  | "Brand Design"
+  | "Audio / Voice"
+  | "Research"
+  | "Administration"
+  | "Other";
+
+export const EFFORT_CATEGORIES: EffortCategory[] = [
+  "Product Design", "Development", "Testing / QA", "Marketing", "Web Design",
+  "Brand Design", "Audio / Voice", "Research", "Administration", "Other",
+];
+
+export type DepartmentCategory =
+  | "Management"
+  | "Delivery"
+  | "Finance & Admin"
+  | "Sales & Marketing"
+  | "Customer Service"
+  | "Profit";
+
+export const DEPARTMENT_ALLOCATIONS: Record<DepartmentCategory, number> = {
+  Management: 10,
+  Delivery: 30,
+  "Finance & Admin": 20,
+  "Sales & Marketing": 20,
+  "Customer Service": 10,
+  Profit: 10,
+};
+
+export interface ContributionRecord {
   id: string;
-  period_label: string;
-  total_equity_distributed: number;
-  treasury_balance_usd: number;
-  cooperative_dividends_pool: number;
-  contributors_count: number;
-  l2_block_number: number;
-  created_at: string;
+  contributorName: string;
+  contributorEmail?: string;
+  role: UserRole;
+  clientCode: string;
+  projectCode: string;
+  departmentCategory: DepartmentCategory;
+  effortCategory: EffortCategory;
+  contributionType: string;
+  description: string;
+  loggedHours: number | null;
+  weightedUnits: number | null;
+  status: ContributionStatus;
+  contributedAt: string;
+  l2TxHash?: string;
 }
 
-export const INITIAL_FINANCIAL_METRICS: FinancialMetric[] = [
+export type InvestmentCategory = "Tax & Accounting" | "Software & AI" | "Hosting & Infrastructure" | "Legal" | "Marketing" | "Equipment" | "Other";
+
+export const INVESTMENT_CATEGORIES: InvestmentCategory[] = [
+  "Tax & Accounting", "Software & AI", "Hosting & Infrastructure", "Legal", "Marketing", "Equipment", "Other",
+];
+
+export interface FinancialInvestmentRecord {
+  id: string;
+  investorName: string;
+  investorEmail?: string;
+  investorRole: UserRole;
+  clientCode: string;
+  projectCode: string;
+  departmentCategory: DepartmentCategory;
+  category: InvestmentCategory;
+  supplier: string;
+  description: string;
+  amount: number;
+  currency: string;
+  incurredAt: string;
+  receiptReference?: string;
+  status: "documented" | "verified";
+}
+
+// Known contributions are deliberately unvalued until management approves hours/OVUs.
+export const KNOWN_CONTRIBUTIONS: ContributionRecord[] = [
   {
-    id: "coop-2026-q3",
-    period_label: "Q3 2026 Cooperative Pool",
-    total_equity_distributed: 42500,
-    treasury_balance_usd: 185000,
-    cooperative_dividends_pool: 37000,
-    contributors_count: 64,
-    l2_block_number: 14892011,
-    created_at: "2026-08-30T00:00:00Z",
+    id: "founder-platform-build",
+    contributorName: "Roger S.",
+    contributorEmail: "roger.s@gradagig.com",
+    role: "CodeWithKris Administrator",
+    clientCode: "INTERNAL",
+    projectCode: "CWK-FOUNDATION",
+    departmentCategory: "Delivery",
+    effortCategory: "Development",
+    contributionType: "Founding and platform development",
+    description: "Founder contribution covering product direction, application development, and cooperative model design.",
+    loggedHours: null,
+    weightedUnits: null,
+    status: "unvalued",
+    contributedAt: "2026-08-30T00:00:00Z",
   },
   {
-    id: "coop-2026-q2",
-    period_label: "Q2 2026 Cooperative Pool",
-    total_equity_distributed: 31200,
-    treasury_balance_usd: 142000,
-    cooperative_dividends_pool: 28400,
-    contributors_count: 48,
-    l2_block_number: 14120894,
-    created_at: "2026-06-30T00:00:00Z",
+    id: "abhinaya-brand-logo",
+    contributorName: "Abhinaya",
+    role: "Individual",
+    clientCode: "INTERNAL",
+    projectCode: "CWK-BRAND",
+    departmentCategory: "Sales & Marketing",
+    effortCategory: "Brand Design",
+    contributionType: "Brand design",
+    description: "Designed the CodeWithKris logo as Brand Manager.",
+    loggedHours: null,
+    weightedUnits: null,
+    status: "unvalued",
+    contributedAt: "2026-08-30T00:00:00Z",
+  },
+  {
+    id: "josy-audio-recordings",
+    contributorName: "Josy Chow",
+    role: "Persons with Disabilities",
+    clientCode: "INTERNAL",
+    projectCode: "CWK-VOICE",
+    departmentCategory: "Delivery",
+    effortCategory: "Audio / Voice",
+    contributionType: "Audio contribution",
+    description: "Shared audio recordings and lived-experience input as PwD Ambassador.",
+    loggedHours: null,
+    weightedUnits: null,
+    status: "unvalued",
+    contributedAt: "2026-08-30T00:00:00Z",
+  },
+];
+
+// This is a documented minimum only; detailed receipts can be entered individually.
+export const KNOWN_INVESTMENTS: FinancialInvestmentRecord[] = [
+  {
+    id: "roger-operating-costs-minimum",
+    investorName: "Roger S.",
+    investorEmail: "roger.s@gradagig.com",
+    investorRole: "CodeWithKris Administrator",
+    clientCode: "INTERNAL",
+    projectCode: "CWK-FOUNDATION",
+    departmentCategory: "Finance & Admin",
+    category: "Other",
+    supplier: "Multiple suppliers",
+    description: "Documented minimum spent on tax, accounting, GitHub Copilot, and related CodeWithKris operating costs. Itemized receipt allocation is pending.",
+    amount: 2500,
+    currency: "USD",
+    incurredAt: "2026-08-30T00:00:00Z",
+    status: "documented",
   },
 ];

@@ -38,7 +38,7 @@ create table if not exists public.financial_metrics (
 create table if not exists public.ovu_contributions (
   id uuid primary key default gen_random_uuid(),
   contributor_address text not null,
-  contributor_id uuid references auth.users(id) on delete set null,
+  contributor_id uuid default auth.uid() references auth.users(id) on delete set null,
   task_id text not null,
   tier text not null check (tier in ('Tier 1', 'Tier 2', 'Tier 3', 'Tier 4', 'Tier 5')),
   base_ovu numeric not null,
@@ -49,22 +49,258 @@ create table if not exists public.ovu_contributions (
   final_ovu_wei text not null,
   period_id integer not null,
   l2_tx_hash text,
-  calculated_at timestamptz not null default now()
+  calculated_at timestamptz not null default now(),
+  stakeholder_category text not null check (stakeholder_category in (
+    'Founders & Core Operating Team',
+    'Institutional Seed Investors',
+    'Employee & PwD Talent Pool',
+    'Community & Ecosystem Trust',
+    'Advisors',
+    'Unallocated Reserve / Future Rounds'
+  ))
+);
+
+alter table public.ovu_contributions
+  add column if not exists stakeholder_category text;
+
+-- Assigned after registration by management; users cannot self-select cap-table ownership.
+create table if not exists public.user_stakeholder_assignments (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  stakeholder_category text not null check (stakeholder_category in (
+    'Founders & Core Operating Team',
+    'Institutional Seed Investors',
+    'Employee & PwD Talent Pool',
+    'Community & Ecosystem Trust',
+    'Advisors',
+    'Unallocated Reserve / Future Rounds'
+  )),
+  assigned_by uuid references auth.users(id),
+  assignment_source text not null default 'management' check (assignment_source in ('automatic_default', 'management')),
+  assignment_notes text not null default '',
+  assigned_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.user_stakeholder_assignments
+  alter column assigned_by drop not null,
+  add column if not exists assignment_source text not null default 'management';
+
+-- Every signup receives a conservative bucket; management can reassign after review.
+create or replace function public.assign_default_stakeholder_category()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.user_stakeholder_assignments (
+    user_id,
+    stakeholder_category,
+    assignment_source,
+    assignment_notes
+  ) values (
+    new.id,
+    case
+      when lower(new.email) = 'roger.s@gradagig.com'
+        then 'Founders & Core Operating Team'
+      else 'Community & Ecosystem Trust'
+    end,
+    'automatic_default',
+    case
+      when lower(new.email) = 'roger.s@gradagig.com'
+        then 'Founder assignment created during registration.'
+      else 'Temporary Community Trust assignment pending management review.'
+    end
+  )
+  on conflict (user_id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists assign_default_stakeholder_after_signup on auth.users;
+create trigger assign_default_stakeholder_after_signup
+  after insert on auth.users
+  for each row execute function public.assign_default_stakeholder_category();
+
+-- Human-readable contribution register. Values remain null until management verifies them.
+create table if not exists public.contribution_records (
+  id uuid primary key default gen_random_uuid(),
+  contribution_key text not null unique,
+  contributor_id uuid references auth.users(id) on delete set null,
+  contributor_name text not null,
+  contributor_email text,
+  role text not null,
+  client_code text not null default 'INTERNAL',
+  project_code text not null default 'CWK',
+  department_category text not null default 'Delivery',
+  effort_category text not null default 'Other',
+  contribution_type text not null,
+  description text not null default '',
+  logged_hours numeric check (logged_hours is null or logged_hours >= 0),
+  weighted_units numeric check (weighted_units is null or weighted_units >= 0),
+  status text not null default 'unvalued' check (status in ('unvalued', 'valued', 'verified')),
+  l2_tx_hash text,
+  contributed_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+alter table public.contribution_records
+  add column if not exists effort_category text not null default 'Other';
+alter table public.contribution_records
+  add column if not exists client_code text not null default 'INTERNAL',
+  add column if not exists project_code text not null default 'CWK',
+  add column if not exists department_category text not null default 'Delivery';
+alter table public.contribution_records
+  alter column contributor_id set default auth.uid();
+
+-- Cash investments are kept separate from labor hours and weighted equity units.
+create table if not exists public.financial_investments (
+  id uuid primary key default gen_random_uuid(),
+  investment_key text not null unique,
+  investor_id uuid default auth.uid() references auth.users(id) on delete set null,
+  investor_name text not null,
+  investor_email text,
+  investor_role text not null default 'Individual',
+  client_code text not null default 'INTERNAL',
+  project_code text not null default 'CWK',
+  department_category text not null default 'Finance & Admin',
+  category text not null,
+  supplier text not null,
+  description text not null default '',
+  amount numeric not null check (amount > 0),
+  currency text not null default 'USD',
+  receipt_reference text,
+  status text not null default 'documented' check (status in ('documented', 'verified')),
+  incurred_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
 );
 
 alter table public.financial_metrics enable row level security;
 alter table public.ovu_contributions enable row level security;
+alter table public.user_stakeholder_assignments enable row level security;
+alter table public.contribution_records enable row level security;
+alter table public.financial_investments enable row level security;
+
+-- Authorization must be granted through app_metadata by a trusted backend, never user_metadata.
+create or replace function public.has_financial_access()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or coalesce((auth.jwt() -> 'app_metadata' ->> 'financial_access')::boolean, false)
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator';
+$$;
+
+create policy "Allow users read own stakeholder assignment"
+  on public.user_stakeholder_assignments
+  for select
+  to authenticated
+  using (user_id = auth.uid() or public.has_financial_access());
+
+create policy "Allow management assign stakeholder categories"
+  on public.user_stakeholder_assignments
+  for all
+  to authenticated
+  using (
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+  )
+  with check (
+    assigned_by = auth.uid()
+    and (
+      lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+      or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+    )
+  );
+
+create policy "Allow authorized viewers read contribution records"
+  on public.contribution_records
+  for select
+  to authenticated
+  using (public.has_financial_access() or contributor_id = auth.uid());
+
+create policy "Allow contributors insert own effort records"
+  on public.contribution_records
+  for insert
+  to authenticated
+  with check (
+    contributor_id = auth.uid()
+    and lower(contributor_email) = lower(auth.jwt() ->> 'email')
+  );
+
+create policy "Allow management write contribution records"
+  on public.contribution_records
+  for all
+  to authenticated
+  using (
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+  )
+  with check (
+    contributor_id = auth.uid()
+    and lower(contributor_email) = lower(auth.jwt() ->> 'email')
+    and (
+      lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+      or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+    )
+  );
+
+create policy "Allow authorized viewers read financial investments"
+  on public.financial_investments
+  for select
+  to authenticated
+  using (public.has_financial_access() or investor_id = auth.uid());
+
+create policy "Allow investors insert own expense records"
+  on public.financial_investments
+  for insert
+  to authenticated
+  with check (
+    investor_id = auth.uid()
+    and lower(investor_email) = lower(auth.jwt() ->> 'email')
+  );
+
+create policy "Allow management write financial investments"
+  on public.financial_investments
+  for all
+  to authenticated
+  using (
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+  )
+  with check (
+    investor_id = auth.uid()
+    and lower(investor_email) = lower(auth.jwt() ->> 'email')
+    and (
+      lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+      or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+    )
+  );
+
+insert into public.contribution_records
+  (contribution_key, contributor_name, contributor_email, role, client_code, project_code, department_category, effort_category, contribution_type, description, status)
+values
+  ('founder-platform-build', 'Roger S.', 'roger.s@gradagig.com', 'CodeWithKris Administrator', 'INTERNAL', 'CWK-FOUNDATION', 'Delivery', 'Development', 'Founding and platform development', 'Founder contribution covering product direction, application development, and cooperative model design.', 'unvalued'),
+  ('abhinaya-brand-logo', 'Abhinaya', null, 'Individual', 'INTERNAL', 'CWK-BRAND', 'Sales & Marketing', 'Brand Design', 'Brand design', 'Designed the CodeWithKris logo as Brand Manager.', 'unvalued'),
+  ('josy-audio-recordings', 'Josy Chow', null, 'Persons with Disabilities', 'INTERNAL', 'CWK-VOICE', 'Delivery', 'Audio / Voice', 'Audio contribution', 'Shared audio recordings and lived-experience input as PwD Ambassador.', 'unvalued')
+on conflict (contribution_key) do nothing;
+
+insert into public.financial_investments
+  (investment_key, investor_name, investor_email, investor_role, client_code, project_code, department_category, category, supplier, description, amount, currency, status)
+values
+  ('roger-operating-costs-minimum', 'Roger S.', 'roger.s@gradagig.com', 'CodeWithKris Administrator', 'INTERNAL', 'CWK-FOUNDATION', 'Finance & Admin', 'Other', 'Multiple suppliers', 'Documented minimum spent on tax, accounting, GitHub Copilot, and related CodeWithKris operating costs. Itemized receipt allocation is pending.', 2500, 'USD', 'documented')
+on conflict (investment_key) do nothing;
 
 -- Only Grad-a-Gig Management & Authorized Investors can view financial metrics
 create policy "Allow management and investors view financial metrics"
   on public.financial_metrics
   for select
   to authenticated
-  using (
-    (auth.jwt() -> 'user_metadata' ->> 'role') in ('CodeWithKris Administrator', 'Investor')
-    or
-    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
-  );
+  using (public.has_financial_access());
 
 -- Only Administrator can modify
 create policy "Allow only administrator write financial metrics"
@@ -72,9 +308,12 @@ create policy "Allow only administrator write financial metrics"
   for all
   to authenticated
   using (
-    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
-    or
-    (auth.jwt() ->> 'email') = 'roger.s@gradagig.com'
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+  )
+  with check (
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
   );
 
 -- OVU Contributions: Management & Investors can view all records; individual contributors can view their own
@@ -82,22 +321,19 @@ create policy "Allow management and investors view all OVU records"
   on public.ovu_contributions
   for select
   to authenticated
-  using (
-    (auth.jwt() -> 'user_metadata' ->> 'role') in ('CodeWithKris Administrator', 'Investor')
-    or
-    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
-    or
-    auth.uid() = contributor_id
-  );
+  using (public.has_financial_access() or auth.uid() = contributor_id);
 
 create policy "Allow only administrator insert/update OVU records"
   on public.ovu_contributions
   for all
   to authenticated
   using (
-    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
-    or
-    (auth.jwt() ->> 'email') = 'roger.s@gradagig.com'
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+  )
+  with check (
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
   );
 
 -- Sensitive Private Contributor Records (Raw PII, conditions, private notes)
@@ -115,11 +351,36 @@ create table if not exists public.private_contributor_records (
   anonymized_commitment text not null,
   created_at timestamptz not null default now()
 );
-
+  calculated_at timestamptz not null default now(),
+  stakeholder_category text not null check (stakeholder_category in (
+    'Founders & Core Operating Team',
+    'Institutional Seed Investors',
+    'Employee & PwD Talent Pool',
+    'Community & Ecosystem Trust',
+    'Advisors',
+    'Unallocated Reserve / Future Rounds'
+  ))
 -- Public On-Chain Verified Proofs (Anonymous Ledger Mirror for L2 Testnet)
 create table if not exists public.onchain_audit_proofs (
+-- Assigned after registration by management; users cannot self-select cap-table ownership.
+create table if not exists public.user_stakeholder_assignments (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  stakeholder_category text not null check (stakeholder_category in (
+    'Founders & Core Operating Team',
+    'Institutional Seed Investors',
+    'Employee & PwD Talent Pool',
+    'Community & Ecosystem Trust',
+    'Advisors',
+    'Unallocated Reserve / Future Rounds'
+  )),
+  assigned_by uuid not null references auth.users(id),
+  assignment_notes text not null default '',
+  assigned_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
   id uuid primary key default gen_random_uuid(),
   anonymized_commitment text not null,
+alter table public.user_stakeholder_assignments enable row level security;
   data_integrity_proof_hash text not null,
   public_points_total numeric not null,
   period_id integer not null,
@@ -139,9 +400,7 @@ create policy "Allow contributors view own private record"
   using (
     auth.uid() = user_id
     or
-    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
-    or
-    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
+    public.has_financial_access()
   );
 
 create policy "Allow administrator manage private contributor records"
@@ -149,9 +408,12 @@ create policy "Allow administrator manage private contributor records"
   for all
   to authenticated
   using (
-    (auth.jwt() -> 'user_metadata' ->> 'role') = 'CodeWithKris Administrator'
-    or
-    (auth.jwt() ->> 'email') in ('roger.s@gradagig.com')
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+  )
+  with check (
+    lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
   );
 
 -- Public Audit Transparency: Anyone authenticated or anonymous can verify on-chain hashes

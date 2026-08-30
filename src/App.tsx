@@ -10,6 +10,7 @@ import {
   getRoleGreeting,
 } from "./components/UserRegistration";
 import { FinancialDashboard } from "./components/FinancialDashboard";
+import { type StakeholderCategory } from "./lib/ovuMatrix";
 
 type Screen =
   | "register"
@@ -151,6 +152,8 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [hasFinancialAccess, setHasFinancialAccess] = useState(false);
+  const [stakeholderCategory, setStakeholderCategory] = useState<StakeholderCategory | null>(null);
   const [authError, setAuthError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
@@ -182,6 +185,37 @@ function App() {
     }
   };
 
+  const loadStakeholderAssignment = async (
+    userId: string,
+    appMetadataCategory?: StakeholderCategory,
+  ) => {
+    if (!supabase) return;
+    const { data } = await supabase
+      .from("user_stakeholder_assignments")
+      .select("stakeholder_category")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setStakeholderCategory(
+      (data?.stakeholder_category as StakeholderCategory | undefined) ||
+        appMetadataCategory ||
+        null,
+    );
+  };
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const preview = new URLSearchParams(window.location.search).get("preview");
+    if (preview === "financials") {
+      setEmail(ADMIN_EMAIL);
+      setFullName("Roger S.");
+      setHasFinancialAccess(true);
+      setStakeholderCategory("Founders & Core Operating Team");
+      setUserRole("CodeWithKris Administrator");
+      setRole("admin");
+      setScreen("financials");
+    }
+  }, []);
+
   useEffect(() => {
     if (!isRecording) return;
     const timer = window.setInterval(
@@ -195,20 +229,34 @@ function App() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         const meta = data.session.user?.user_metadata;
+        const appMeta = data.session.user?.app_metadata;
         if (meta?.role) setUserRole(meta.role as UserRole);
         if (meta?.full_name) setFullName(meta.full_name);
+        setHasFinancialAccess(Boolean(appMeta?.financial_access || appMeta?.role === "CodeWithKris Administrator"));
+        void loadStakeholderAssignment(
+          data.session.user.id,
+          appMeta?.stakeholder_category as StakeholderCategory | undefined,
+        );
         setScreen("templates");
       }
     });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         const meta = session.user?.user_metadata;
+        const appMeta = session.user?.app_metadata;
         if (meta?.role) setUserRole(meta.role as UserRole);
         if (meta?.full_name) setFullName(meta.full_name);
+        setHasFinancialAccess(Boolean(appMeta?.financial_access || appMeta?.role === "CodeWithKris Administrator"));
+        void loadStakeholderAssignment(
+          session.user.id,
+          appMeta?.stakeholder_category as StakeholderCategory | undefined,
+        );
         setScreen((current) =>
           current === "signin" || current === "register" ? "templates" : current,
         );
       } else if (event === "SIGNED_OUT") {
+        setHasFinancialAccess(false);
+        setStakeholderCategory(null);
         setScreen((current) => current === "volunteer" ? current : "signin");
       }
     });
@@ -1189,16 +1237,17 @@ function App() {
         {screen === "financials" && (
           <section className="page-content" style={{ maxWidth: 1000, margin: "0 auto" }}>
             <FinancialDashboard
-              currentUserRole={userRole || (role === "admin" ? "CodeWithKris Administrator" : "Student")}
+              currentUserRole={userRole || "Student"}
               userEmail={email}
+              userName={fullName}
+              hasFinancialAccess={hasFinancialAccess}
+              stakeholderCategory={stakeholderCategory}
             />
           </section>
         )}
       </div>
       <nav className="bottom-nav" aria-label="Main navigation">
-        {((role === "admin" ||
-          userRole === "Investor" ||
-          userRole === "CodeWithKris Administrator" ||
+        {((hasFinancialAccess ||
           email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase())
           ? [
               ["templates", "Practice", "▦"],
@@ -1211,6 +1260,7 @@ function App() {
               ["record", "Record", "●"],
               ["practice", "Practice", "◌"],
               ["progress", "Progress", "▥"],
+              ["financials", "Contribute", "+"],
             ]
         ).map(([value, label, icon]) => (
           <button

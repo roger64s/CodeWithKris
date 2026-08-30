@@ -21,6 +21,23 @@ export function toWei(value: number | string): string {
  */
 export type OVUTier = "Tier 1" | "Tier 2" | "Tier 3" | "Tier 4" | "Tier 5";
 
+export type StakeholderCategory =
+  | "Founders & Core Operating Team"
+  | "Institutional Seed Investors"
+  | "Employee & PwD Talent Pool"
+  | "Community & Ecosystem Trust"
+  | "Advisors"
+  | "Unallocated Reserve / Future Rounds";
+
+export const STAKEHOLDER_ALLOCATIONS: Record<StakeholderCategory, number> = {
+  "Founders & Core Operating Team": 40,
+  "Institutional Seed Investors": 20,
+  "Employee & PwD Talent Pool": 10,
+  "Community & Ecosystem Trust": 15,
+  Advisors: 2,
+  "Unallocated Reserve / Future Rounds": 13,
+};
+
 export interface OVUTierConfig {
   tier: OVUTier;
   minOVU: number;
@@ -47,6 +64,7 @@ export interface CalculateOVUInput {
   contributorAddress: Address;
   contributorId?: string;
   taskId: string;
+  stakeholderCategory: StakeholderCategory;
   tier: OVUTier;
   customBaseOVU?: number;
   modifiers: ModifiersInput;
@@ -64,6 +82,8 @@ export interface FinalOVUPayload {
   contributor: Address;
   contributorId?: string;
   taskId: string;
+  stakeholderCategory: StakeholderCategory;
+  stakeholderPoolSharePercent: number;
   tier: OVUTier;
   baseOVU: number;
   modifiers: AppliedModifiers;
@@ -106,6 +126,8 @@ export function calculateFinalOVU(input: CalculateOVUInput): FinalOVUPayload {
     contributor: input.contributorAddress,
     contributorId: input.contributorId,
     taskId: input.taskId,
+    stakeholderCategory: input.stakeholderCategory,
+    stakeholderPoolSharePercent: STAKEHOLDER_ALLOCATIONS[input.stakeholderCategory],
     tier: input.tier,
     baseOVU,
     modifiers: {

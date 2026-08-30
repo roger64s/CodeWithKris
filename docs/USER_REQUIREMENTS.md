@@ -65,5 +65,17 @@
 - Implement the OVU (Outcome Valuation Unit) Matrix with dynamic multipliers (+25% Reusability, +15% Speed, -30% Quality Penalty).
 - Implement Web Crypto API zero-knowledge-ready data hashing for privacy-preserving, anonymous on-chain L2 audit verification.
 - Implement the restricted Cooperative Financial & Equity Ledger with Row Level Security (RLS) policies for Grad-a-Gig Management and Authorized Investors.
+- Track contributions from all participants without inventing financial values; begin with the founder's platform work, Abhinaya's logo design, and Josy Chow's audio recordings as unvalued records pending approved hours or OVUs.
+- Derive contributor counts, approved hours, weighted units, and verification status from the secured contribution ledger instead of static demonstration figures.
+- Let management record effort hours under controlled categories including Product Design, Development, Testing/QA, Marketing, Web Design, Brand Design, Audio/Voice, Research, Administration, and Other.
+- Track financial investment separately from labor, including amount, currency, expense category, supplier, description, and receipt or invoice reference.
+- Automatically bind every new effort and expense record to the logged-in Supabase user's ID, email, display name, and role; do not allow identity fields to be edited in the entry form.
+- Let every authenticated user submit and review their own effort and expense records while keeping aggregate contribution and financial reporting restricted to management and authorized investors.
+- Capture free-text Client Code and Project Code on every effort and expense record, ready for future validation against reference tables.
+- Classify every record by the cost-control department allocation guide: Management (~10%), Delivery (~30%), Finance & Admin (~20%), Sales & Marketing (~20%), Customer Service (~10%), or Profit (~10%).
+- Assign every registered user to one management-controlled cap-table stakeholder category after registration: Founders & Core Operating Team (40%), Institutional Seed Investors (20%), Employee & PwD Talent Pool (10%), Community & Ecosystem Trust (15%), Advisors (2%), or Unallocated Reserve/Future Rounds (13%).
+- Automatically place new users in Community & Ecosystem Trust pending management review, except the founder account, which is assigned to Founders & Core Operating Team; registration roles must not grant cap-table ownership.
+- Base OVU calculation on the user's assigned stakeholder category and OVU tier/modifiers, not their registration role; retain the category percentage as a cap-table pool classification rather than an OVU multiplier.
+- Record Roger's USD 2,500+ documented operating investment without inventing a split across tax, accounting, GitHub Copilot, and related costs; support later receipt-level itemization.
 - Fit the registration card cleanly within the desktop viewport without vertical scrolling.
 
