@@ -142,7 +142,7 @@ function similarity(expected: string, actual: string) {
 function App() {
   const [screen, setScreen] = useState<Screen>("signin");
   const [role, setRole] = useState<"user" | "admin">("user");
-  const [userRole, setUserRole] = useState<UserRole>("Student");
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [authMode, setAuthMode] = useState<"register" | "signin">("signin");
   const [verificationSent, setVerificationSent] = useState(false);
   const [email, setEmail] = useState("");
@@ -175,7 +175,7 @@ function App() {
     setEmail(newEmail);
     const eligible = newEmail.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
     if (userRole === "CodeWithKris Administrator" && !eligible) {
-      setUserRole("Student");
+      setUserRole(null);
     }
   };
 
@@ -244,6 +244,11 @@ function App() {
     setIsAuthenticating(true);
     try {
       if (authMode === "register") {
+        if (!userRole) {
+          setAuthError("Please select a category above first.");
+          setIsAuthenticating(false);
+          return;
+        }
         const finalRole: UserRole =
           userRole === "CodeWithKris Administrator" && !isEligibleForAdmin
             ? "Student"
@@ -483,25 +488,21 @@ function App() {
       </section>
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="card-heading">
-          <span className="section-kicker">
-            {authMode === "register"
-              ? "Create a new user"
-              : "Existing user login"}
-          </span>
-          <h2 id="auth-title">
-            {verificationSent
-              ? "Check your email"
-              : authMode === "register"
-                ? "Create your account"
-                : "Welcome back"}
-          </h2>
-          <p>
-            {verificationSent
-              ? "We sent a verification link to your email. Verify it before signing in."
-              : authMode === "register"
-                ? "Create a private practice space at your own pace."
-                : "Sign in to continue your voice training journey."}
-          </p>
+          {authMode === "register" ? (
+            <h2 id="auth-title" style={{ fontSize: "1.7rem", margin: "0 0 10px 0" }}>Create account</h2>
+          ) : (
+            <>
+              <span className="section-kicker">Existing user login</span>
+              <h2 id="auth-title">
+                {verificationSent ? "Check your email" : "Welcome back"}
+              </h2>
+              <p>
+                {verificationSent
+                  ? "We sent a verification link to your email. Verify it before signing in."
+                  : "Sign in to continue your voice training journey."}
+              </p>
+            </>
+          )}
         </div>
         {verificationSent ? (
           <>
@@ -537,7 +538,10 @@ function App() {
                         role="radio"
                         aria-checked={isSelected}
                         className={`role-chip-btn ${isSelected ? "selected" : ""}`}
-                        onClick={() => setUserRole(r.value)}
+                        onClick={() => {
+                          setUserRole(r.value);
+                          setAuthError("");
+                        }}
                         title={r.description}
                       >
                         <span className="role-chip-icon">{r.icon}</span>
@@ -553,7 +557,10 @@ function App() {
                       className={`role-chip-btn role-chip-admin ${
                         userRole === ADMIN_ROLE_OPTION.value ? "selected" : ""
                       }`}
-                      onClick={() => setUserRole(ADMIN_ROLE_OPTION.value)}
+                      onClick={() => {
+                        setUserRole(ADMIN_ROLE_OPTION.value);
+                        setAuthError("");
+                      }}
                       title={ADMIN_ROLE_OPTION.description}
                     >
                       <span className="role-chip-icon">{ADMIN_ROLE_OPTION.icon}</span>
@@ -563,68 +570,73 @@ function App() {
                 </div>
               </div>
             )}
-            {authMode === "register" && (
-              <label>
-                Full name
-                <input
-                  value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
-                  placeholder="Enter your full name"
-                  autoComplete="name"
-                  required
-                />
-              </label>
+            {/* Show inputs and submit button only when in signin mode OR when a role has been selected in register mode */}
+            {(authMode === "signin" || userRole !== null) && (
+              <>
+                {authMode === "register" && (
+                  <label>
+                    Full name
+                    <input
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      placeholder="Enter your full name"
+                      autoComplete="name"
+                      required
+                    />
+                  </label>
+                )}
+                <label>
+                  Email address
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => handleEmailChange(event.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    required
+                  />
+                </label>
+                <label>
+                  Password
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Choose a secure password"
+                    autoComplete={authMode === "register" ? "new-password" : "current-password"}
+                    minLength={6}
+                    required
+                  />
+                </label>
+                {authMode === "register" && (
+                  <label>
+                    Speech condition <span className="optional">optional</span>
+                    <select defaultValue="">
+                      <option value="" disabled>
+                        Select a condition
+                      </option>
+                      <option>Stuttering</option>
+                      <option>Apraxia</option>
+                      <option>Dysarthria</option>
+                      <option>Prefer not to say</option>
+                    </select>
+                  </label>
+                )}
+                {authError && <p className="auth-error" role="alert">{authError}</p>}
+                <button
+                  className={`primary-button ${authMode === "signin" ? "compact-signin" : ""}`}
+                  type="submit"
+                  disabled={isAuthenticating}
+                >
+                  {isAuthenticating
+                    ? "Please wait"
+                    : authMode === "register"
+                      ? `Create ${userRole} account`
+                      : "Sign in"}{" "}
+                  <span>→</span>
+                </button>
+              </>
             )}
-            <label>
-              Email address
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => handleEmailChange(event.target.value)}
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-              />
-            </label>
-            <label>
-              Password
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Choose a secure password"
-                autoComplete={authMode === "register" ? "new-password" : "current-password"}
-                minLength={6}
-                required
-              />
-            </label>
-            {authMode === "register" && (
-              <label>
-                Speech condition <span className="optional">optional</span>
-                <select defaultValue="">
-                  <option value="" disabled>
-                    Select a condition
-                  </option>
-                  <option>Stuttering</option>
-                  <option>Apraxia</option>
-                  <option>Dysarthria</option>
-                  <option>Prefer not to say</option>
-                </select>
-              </label>
-            )}
-            {authError && <p className="auth-error" role="alert">{authError}</p>}
-            <button
-              className={`primary-button ${authMode === "signin" ? "compact-signin" : ""}`}
-              type="submit"
-              disabled={isAuthenticating}
-            >
-              {isAuthenticating
-                ? "Please wait"
-                : authMode === "register"
-                  ? `Create ${userRole} account`
-                  : "Sign in"}{" "}
-              <span>→</span>
-            </button>
             {authMode === "signin" && (
               <button className="text-button" type="button">Forgot password?</button>
             )}
@@ -633,6 +645,7 @@ function App() {
               type="button"
               onClick={() => {
                 setAuthError("");
+                setUserRole(null);
                 setAuthMode(authMode === "register" ? "signin" : "register");
               }}
             >
@@ -770,11 +783,11 @@ function App() {
               {selectedPhase === null ? (
                 <section className="dashboard-panel" aria-labelledby="dashboard-title">
                   <div className="page-intro">
-                    <span className="role-badge" data-role={userRole}>
-                      {userRole} Account
+                    <span className="role-badge" data-role={userRole || "Student"}>
+                      {userRole || "Student"} Account
                     </span>
-                    <h1 id="dashboard-title">{getRoleGreeting(userRole, fullName).headline}</h1>
-                    <p>{getRoleGreeting(userRole, fullName).message}</p>
+                    <h1 id="dashboard-title">{getRoleGreeting(userRole || "Student", fullName).headline}</h1>
+                    <p>{getRoleGreeting(userRole || "Student", fullName).message}</p>
                   </div>
                   <div className="dashboard-stats">
                     <div><strong>3</strong><span>Learning phases</span></div>

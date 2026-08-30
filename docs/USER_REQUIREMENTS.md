@@ -56,6 +56,8 @@
 
 ## 2026-08-30
 - Include NGO and Government role categories in user registration with dedicated greetings.
-- Move role selection to the top of account registration as clickable icon boxes chosen prior to credential entry.
+- Streamline welcome panel width and logo sizing to eliminate excess blank space on login and registration screens.
+- Keep only "Create account" as the clean registration title without excess top kicker or subtitle text.
+- Progressive disclosure on registration: display category icon boxes first; only reveal credential input fields and submission action after a role is selected.
 - Fit the registration card cleanly within the desktop viewport without vertical scrolling.
 
