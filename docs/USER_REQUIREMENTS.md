@@ -54,3 +54,8 @@
 - Add an exclusive "CodeWithKris Administrator" role category reserved solely for roger.s@gradagig.com.
 - Store the selected user role and render a role-specific dashboard greeting upon registration.
 
+## 2026-08-30
+- Include NGO and Government role categories in user registration with dedicated greetings.
+- Move role selection to the top of account registration as clickable icon boxes chosen prior to credential entry.
+- Fit the registration card cleanly within the desktop viewport without vertical scrolling.
+

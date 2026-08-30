@@ -6,10 +6,12 @@ import React, { useState, type FormEvent } from "react";
 export type UserRole =
   | "Student"
   | "Woman/Carer"
-  | "Investor"
+  | "Individual"
   | "Mentor"
   | "Corporate"
-  | "Individual"
+  | "Investor"
+  | "NGO"
+  | "Government"
   | "CodeWithKris Administrator";
 
 export const ADMIN_EMAIL = "roger.s@gradagig.com";
@@ -20,42 +22,69 @@ export interface RegistrationFormData {
   role: UserRole;
 }
 
-export const BASE_USER_ROLES: { value: UserRole; label: string; description: string; restrictedTo?: string }[] = [
+export interface RoleOption {
+  value: UserRole;
+  label: string;
+  icon: string;
+  description: string;
+  restrictedTo?: string;
+}
+
+export const BASE_USER_ROLES: RoleOption[] = [
   {
     value: "Student",
     label: "Student",
+    icon: "🎓",
     description: "Access learning resources, speech practice, and coding challenges.",
   },
   {
     value: "Woman/Carer",
     label: "Woman / Carer",
+    icon: "🌸",
     description: "Explore flexible career pathways, mentorship, and support networks.",
   },
   {
-    value: "Investor",
-    label: "Investor",
-    description: "Review impact metrics, project milestones, and growth opportunities.",
+    value: "Individual",
+    label: "Individual",
+    icon: "✨",
+    description: "Personal development, communication training, and self-paced growth.",
   },
   {
     value: "Mentor",
     label: "Mentor",
+    icon: "🤝",
     description: "Guide learners, review practice sessions, and share professional expertise.",
   },
   {
     value: "Corporate",
     label: "Corporate",
+    icon: "🏢",
     description: "Sponsor initiatives, connect with talent, and foster workforce inclusion.",
   },
   {
-    value: "Individual",
-    label: "Individual",
-    description: "Personal development, communication training, and self-paced growth.",
+    value: "Investor",
+    label: "Investor",
+    icon: "📈",
+    description: "Review impact metrics, project milestones, and growth opportunities.",
+  },
+  {
+    value: "NGO",
+    label: "NGO",
+    icon: "🌍",
+    description: "Community empowerment, digital inclusion, and partner programs.",
+  },
+  {
+    value: "Government",
+    label: "Government",
+    icon: "🏛️",
+    description: "Policy initiatives, workforce accessibility, and public sector data.",
   },
 ];
 
-export const ADMIN_ROLE_OPTION = {
-  value: "CodeWithKris Administrator" as const,
-  label: "CodeWithKris Administrator",
+export const ADMIN_ROLE_OPTION: RoleOption = {
+  value: "CodeWithKris Administrator",
+  label: "Administrator",
+  icon: "🛡️",
   description: "Platform administration, user oversight, security controls, and system analytics.",
   restrictedTo: ADMIN_EMAIL,
 };
@@ -79,10 +108,10 @@ export function getRoleGreeting(role: UserRole, name?: string): { headline: stri
         headline: `Welcome to your Empowerment Space${displayName}! 🌸`,
         message: "We're here to support your journey with flexible learning paths, caregiver-friendly schedules, and community mentors.",
       };
-    case "Investor":
+    case "Individual":
       return {
-        headline: `Welcome to the Investor Portal${displayName}! 📈`,
-        message: "Explore real-time impact indicators, platform usage analytics, and community outcome reports.",
+        headline: `Welcome to your Personal Growth Dashboard${displayName}! ✨`,
+        message: "Explore tailored speech practice modules, set personal milestones, and track your communication confidence.",
       };
     case "Mentor":
       return {
@@ -94,10 +123,20 @@ export function getRoleGreeting(role: UserRole, name?: string): { headline: stri
         headline: `Welcome to the Corporate Partner Suite${displayName}! 🏢`,
         message: "Manage enterprise sponsorships, engage with qualified talent pipelines, and track social impact goals.",
       };
-    case "Individual":
+    case "Investor":
       return {
-        headline: `Welcome to your Personal Growth Dashboard${displayName}! ✨`,
-        message: "Explore tailored speech practice modules, set personal milestones, and track your communication confidence.",
+        headline: `Welcome to the Investor Portal${displayName}! 📈`,
+        message: "Explore real-time impact indicators, platform usage analytics, and community outcome reports.",
+      };
+    case "NGO":
+      return {
+        headline: `Welcome to the Impact & NGO Network${displayName}! 🌍`,
+        message: "Collaborate on community empowerment, track inclusion initiatives, and support speech and digital skills development.",
+      };
+    case "Government":
+      return {
+        headline: `Welcome to the Public Sector & Policy Portal${displayName}! 🏛️`,
+        message: "Access national accessibility benchmarks, workforce inclusion analytics, and community skill-building programs.",
       };
     case "CodeWithKris Administrator":
       return {
@@ -202,6 +241,44 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({ onRegisterSu
       </div>
 
       <form onSubmit={handleSubmit} className="registration-form">
+        <fieldset className="role-fieldset">
+          <legend>
+            1. Select Your Role
+            {isEligibleForAdmin && (
+              <span className="admin-unlocked-badge"> (Admin Role Unlocked)</span>
+            )}
+          </legend>
+          <div className="role-options-grid">
+            {availableRoles.map((r) => (
+              <label
+                key={r.value}
+                className={`role-option-card ${selectedRole === r.value ? "selected" : ""} ${
+                  r.value === "CodeWithKris Administrator" ? "role-admin-card" : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="userRole"
+                  value={r.value}
+                  checked={selectedRole === r.value}
+                  onChange={() => setSelectedRole(r.value)}
+                  className="role-radio-input"
+                />
+                <div className="role-option-content">
+                  <span className="role-label">
+                    <span style={{ marginRight: 6 }}>{r.icon}</span>
+                    {r.label}
+                    {r.value === "CodeWithKris Administrator" && (
+                      <span className="badge-exclusive">Exclusive</span>
+                    )}
+                  </span>
+                  <span className="role-description">{r.description}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
         <label htmlFor="reg-fullname">
           Full Name
           <input
@@ -227,43 +304,6 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({ onRegisterSu
             autoComplete="email"
           />
         </label>
-
-        <fieldset className="role-fieldset">
-          <legend>
-            Select Your Role
-            {isEligibleForAdmin && (
-              <span className="admin-unlocked-badge"> (Admin Role Unlocked)</span>
-            )}
-          </legend>
-          <div className="role-options-grid">
-            {availableRoles.map((r) => (
-              <label
-                key={r.value}
-                className={`role-option-card ${selectedRole === r.value ? "selected" : ""} ${
-                  r.value === "CodeWithKris Administrator" ? "role-admin-card" : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="userRole"
-                  value={r.value}
-                  checked={selectedRole === r.value}
-                  onChange={() => setSelectedRole(r.value)}
-                  className="role-radio-input"
-                />
-                <div className="role-option-content">
-                  <span className="role-label">
-                    {r.label}
-                    {r.value === "CodeWithKris Administrator" && (
-                      <span className="badge-exclusive">Exclusive</span>
-                    )}
-                  </span>
-                  <span className="role-description">{r.description}</span>
-                </div>
-              </label>
-            ))}
-          </div>
-        </fieldset>
 
         <button type="submit" className="primary-button" style={{ marginTop: "1.25rem" }}>
           Complete Registration ({selectedRole}) <span>→</span>

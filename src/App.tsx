@@ -524,20 +524,57 @@ function App() {
           </>
         ) : (
           <form onSubmit={authenticate}>
-            <>
-              {authMode === "register" && (
-                <label>
-                  Full name
-                  <input
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                    placeholder="Enter your full name"
-                    autoComplete="name"
-                    required
-                  />
-                </label>
-              )}
-            </>
+            {authMode === "register" && (
+              <div className="role-selector-section">
+                <span className="role-selector-label">1. Choose your category</span>
+                <div className="role-chip-grid" role="radiogroup" aria-label="Select your role">
+                  {BASE_USER_ROLES.map((r) => {
+                    const isSelected = userRole === r.value;
+                    return (
+                      <button
+                        key={r.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        className={`role-chip-btn ${isSelected ? "selected" : ""}`}
+                        onClick={() => setUserRole(r.value)}
+                        title={r.description}
+                      >
+                        <span className="role-chip-icon">{r.icon}</span>
+                        <span className="role-chip-title">{r.label}</span>
+                      </button>
+                    );
+                  })}
+                  {isEligibleForAdmin && (
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={userRole === ADMIN_ROLE_OPTION.value}
+                      className={`role-chip-btn role-chip-admin ${
+                        userRole === ADMIN_ROLE_OPTION.value ? "selected" : ""
+                      }`}
+                      onClick={() => setUserRole(ADMIN_ROLE_OPTION.value)}
+                      title={ADMIN_ROLE_OPTION.description}
+                    >
+                      <span className="role-chip-icon">{ADMIN_ROLE_OPTION.icon}</span>
+                      <span className="role-chip-title">{ADMIN_ROLE_OPTION.label}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            {authMode === "register" && (
+              <label>
+                Full name
+                <input
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                  placeholder="Enter your full name"
+                  autoComplete="name"
+                  required
+                />
+              </label>
+            )}
             <label>
               Email address
               <input
@@ -562,38 +599,18 @@ function App() {
               />
             </label>
             {authMode === "register" && (
-              <>
-                <label>
-                  User category / Role
-                  <select
-                    value={userRole}
-                    onChange={(event) => setUserRole(event.target.value as UserRole)}
-                  >
-                    {BASE_USER_ROLES.map((r) => (
-                      <option key={r.value} value={r.value}>
-                        {r.label} — {r.description}
-                      </option>
-                    ))}
-                    {isEligibleForAdmin && (
-                      <option value={ADMIN_ROLE_OPTION.value}>
-                        🛡️ {ADMIN_ROLE_OPTION.label} (Exclusive)
-                      </option>
-                    )}
-                  </select>
-                </label>
-                <label>
-                  Speech condition <span className="optional">optional</span>
-                  <select defaultValue="">
-                    <option value="" disabled>
-                      Select a condition
-                    </option>
-                    <option>Stuttering</option>
-                    <option>Apraxia</option>
-                    <option>Dysarthria</option>
-                    <option>Prefer not to say</option>
-                  </select>
-                </label>
-              </>
+              <label>
+                Speech condition <span className="optional">optional</span>
+                <select defaultValue="">
+                  <option value="" disabled>
+                    Select a condition
+                  </option>
+                  <option>Stuttering</option>
+                  <option>Apraxia</option>
+                  <option>Dysarthria</option>
+                  <option>Prefer not to say</option>
+                </select>
+              </label>
             )}
             {authError && <p className="auth-error" role="alert">{authError}</p>}
             <button
@@ -604,7 +621,7 @@ function App() {
               {isAuthenticating
                 ? "Please wait"
                 : authMode === "register"
-                  ? "Create account"
+                  ? `Create ${userRole} account`
                   : "Sign in"}{" "}
               <span>→</span>
             </button>
