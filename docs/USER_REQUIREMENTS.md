@@ -55,7 +55,8 @@
 - Store the selected user role and render a role-specific dashboard greeting upon registration.
 
 ## 2026-08-30
-- Include NGO and Government role categories in user registration with dedicated greetings.
+- Include Persons with Disabilities (PWD) as the first category role option, alongside Student, Woman/Carer, Individual, Mentor, Corporate, Investor, NGO, Government, and Admin.
+- Redesign category options into balanced squarish icon tiles arranged in a clean 5-column grid.
 - Streamline welcome panel width and logo sizing to eliminate excess blank space on login and registration screens.
 - Keep only "Create account" as the clean registration title without excess top kicker or subtitle text.
 - Progressive disclosure on registration: display category icon boxes first; only reveal credential input fields and submission action after a role is selected.

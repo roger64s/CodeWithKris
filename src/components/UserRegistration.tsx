@@ -4,6 +4,7 @@ import React, { useState, type FormEvent } from "react";
  * Distinct user roles available for registration
  */
 export type UserRole =
+  | "Persons with Disabilities"
   | "Student"
   | "Woman/Carer"
   | "Individual"
@@ -31,6 +32,12 @@ export interface RoleOption {
 }
 
 export const BASE_USER_ROLES: RoleOption[] = [
+  {
+    value: "Persons with Disabilities",
+    label: "PWD",
+    icon: "♿",
+    description: "Personalized speech therapy, accessible coding paths, and inclusive community support.",
+  },
   {
     value: "Student",
     label: "Student",
@@ -83,7 +90,7 @@ export const BASE_USER_ROLES: RoleOption[] = [
 
 export const ADMIN_ROLE_OPTION: RoleOption = {
   value: "CodeWithKris Administrator",
-  label: "Administrator",
+  label: "Admin",
   icon: "🛡️",
   description: "Platform administration, user oversight, security controls, and system analytics.",
   restrictedTo: ADMIN_EMAIL,
@@ -98,6 +105,11 @@ export function getRoleGreeting(role: UserRole, name?: string): { headline: stri
   const displayName = name?.trim() ? `, ${name.trim()}` : "";
 
   switch (role) {
+    case "Persons with Disabilities":
+      return {
+        headline: `Welcome to your Accessible Training Hub${displayName}! ♿`,
+        message: "Your voice, your pace. Access tailored voice exercises, adaptive pair programming missions, and assistive community tools.",
+      };
     case "Student":
       return {
         headline: `Welcome to your Learning Hub${displayName}! 🎓`,
