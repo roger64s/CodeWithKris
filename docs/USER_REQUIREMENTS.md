@@ -98,4 +98,5 @@
 - Keep personal contact details hidden from the initial client target view until targets are prioritized and deeper engagement is authorized.
 - Link every pilot task to auditable contribution and OVU records across the cooperative ecosystem.
 - Provide a secure CRM database for companies, contacts, ownership history, and team-pod collaboration with owner-scoped access controls.
+- Provide visible Company, Contact, and Contribution workspace views backed by owner-scoped CRM and contribution records.
 

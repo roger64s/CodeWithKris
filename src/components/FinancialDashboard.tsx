@@ -21,6 +21,7 @@ import {
   type OVUTier,
   type StakeholderCategory,
 } from "../lib/ovuMatrix";
+import { CrmWorkspace } from "./CrmWorkspace";
 import { type UserRole } from "./UserRegistration";
 
 interface FinancialDashboardProps {
@@ -108,8 +109,8 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
   const authenticatedName = userName?.trim() || userEmail.split("@")[0] || "Authenticated user";
   const isAuthorized = hasFinancialAccess || normalizedEmail === "roger.s@gradagig.com";
   const canSubmit = Boolean(normalizedEmail);
-  const [contributions, setContributions] = useState<ContributionRecord[]>(KNOWN_CONTRIBUTIONS);
-  const [investments, setInvestments] = useState<FinancialInvestmentRecord[]>(KNOWN_INVESTMENTS);
+  const [contributions, setContributions] = useState<ContributionRecord[]>(isAuthorized ? KNOWN_CONTRIBUTIONS : []);
+  const [investments, setInvestments] = useState<FinancialInvestmentRecord[]>(isAuthorized ? KNOWN_INVESTMENTS : []);
   const [clientCode, setClientCode] = useState("");
   const [projectCode, setProjectCode] = useState("");
   const [departmentCategory, setDepartmentCategory] = useState<DepartmentCategory>("Delivery");
@@ -129,20 +130,20 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
   const [reusabilityBonus, setReusabilityBonus] = useState(false);
   const [speedBonus, setSpeedBonus] = useState(false);
   const [qualityPenalty, setQualityPenalty] = useState(false);
-  const [activeTab, setActiveTab] = useState<"ledger" | "effort" | "investment" | "calculator" | "l2">(isAuthorized ? "ledger" : "effort");
+  const [activeTab, setActiveTab] = useState<"companies" | "contacts" | "ledger" | "effort" | "investment" | "calculator" | "l2">("ledger");
   const [ovuResult, setOvuResult] = useState<FinalOVUPayload | null>(null);
   const [saveStatus, setSaveStatus] = useState("");
 
   useEffect(() => {
-    if (!supabase || !isAuthorized) return;
+    if (!supabase || !canSubmit) return;
     Promise.all([
       supabase.from("contribution_records").select("*").order("contributed_at", { ascending: false }),
       supabase.from("financial_investments").select("*").order("incurred_at", { ascending: false }),
     ]).then(([contributionResult, investmentResult]) => {
-      if (!contributionResult.error && contributionResult.data) {
+      if (!contributionResult.error && contributionResult.data?.length) {
         setContributions((contributionResult.data as ContributionRow[]).map(fromDatabase));
       }
-      if (!investmentResult.error && investmentResult.data) {
+      if (!investmentResult.error && investmentResult.data?.length) {
         setInvestments((investmentResult.data as InvestmentRow[]).map(investmentFromDatabase));
       }
       if (!contributionResult.error && !investmentResult.error) {
@@ -151,7 +152,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
         setSaveStatus("Showing documented baseline records. Apply the Supabase schema to enable live tracking.");
       }
     });
-  }, [isAuthorized]);
+  }, [canSubmit]);
 
   const totalHours = contributions.reduce((total, item) => total + (item.loggedHours || 0), 0);
   const totalUnits = contributions.reduce((total, item) => total + (item.weightedUnits || 0), 0);
@@ -243,7 +244,9 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
       <div className="financial-header">
         <div><span className="section-kicker">Contribution ledger</span><h2>CodeWithKris cooperative contributions</h2><p>Only recorded contributions are shown. Unvalued work remains pending until management approves hours or OVUs.</p>{stakeholderCategory ? <span className="stakeholder-assignment">{stakeholderCategory} · {STAKEHOLDER_ALLOCATIONS[stakeholderCategory]}% cap-table pool</span> : <span className="stakeholder-assignment pending">Stakeholder category assignment pending</span>}</div>
         <div className="financial-tabs">
-          {isAuthorized && <button className={`tab-btn ${activeTab === "ledger" ? "active" : ""}`} onClick={() => setActiveTab("ledger")}>Ledger</button>}
+          <button className={`tab-btn ${activeTab === "companies" ? "active" : ""}`} onClick={() => setActiveTab("companies")}>Company</button>
+          <button className={`tab-btn ${activeTab === "contacts" ? "active" : ""}`} onClick={() => setActiveTab("contacts")}>Contact</button>
+          <button className={`tab-btn ${activeTab === "ledger" ? "active" : ""}`} onClick={() => setActiveTab("ledger")}>Contribution</button>
           <button className={`tab-btn ${activeTab === "effort" ? "active" : ""}`} onClick={() => { setDepartmentCategory("Delivery"); setActiveTab("effort"); }}>Add effort</button>
           <button className={`tab-btn ${activeTab === "investment" ? "active" : ""}`} onClick={() => { setDepartmentCategory("Finance & Admin"); setActiveTab("investment"); }}>Add expense</button>
           {isAuthorized && <button className={`tab-btn ${activeTab === "calculator" ? "active" : ""}`} onClick={() => setActiveTab("calculator")}>Calculator</button>}
@@ -251,7 +254,10 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
         </div>
       </div>
 
-      {activeTab === "ledger" && isAuthorized && <div className="financial-content">
+      {activeTab === "companies" && <CrmWorkspace view="companies" isAuthenticated={canSubmit} />}
+      {activeTab === "contacts" && <CrmWorkspace view="contacts" isAuthenticated={canSubmit} />}
+
+      {activeTab === "ledger" && <div className="financial-content">
         <div className="ledger-summary">
           <div><span>Known contributors</span><strong>{new Set(contributions.map((item) => item.contributorName)).size}</strong></div>
           <div><span>Recorded contributions</span><strong>{contributions.length}</strong></div>

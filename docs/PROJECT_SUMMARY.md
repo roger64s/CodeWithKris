@@ -12,11 +12,11 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 27 | 1 release update | 28 after publication |
-| Text lines added | 8,364 | 3,184 | 11,548 |
-| Text lines deleted | 1,141 | 136 | 1,277 |
-| Net text-line change | 7,223 | 3,048 | 10,271 |
-| New release files | 0 | 10 | 10 |
+| Commits | 28 | 1 corrective update | 29 after publication |
+| Text lines added | 11,548 | 190 | 11,738 |
+| Text lines deleted | 1,277 | 21 | 1,298 |
+| Net text-line change | 10,271 | 169 | 10,440 |
+| New release files | 10 | 1 | 11 |
 | Build status | Passed | Passed | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -34,7 +34,7 @@ xychart-beta
     title "Lines Added by Date"
     x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31"]
     y-axis "Lines of Code" 0 --> 3500
-    bar [5208, 609, 2538, 3193]
+    bar [5208, 609, 2538, 3383]
 ```
 
 ## Delivered Today
@@ -67,6 +67,7 @@ xychart-beta
 - Added a producer-owner peer-review queue with focused code submissions, constructive revision feedback, and protected reviewer/submitter email fields.
 - Added the configurable GTM Pilot workflow for client briefs, diverse assignments, anonymized targets, approved multilingual outreach, conversion tracking, milestone compensation, revenue success fees, and OVU evidence.
 - Added a production-ready CRM migration for companies, contacts, owner history, team pods, audit triggers, indexed access paths, and owner-scoped RLS.
+- Added visible Company, Contact, and Contribution workspace views backed by the owner-scoped CRM and contribution tables.
 - Added an authenticated Vercel API for private dictionary, recording, audio-storage, and practice-session persistence using Supabase user JWTs rather than a service-role bypass.
 
 ## Effort Estimate
@@ -78,7 +79,7 @@ xychart-beta
 | Research and product design | 8% |
 | Documentation and release preparation | 7% |
 
-Estimated active work window: approximately 12 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 12.5 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
