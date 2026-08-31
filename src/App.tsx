@@ -10,6 +10,10 @@ import {
   getRoleGreeting,
 } from "./components/UserRegistration";
 import { FinancialDashboard } from "./components/FinancialDashboard";
+import { OnboardingDiagnostic } from "./components/OnboardingDiagnostic";
+import { CooperativeReadinessDashboard } from "./components/CooperativeReadinessDashboard";
+import { PeerReviewQueue } from "./components/PeerReviewQueue";
+import { GtmPilotProject } from "./components/GtmPilotProject";
 import { type StakeholderCategory } from "./lib/ovuMatrix";
 
 type Screen =
@@ -22,6 +26,9 @@ type Screen =
   | "dictionary"
   | "admin"
   | "financials"
+  | "diagnostic"
+  | "peer-review"
+  | "gtm-pilot"
   | "volunteer";
 type Template = { icon: string; title: string; detail: string; color: string; phase: 1 | 2 | 3 };
 type PracticeSession = {
@@ -119,7 +126,12 @@ const phraseFor = (template: Template) =>
     ? "Good morning, I am calling to confirm my appointment."
     : `I feel confident practicing ${template.title.toLowerCase()}.`;
 const api = async <T,>(path: string, options?: RequestInit): Promise<T> => {
-  const response = await fetch(path, options);
+  const { data } = await supabase?.auth.getSession() || { data: { session: null } };
+  const accessToken = data.session?.access_token;
+  if (!accessToken) throw new Error("Authentication required.");
+  const headers = new Headers(options?.headers);
+  headers.set("Authorization", `Bearer ${accessToken}`);
+  const response = await fetch(path, { ...options, headers });
   if (!response.ok) throw new Error(await response.text());
   return response.status === 204 ? (undefined as T) : response.json();
 };
@@ -154,6 +166,7 @@ function App() {
   const [fullName, setFullName] = useState("");
   const [hasFinancialAccess, setHasFinancialAccess] = useState(false);
   const [stakeholderCategory, setStakeholderCategory] = useState<StakeholderCategory | null>(null);
+  const [authenticatedUserId, setAuthenticatedUserId] = useState<string | null>(null);
   const [authError, setAuthError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
@@ -161,6 +174,9 @@ function App() {
   const [words, setWords] = useState<string[]>(defaultWords);
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [peerReviewContributions, setPeerReviewContributions] = useState(0);
+  const [codeQualityScore, setCodeQualityScore] = useState<number | null>(null);
+  const [diagnosticCompleted, setDiagnosticCompleted] = useState(false);
   const [currentTime] = useState(() => Date.now());
   const [newWord, setNewWord] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -213,6 +229,24 @@ function App() {
       setUserRole("CodeWithKris Administrator");
       setRole("admin");
       setScreen("financials");
+    } else if (preview === "diagnostic") {
+      setFullName("Developer");
+      setUserRole("Student");
+      setScreen("diagnostic");
+    } else if (preview === "dashboard") {
+      setFullName("Developer");
+      setUserRole("Student");
+      setSelectedPhase(null);
+      setScreen("templates");
+    } else if (preview === "peer-review") {
+      setFullName("Developer");
+      setUserRole("Student");
+      setScreen("peer-review");
+    } else if (preview === "gtm-pilot") {
+      setEmail("client@example.com");
+      setFullName("Pilot Client");
+      setUserRole("Client");
+      setScreen("gtm-pilot");
     }
   }, []);
 
@@ -228,6 +262,7 @@ function App() {
     if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
+        setAuthenticatedUserId(data.session.user.id);
         const meta = data.session.user?.user_metadata;
         const appMeta = data.session.user?.app_metadata;
         if (meta?.role) setUserRole(meta.role as UserRole);
@@ -242,6 +277,7 @@ function App() {
     });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        setAuthenticatedUserId(session.user.id);
         const meta = session.user?.user_metadata;
         const appMeta = session.user?.app_metadata;
         if (meta?.role) setUserRole(meta.role as UserRole);
@@ -255,6 +291,7 @@ function App() {
           current === "signin" || current === "register" ? "templates" : current,
         );
       } else if (event === "SIGNED_OUT") {
+        setAuthenticatedUserId(null);
         setHasFinancialAccess(false);
         setStakeholderCategory(null);
         setScreen((current) => current === "volunteer" ? current : "signin");
@@ -263,6 +300,7 @@ function App() {
     return () => data.subscription.unsubscribe();
   }, []);
   useEffect(() => {
+    if (!authenticatedUserId) return;
     Promise.all([
       api<{ word: string }[]>("/api/dictionary"),
       api<PracticeSession[]>("/api/sessions"),
@@ -282,7 +320,18 @@ function App() {
           "The database is not connected yet. Start the API with npm run dev:api.",
         ),
       );
-  }, []);
+  }, [authenticatedUserId]);
+  useEffect(() => {
+    if (!supabase || !authenticatedUserId) return;
+    Promise.all([
+      supabase.from("peer_review_submissions").select("id", { count: "exact", head: true }).eq("submitter_id", authenticatedUserId),
+      supabase.from("peer_review_feedback").select("quality_score,peer_review_submissions!inner(submitter_id)").eq("peer_review_submissions.submitter_id", authenticatedUserId).not("quality_score", "is", null),
+    ]).then(([submissionResult, scoreResult]) => {
+      setPeerReviewContributions(submissionResult.count || 0);
+      const scores = (scoreResult.data || []).map((item) => Number(item.quality_score)).filter(Number.isFinite);
+      setCodeQualityScore(scores.length ? Math.round(scores.reduce((total, score) => total + score, 0) / scores.length) : null);
+    });
+  }, [authenticatedUserId]);
 
   const navigate = (next: Screen) => setScreen(next);
   const authenticate = async (event: FormEvent<HTMLFormElement>) => {
@@ -507,6 +556,15 @@ function App() {
   }));
   const phaseTemplates = templates.filter(
     (template) => template.phase === selectedPhase,
+  );
+  const completedTemplateTitles = new Set(sessions.map((session) => session.template));
+  const completedMissionsByPhase = phases.map((phase) =>
+    templates.filter(
+      (template) => template.phase === phase.number && completedTemplateTitles.has(template.title),
+    ).length,
+  );
+  const totalMissionsByPhase = phases.map(
+    (phase) => templates.filter((template) => template.phase === phase.number).length,
   );
   const switchRole = () => {
     const nextRole = role === "user" ? "admin" : "user";
@@ -854,20 +912,20 @@ function App() {
             </aside>
             <div className="page-content phase-content">
               {selectedPhase === null ? (
-                <section className="dashboard-panel" aria-labelledby="dashboard-title">
-                  <div className="page-intro">
-                    <span className="role-badge" data-role={userRole || "Student"}>
-                      {userRole || "Student"} Account
-                    </span>
-                    <h1 id="dashboard-title">{getRoleGreeting(userRole || "Student", fullName).headline}</h1>
-                    <p>{getRoleGreeting(userRole || "Student", fullName).message}</p>
-                  </div>
-                  <div className="dashboard-stats">
-                    <div><strong>3</strong><span>Learning phases</span></div>
-                    <div><strong>8</strong><span>Practice missions</span></div>
-                    <div><strong>{weekSessions.length}</strong><span>Sessions this week</span></div>
-                  </div>
-                  <button className="outline-wide" onClick={() => navigate("progress")}>View my progress <span>→</span></button>
+                <section className="dashboard-panel">
+                  <CooperativeReadinessDashboard
+                    headline={getRoleGreeting(userRole || "Student", fullName).headline}
+                    message={getRoleGreeting(userRole || "Student", fullName).message}
+                    phases={phases}
+                    completedMissions={completedMissionsByPhase}
+                    totalMissions={totalMissionsByPhase}
+                    peerReviewContributions={peerReviewContributions}
+                    codeQualityScore={codeQualityScore}
+                    diagnosticCompleted={diagnosticCompleted}
+                    onSelectPhase={setSelectedPhase}
+                    onStartDiagnostic={() => navigate("diagnostic")}
+                    onOpenPeerReviews={() => navigate("peer-review")}
+                  />
                 </section>
               ) : (
                 <>
@@ -1245,6 +1303,25 @@ function App() {
             />
           </section>
         )}
+        {screen === "diagnostic" && (
+          <OnboardingDiagnostic onBack={() => navigate("templates")} onComplete={() => setDiagnosticCompleted(true)} />
+        )}
+        {screen === "peer-review" && (
+          <PeerReviewQueue
+            userName={fullName}
+            userEmail={email}
+            userRole={userRole || "Student"}
+            onBack={() => navigate("templates")}
+          />
+        )}
+        {screen === "gtm-pilot" && (
+          <GtmPilotProject
+            userName={fullName}
+            userEmail={email}
+            userRole={userRole || "Student"}
+            onBack={() => navigate("templates")}
+          />
+        )}
       </div>
       <nav className="bottom-nav" aria-label="Main navigation">
         {((hasFinancialAccess ||
@@ -1253,6 +1330,7 @@ function App() {
               ["templates", "Practice", "▦"],
               ["progress", "User view", "◎"],
               ["admin", "Admin", "▤"],
+              ["gtm-pilot", "GTM Pilot", "◇"],
               ["financials", "Coop Equity", "⚖️"],
             ]
           : [
@@ -1260,6 +1338,7 @@ function App() {
               ["record", "Record", "●"],
               ["practice", "Practice", "◌"],
               ["progress", "Progress", "▥"],
+              ["gtm-pilot", "GTM Pilot", "◇"],
               ["financials", "Contribute", "+"],
             ]
         ).map(([value, label, icon]) => (

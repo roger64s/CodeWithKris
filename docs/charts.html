@@ -15,6 +15,7 @@
         .chart-title { color: #27233b; font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; text-align: center; }
         .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
         canvas { max-height: 400px; }
+        .stacked-chart canvas { min-height: 400px; }
         .summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .stat-card { color: white; padding: 20px; border-radius: 12px; text-align: center; }
         .stat-card:nth-child(1) { background: linear-gradient(135deg, #6756c9 0%, #4a3da0 100%); }
@@ -31,18 +32,18 @@
         <h1>CodeWithKris Project Metrics</h1>
         <p class="updated">CodeWithKris repository only · Updated August 31, 2026</p>
         <div class="summary-stats" aria-label="CodeWithKris summary statistics">
-            <div class="stat-card"><div class="stat-value">7,256</div><div class="stat-label">Net text-line change</div></div>
-            <div class="stat-card"><div class="stat-value">9h</div><div class="stat-label">Estimated active time</div></div>
-            <div class="stat-card"><div class="stat-value">27</div><div class="stat-label">Published commits</div></div>
+            <div class="stat-card"><div class="stat-value">10,271</div><div class="stat-label">Net text-line change</div></div>
+            <div class="stat-card"><div class="stat-value">12h</div><div class="stat-label">Estimated active time</div></div>
+            <div class="stat-card"><div class="stat-value">28</div><div class="stat-label">Commits after publication</div></div>
             <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Prototype phases</div></div>
         </div>
         <div class="charts-row">
-            <div class="chart-container"><div class="chart-title">Time Distribution by Category</div><canvas id="pieChart"></canvas></div>
-            <div class="chart-container"><div class="chart-title">CodeWithKris LOC by Workstream</div><canvas id="barChart"></canvas></div>
+            <div class="chart-container"><div class="chart-title">Estimated Effort Distribution by Category</div><canvas id="pieChart"></canvas></div>
+            <div class="chart-container"><div class="chart-title">Lines Added by Date</div><canvas id="barChart"></canvas></div>
         </div>
-        <div class="chart-container"><div class="chart-title">Effort Breakdown by Workstream (Stacked)</div><canvas id="stackedChart"></canvas></div>
+        <div class="chart-container stacked-chart"><div class="chart-title">Repository Change by Delivery Category (Stacked)</div><canvas id="stackedChart"></canvas></div>
         <div class="charts-row">
-            <div class="chart-container"><div class="chart-title">Estimated Time by Workstream — Total: 9h</div><canvas id="hoursChart"></canvas></div>
+            <div class="chart-container"><div class="chart-title">Estimated Time by Workstream — Total: 12h</div><canvas id="hoursChart"></canvas></div>
             <div class="chart-container"><div class="chart-title">CodeWithKris LOC by Category</div><canvas id="categoryBarChart"></canvas></div>
         </div>
     </div>
@@ -51,15 +52,18 @@
         Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
         Chart.defaults.color = '#4d4761';
         Chart.register(ChartDataLabels);
-        const labels = ['Scaffold', 'Supabase/Data', 'Admin/User', 'Auth & Viewport', 'Research', 'Phases', 'Documentation', 'Roles & Reg', 'Coop & OVU L2', 'Ledger & Stakeholders', 'Deployment'];
-        const loc = [3122, 170, 8, 232, 229, 873, 79, 488, 1462, 570, 27];
-        const hours = [0.35, 0.65, 0.25, 1.15, 0.7, 0.75, 0.57, 0.50, 1.33, 1.75, 1.0];
-        const commonDataLabels = { color: '#27233b', font: { weight: 'bold', size: 12 }, formatter: value => value.toLocaleString() };
-        new Chart(document.getElementById('pieChart'), { type: 'pie', data: { labels: ['Coding/UI', 'Testing & Deployment', 'Research/Design', 'Documentation'], datasets: [{ data: [61, 25, 9, 5], backgroundColor: [colors.coding, colors.testing, colors.research, colors.documentation], borderWidth: 2, borderColor: '#fff' }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: context => `${context.label}: ${context.parsed}%` } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: value => `${value}%` } } } });
-        new Chart(document.getElementById('barChart'), { type: 'bar', data: { labels, datasets: [{ label: 'Lines of Code', data: loc, backgroundColor: colors.coding, borderRadius: 8 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'top' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Lines of Code' } } } } });
-        new Chart(document.getElementById('stackedChart'), { type: 'bar', data: { labels, datasets: [ { label: 'Coding/UI', data: [2100, 90, 5, 110, 140, 520, 20, 390, 1120, 310, 2], backgroundColor: colors.coding }, { label: 'Testing & Deployment', data: [650, 35, 2, 38, 50, 260, 8, 58, 210, 120, 18], backgroundColor: colors.testing }, { label: 'Research/Design', data: [250, 30, 1, 12, 30, 160, 5, 30, 100, 90, 2], backgroundColor: colors.research }, { label: 'Documentation', data: [122, 15, 0, 23, 9, 60, 35, 10, 32, 50, 5], backgroundColor: colors.documentation } ] }, options: { responsive: true, plugins: { legend: { position: 'bottom' }, datalabels: { color: '#fff', font: { weight: 'bold', size: 10 }, formatter: value => value ? value.toLocaleString() : '' } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Lines of Code' } } } } });
-        new Chart(document.getElementById('hoursChart'), { type: 'line', data: { labels, datasets: [{ label: 'Estimated Hours', data: hours, borderColor: colors.coding, backgroundColor: '#6756c922', fill: true, tension: .35, pointBackgroundColor: colors.coding, pointRadius: 5 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'top', formatter: value => `${value}h` } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Hours' } } } } });
-        new Chart(document.getElementById('categoryBarChart'), { type: 'bar', data: { labels: ['Coding/UI', 'Testing & Deployment', 'Research/Design', 'Documentation'], datasets: [{ label: 'Lines of Code', data: [4497, 1329, 620, 311], backgroundColor: [colors.coding, colors.testing, colors.research, colors.documentation], borderRadius: 8 }] }, options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'right' } }, scales: { x: { beginAtZero: true, title: { display: true, text: 'Lines of Code' } } } } });
+        const isMobile = window.matchMedia('(max-width: 600px)').matches;
+        const detailedLabels = ['Scaffold', 'Supabase/Data', 'Admin/User', 'Auth & Viewport', 'Research', 'Phases', 'Documentation', 'Roles & Reg', 'Coop & OVU L2', 'Ledger', 'Readiness', 'Peer Review', 'GTM', 'CRM/API'];
+        const labels = isMobile ? ['Foundation', 'Coop & Ledger', 'New Workflows', 'Data, API & Docs'] : detailedLabels;
+        const loc = isMobile ? [4464, 2032, 1410, 2365] : [3122, 170, 8, 232, 229, 873, 195, 488, 1462, 570, 430, 260, 720, 1511];
+        const hours = isMobile ? [3, 2.65, 2.95, 3.4] : [0.35, 0.65, 0.2, 1.05, 0.65, 0.65, 0.8, 0.45, 1.2, 1.45, 0.85, 0.7, 1.4, 1.6];
+        const commonDataLabels = { color: '#27233b', font: { weight: 'bold', size: isMobile ? 10 : 12 }, formatter: value => value.toLocaleString() };
+        new Chart(document.getElementById('pieChart'), { type: 'pie', data: { labels: ['Coding/UI', 'Testing & Deployment', 'Research/Design', 'Documentation'], datasets: [{ data: [66, 19, 8, 7], backgroundColor: [colors.coding, colors.testing, colors.research, colors.documentation], borderWidth: 2, borderColor: '#fff' }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: context => `${context.label}: ${context.parsed}%` } }, datalabels: { color: context => context.dataIndex === 0 ? '#fff' : '#27233b', font: { weight: 'bold', size: 14 }, formatter: value => `${value}%` } } } });
+        new Chart(document.getElementById('barChart'), { type: 'bar', data: { labels: ['Aug 22', 'Aug 29', 'Aug 30', 'Aug 31'], datasets: [{ label: 'Lines Added', data: [5208, 609, 2538, 3193], backgroundColor: colors.coding, borderRadius: 8 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'top' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Lines Added' } } } } });
+        const stackedDatasets = [ { label: 'Coding/UI', data: [6916], backgroundColor: colors.coding }, { label: 'Testing & Deployment', data: [1854], backgroundColor: colors.testing }, { label: 'Research/Design', data: [782], backgroundColor: colors.research }, { label: 'Documentation', data: [719], backgroundColor: colors.documentation } ];
+        new Chart(document.getElementById('stackedChart'), { type: 'bar', data: { labels: ['All repository changes'], datasets: stackedDatasets }, options: { indexAxis: 'x', maintainAspectRatio: !isMobile, responsive: true, plugins: { legend: { position: 'bottom' }, datalabels: { color: context => context.datasetIndex === 0 ? '#fff' : '#27233b', font: { weight: 'bold', size: 10 }, formatter: value => value.toLocaleString() } }, scales: { x: { stacked: true, beginAtZero: true }, y: { stacked: true, beginAtZero: true } } } });
+        new Chart(document.getElementById('hoursChart'), { type: 'line', data: { labels, datasets: [{ label: 'Estimated Hours', data: hours, borderColor: colors.coding, backgroundColor: '#6756c922', fill: true, tension: .35, pointBackgroundColor: colors.coding, pointRadius: 5 }] }, options: { responsive: true, layout: { padding: { top: 18, right: 56 } }, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'top', formatter: value => `${value}h` } }, scales: { y: { beginAtZero: true, grace: '15%', title: { display: true, text: 'Hours' } } } } });
+        new Chart(document.getElementById('categoryBarChart'), { type: 'bar', data: { labels: ['Coding/UI', 'Testing & Deployment', 'Research/Design', 'Documentation'], datasets: [{ label: 'Lines of Code', data: [6916, 1854, 782, 719], backgroundColor: [colors.coding, colors.testing, colors.research, colors.documentation], borderRadius: 8 }] }, options: { indexAxis: 'y', responsive: true, layout: { padding: { right: 48 } }, plugins: { legend: { display: false }, datalabels: { ...commonDataLabels, anchor: 'end', align: 'right' } }, scales: { x: { beginAtZero: true, grace: '15%', title: { display: true, text: 'Lines of Code' } } } } });
     </script>
 </body>
 </html>

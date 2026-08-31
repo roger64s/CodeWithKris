@@ -11,8 +11,8 @@ The current production demo is a responsive web application, but it does not yet
 - Audio is captured with `MediaRecorder` and normally uploaded as WebM. The server preserves OGG only when the browser sends OGG.
 - Live transcription uses browser `SpeechRecognition` or `webkitSpeechRecognition`.
 - The current accuracy score is token overlap in `src/App.tsx`, not model confidence or word error rate.
-- Supabase stores dictionary words, recordings, and practice sessions. Recordings are private through the server-side service role key.
-- The app has user practice and demo Admin views, but no user authentication boundary yet. Do not expose aggregate or personal data as a real multi-user feature until Supabase Auth and row-level security are enabled.
+- Supabase stores dictionary words, recordings, and practice sessions behind authenticated user JWTs and owner-scoped row-level security.
+- The app has Supabase authentication boundaries for personal data and trusted metadata capabilities for restricted cooperative administration.
 
 This distinction should be kept visible in product and technical documentation. It prevents a browser transcript score from being presented as a clinically or operationally validated speech-recognition result.
 
@@ -289,3 +289,11 @@ For monetization, prefer a cooperative model with transparent task rates and no 
 - Added research-informed guidance from Project Euphonia, Duolingo, and Quorum.
 - Added the copyright and licensing register; commercial release remains gated on owner permissions and asset provenance for supplied media.
 - Production MFCC/MLP/Softmax inference, Supabase Auth/RLS, channel delivery adapters, community features, and employer workflows remain future implementation phases.
+
+## Current implementation update - 2026-08-31
+
+- Supabase Auth and owner-scoped RLS are now implemented for dictionary words, recordings, private audio objects, and practice sessions.
+- Cooperative readiness, producer-owner peer review, client impact snapshots, and the GTM Pilot workflow are implemented in the application.
+- GTM and CRM database migrations are publication-ready but still require application to the remote Supabase project.
+- External email, WhatsApp, and social-platform delivery adapters remain future work; approved GTM outreach is currently tracked as workflow evidence rather than sent through provider APIs.
+- Production MFCC/MLP/Softmax inference and representative consented-speech benchmarking remain future work.

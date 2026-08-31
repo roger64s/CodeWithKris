@@ -12,29 +12,29 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 26 | 1 maintenance update | 27 after publication |
-| Text lines added | 8,291 | 64 | 8,355 |
-| Text lines deleted | 1,054 | 45 | 1,099 |
-| Net text-line change | 7,237 | 19 | 7,256 |
-| New source files | 5 | 0 | 5 |
+| Commits | 27 | 1 release update | 28 after publication |
+| Text lines added | 8,364 | 3,184 | 11,548 |
+| Text lines deleted | 1,141 | 136 | 1,277 |
+| Net text-line change | 7,223 | 3,048 | 10,271 |
+| New release files | 0 | 10 | 10 |
 | Build status | Passed | Passed | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
 
 ```mermaid
-pie title Effort Distribution by Category
-    "Coding and UI" : 68
-    "Testing and Verification" : 18
-    "Research and Architecture" : 9
-    "Documentation" : 5
+pie title Estimated Effort Distribution by Category
+    "Coding and UI" : 66
+    "Testing and Verification" : 19
+    "Research and Architecture" : 8
+    "Documentation" : 7
 ```
 
 ```mermaid
 xychart-beta
-    title "Lines of Code by Workstream"
-    x-axis ["Scaffold", "Supabase", "Admin/User", "Auth", "Research", "Phases", "Docs", "Roles", "Coop/OVU", "Ledger"]
+    title "Lines Added by Date"
+    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31"]
     y-axis "Lines of Code" 0 --> 3500
-    bar [3122, 170, 8, 232, 229, 873, 79, 488, 1462, 570]
+    bar [5208, 609, 2538, 3193]
 ```
 
 ## Delivered Today
@@ -62,21 +62,27 @@ xychart-beta
 - Deployed and verified the functional application on Vercel, then removed the temporary schema endpoint and token.
 - Audited all desktop application and document screens within a single viewport without document or nested scrolling.
 - Restored the Supabase ledger schema to the prior policy creation structure after the repeatable-schema change affected the cooperative contribution flow.
+- Added a five-question Frontend, Backend, or DevOps diagnostic with JSON results and free three-phase learning pathways.
+- Replaced generic learner progress with Cooperative Readiness, client-impact metrics, and live sprint-eligibility states without invented activity.
+- Added a producer-owner peer-review queue with focused code submissions, constructive revision feedback, and protected reviewer/submitter email fields.
+- Added the configurable GTM Pilot workflow for client briefs, diverse assignments, anonymized targets, approved multilingual outreach, conversion tracking, milestone compensation, revenue success fees, and OVU evidence.
+- Added a production-ready CRM migration for companies, contacts, owner history, team pods, audit triggers, indexed access paths, and owner-scoped RLS.
+- Added an authenticated Vercel API for private dictionary, recording, audio-storage, and practice-session persistence using Supabase user JWTs rather than a service-role bypass.
 
 ## Effort Estimate
 
 | Category | Estimated share |
 | --- | ---: |
-| Coding and UI implementation | 68% |
-| Testing and browser validation | 18% |
-| Research and product design | 9% |
-| Documentation and release preparation | 5% |
+| Coding and UI implementation | 66% |
+| Testing and browser validation | 19% |
+| Research and product design | 8% |
+| Documentation and release preparation | 7% |
 
-Estimated active work window: approximately 9 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, Supabase deployment, Vercel verification, L2 privacy hashing, and browser-audit sessions. This is an estimate from Git timestamps and session activity, not a timesheet.
+Estimated active work window: approximately 12 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
-- Latest closeout release includes authenticated effort and expense tracking, stakeholder-category OVU calculation, Web Crypto audit hashing, and responsive role registration.
+- This closeout release includes authenticated effort and expense tracking, stakeholder-category OVU calculation, readiness diagnostics, peer review, GTM pilots, CRM migrations, and a Vercel-compatible authenticated API.
 - Production deployment: Vercel production site is live at https://codewithkris.vercel.app
 - Closeout validation: `npm run build` passed cleanly with Vite and TypeScript.
 - The all-pages no-scroll layouts and 12-screen browser audit are included in this release.
@@ -86,6 +92,8 @@ Estimated active work window: approximately 9 hours across implementation, authe
 - Production verification found 3 baseline contribution records, 1 documented investment record, and the founder account assigned to Founders & Core Operating Team.
 - The preview URL `codewithkris-roger-e1a3.vercel.app` is protected by Vercel Authentication; anonymous production checks use the public alias.
 - August 31 maintenance restores the cooperative contribution ledger schema structure while retaining the SQL syntax correction for the anonymous audit proof table.
+- The authenticated Vercel API and required Supabase environment variables are configured for production deployment.
+- `supabase/schema.sql`, `supabase/gtm_pilot_workflow.sql`, and `supabase/crm_schema.sql` are publication-ready; the two new standalone migrations still require application to the remote Supabase project because this workstation has no authenticated Supabase CLI session.
 
 ## Separation Rule
 

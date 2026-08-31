@@ -26,6 +26,7 @@ export const ROLE_WEIGHTS: Record<UserRole, number> = {
   "Woman/Carer": 1.2,
   Individual: 1.0,
   Corporate: 1.0,
+  Client: 1.0,
   Investor: 1.0,
   NGO: 1.0,
   Government: 1.0,

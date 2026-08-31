@@ -10,6 +10,7 @@ export type UserRole =
   | "Individual"
   | "Mentor"
   | "Corporate"
+  | "Client"
   | "Investor"
   | "NGO"
   | "Government"
@@ -67,6 +68,12 @@ export const BASE_USER_ROLES: RoleOption[] = [
     label: "Corporate",
     icon: "🏢",
     description: "Sponsor initiatives, connect with talent, and foster workforce inclusion.",
+  },
+  {
+    value: "Client",
+    label: "Client",
+    icon: "💼",
+    description: "Define pilot requirements, review targets, and approve outreach workflows.",
   },
   {
     value: "Investor",
@@ -134,6 +141,11 @@ export function getRoleGreeting(role: UserRole, name?: string): { headline: stri
       return {
         headline: `Welcome to the Corporate Partner Suite${displayName}! 🏢`,
         message: "Manage enterprise sponsorships, engage with qualified talent pipelines, and track social impact goals.",
+      };
+    case "Client":
+      return {
+        headline: `Welcome to your Client Pilot Workspace${displayName}!`,
+        message: "Define pilot outcomes, prioritize anonymized targets, and approve outreach before engagement begins.",
       };
     case "Investor":
       return {

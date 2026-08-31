@@ -139,10 +139,10 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
       supabase.from("contribution_records").select("*").order("contributed_at", { ascending: false }),
       supabase.from("financial_investments").select("*").order("incurred_at", { ascending: false }),
     ]).then(([contributionResult, investmentResult]) => {
-      if (!contributionResult.error && contributionResult.data?.length) {
+      if (!contributionResult.error && contributionResult.data) {
         setContributions((contributionResult.data as ContributionRow[]).map(fromDatabase));
       }
-      if (!investmentResult.error && investmentResult.data?.length) {
+      if (!investmentResult.error && investmentResult.data) {
         setInvestments((investmentResult.data as InvestmentRow[]).map(investmentFromDatabase));
       }
       if (!contributionResult.error && !investmentResult.error) {
@@ -180,13 +180,13 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
     event.preventDefault();
     if (!canSubmit || !contributionType.trim() || !clientCode.trim() || !projectCode.trim()) return;
 
-    const hours = loggedHours ? Number(loggedHours) : null;
+    const hours = isAuthorized && loggedHours ? Number(loggedHours) : null;
     const weightedUnits = hours === null ? null : Number((hours * ROLE_WEIGHTS[currentUserRole]).toFixed(2));
     const record: ContributionRecord = {
       id: crypto.randomUUID(), contributorName: authenticatedName, contributorEmail: normalizedEmail,
       role: currentUserRole, clientCode: clientCode.trim(), projectCode: projectCode.trim(), departmentCategory,
       effortCategory, contributionType: contributionType.trim(), description: description.trim(), loggedHours: hours,
-      weightedUnits, status: hours === null ? "unvalued" : "valued", contributedAt: new Date().toISOString(),
+      weightedUnits, status: isAuthorized && hours !== null ? "valued" : "unvalued", contributedAt: new Date().toISOString(),
     };
 
     if (supabase) {
@@ -281,7 +281,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
         <label>Project Code<input value={projectCode} onChange={(event) => setProjectCode(event.target.value)} placeholder="Free text, e.g. CWK-APP" required /></label>
         <label>Department Category<select value={departmentCategory} onChange={(event) => setDepartmentCategory(event.target.value as DepartmentCategory)}>{Object.entries(DEPARTMENT_ALLOCATIONS).map(([category, allocation]) => <option key={category} value={category}>{category} · ~{allocation}%</option>)}</select></label>
         <label>Effort category<select value={effortCategory} onChange={(event) => setEffortCategory(event.target.value as EffortCategory)}>{EFFORT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></label>
-        <label>Verified hours<input type="number" min="0" step="0.25" value={loggedHours} onChange={(event) => setLoggedHours(event.target.value)} placeholder="Pending" /></label>
+        {isAuthorized && <label>Approved hours<input type="number" min="0" step="0.25" value={loggedHours} onChange={(event) => setLoggedHours(event.target.value)} placeholder="Pending" /></label>}
         <label className="contribution-description">Activity / deliverable<input value={contributionType} onChange={(event) => setContributionType(event.target.value)} placeholder="Example: Registration UX redesign" required /></label>
         <label className="contribution-description">Evidence or notes<input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="PR, document, recording, or approval reference" /></label>
         <button className="primary-button" type="submit">Save effort record <span>+</span></button>

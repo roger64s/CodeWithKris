@@ -83,4 +83,19 @@
 
 ## 2026-08-31
 - Restore the cooperative contribution ledger behavior to the correct prior version shown in the reference screenshot.
+- Provide a five-question onboarding diagnostic for Frontend, Backend, and DevOps proficiency.
+- Generate a tailored JSON result and three-phase pathway from free learning modules to cooperative client sprint eligibility.
+- Keep the diagnostic pathway free of paywalls and credit card prompts.
+- Replace generic dashboard progress bars with a three-phase Cooperative Readiness tracker.
+- Show peer-review contributions, reviewed code-quality scores, and live client sprint eligibility without inventing unavailable activity.
+- Add a Client Project Impact widget for cooperative sprint and accepted-output activity.
+- Show timestamped co-op impact metrics for active client projects, reinvested revenue, and member-owner contribution hours.
+- Frame client impact around collective outcomes and shared training capacity rather than individual course purchases.
+- Provide a collaborative queue where trainees submit focused code snippets for producer-owner peer validation.
+- Emphasize human governance, collective code ownership, and constructive revision feedback instead of automated instructor scoring.
+- Provide a customizable Go-To-Market pilot workflow for client briefs, open-ended tasks, diverse participant assignments, anonymized target review, multilingual outreach, and conversion tracking.
+- Compensate verified milestone effort separately from an 8% to 10% revenue success fee, with editable department splits and pricing visible only to the owning client and authorized administrators.
+- Keep personal contact details hidden from the initial client target view until targets are prioritized and deeper engagement is authorized.
+- Link every pilot task to auditable contribution and OVU records across the cooperative ecosystem.
+- Provide a secure CRM database for companies, contacts, ownership history, and team-pod collaboration with owner-scoped access controls.
 
