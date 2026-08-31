@@ -4,7 +4,7 @@
 
 - **Name:** CodeWithKris Mobile/Web Application Prototype
 - **Repository:** `roger64s/CodeWithKris`
-- **Date measured:** 2026-08-30
+- **Date measured:** 2026-08-31
 - **Scope:** CodeWithKris repository only. Grad-a-Gig Website files and metrics are excluded.
 - **Production URL:** https://codewithkris.vercel.app
 
@@ -12,7 +12,7 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 25 | 1 closeout | 26 after publication |
+| Commits | 26 | 1 maintenance update | 27 after publication |
 | Text lines added | 8,291 | 64 | 8,355 |
 | Text lines deleted | 1,054 | 45 | 1,099 |
 | Net text-line change | 7,237 | 19 | 7,256 |
@@ -61,6 +61,7 @@ xychart-beta
 - Backfilled the existing founder account into Founders & Core Operating Team and configured Community Trust defaults for future registrations.
 - Deployed and verified the functional application on Vercel, then removed the temporary schema endpoint and token.
 - Audited all desktop application and document screens within a single viewport without document or nested scrolling.
+- Restored the Supabase ledger schema to the prior policy creation structure after the repeatable-schema change affected the cooperative contribution flow.
 
 ## Effort Estimate
 
@@ -84,6 +85,7 @@ Estimated active work window: approximately 9 hours across implementation, authe
 - The contribution, investment, stakeholder-assignment, signup-trigger, and RLS schema is deployed to production Supabase; persistent tracking is ready for authenticated production use.
 - Production verification found 3 baseline contribution records, 1 documented investment record, and the founder account assigned to Founders & Core Operating Team.
 - The preview URL `codewithkris-roger-e1a3.vercel.app` is protected by Vercel Authentication; anonymous production checks use the public alias.
+- August 31 maintenance restores the cooperative contribution ledger schema structure while retaining the SQL syntax correction for the anonymous audit proof table.
 
 ## Separation Rule
 

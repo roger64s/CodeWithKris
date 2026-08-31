@@ -122,29 +122,6 @@ create trigger assign_default_stakeholder_after_signup
   after insert on auth.users
   for each row execute function public.assign_default_stakeholder_category();
 
--- Backfill users registered before the assignment trigger was introduced.
-insert into public.user_stakeholder_assignments (
-  user_id,
-  stakeholder_category,
-  assignment_source,
-  assignment_notes
-)
-select
-  id,
-  case
-    when lower(email) = 'roger.s@gradagig.com'
-      then 'Founders & Core Operating Team'
-    else 'Community & Ecosystem Trust'
-  end,
-  'automatic_default',
-  case
-    when lower(email) = 'roger.s@gradagig.com'
-      then 'Founder assignment backfilled during stakeholder migration.'
-    else 'Temporary Community Trust assignment pending management review.'
-  end
-from auth.users
-on conflict (user_id) do nothing;
-
 -- Human-readable contribution register. Values remain null until management verifies them.
 create table if not exists public.contribution_records (
   id uuid primary key default gen_random_uuid(),
@@ -218,14 +195,12 @@ as $$
     or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator';
 $$;
 
-drop policy if exists "Allow users read own stakeholder assignment" on public.user_stakeholder_assignments;
 create policy "Allow users read own stakeholder assignment"
   on public.user_stakeholder_assignments
   for select
   to authenticated
   using (user_id = auth.uid() or public.has_financial_access());
 
-drop policy if exists "Allow management assign stakeholder categories" on public.user_stakeholder_assignments;
 create policy "Allow management assign stakeholder categories"
   on public.user_stakeholder_assignments
   for all
@@ -242,14 +217,12 @@ create policy "Allow management assign stakeholder categories"
     )
   );
 
-drop policy if exists "Allow authorized viewers read contribution records" on public.contribution_records;
 create policy "Allow authorized viewers read contribution records"
   on public.contribution_records
   for select
   to authenticated
   using (public.has_financial_access() or contributor_id = auth.uid());
 
-drop policy if exists "Allow contributors insert own effort records" on public.contribution_records;
 create policy "Allow contributors insert own effort records"
   on public.contribution_records
   for insert
@@ -259,7 +232,6 @@ create policy "Allow contributors insert own effort records"
     and lower(contributor_email) = lower(auth.jwt() ->> 'email')
   );
 
-drop policy if exists "Allow management write contribution records" on public.contribution_records;
 create policy "Allow management write contribution records"
   on public.contribution_records
   for all
@@ -277,14 +249,12 @@ create policy "Allow management write contribution records"
     )
   );
 
-drop policy if exists "Allow authorized viewers read financial investments" on public.financial_investments;
 create policy "Allow authorized viewers read financial investments"
   on public.financial_investments
   for select
   to authenticated
   using (public.has_financial_access() or investor_id = auth.uid());
 
-drop policy if exists "Allow investors insert own expense records" on public.financial_investments;
 create policy "Allow investors insert own expense records"
   on public.financial_investments
   for insert
@@ -294,7 +264,6 @@ create policy "Allow investors insert own expense records"
     and lower(investor_email) = lower(auth.jwt() ->> 'email')
   );
 
-drop policy if exists "Allow management write financial investments" on public.financial_investments;
 create policy "Allow management write financial investments"
   on public.financial_investments
   for all
@@ -327,7 +296,6 @@ values
 on conflict (investment_key) do nothing;
 
 -- Only Grad-a-Gig Management & Authorized Investors can view financial metrics
-drop policy if exists "Allow management and investors view financial metrics" on public.financial_metrics;
 create policy "Allow management and investors view financial metrics"
   on public.financial_metrics
   for select
@@ -335,7 +303,6 @@ create policy "Allow management and investors view financial metrics"
   using (public.has_financial_access());
 
 -- Only Administrator can modify
-drop policy if exists "Allow only administrator write financial metrics" on public.financial_metrics;
 create policy "Allow only administrator write financial metrics"
   on public.financial_metrics
   for all
@@ -350,14 +317,12 @@ create policy "Allow only administrator write financial metrics"
   );
 
 -- OVU Contributions: Management & Investors can view all records; individual contributors can view their own
-drop policy if exists "Allow management and investors view all OVU records" on public.ovu_contributions;
 create policy "Allow management and investors view all OVU records"
   on public.ovu_contributions
   for select
   to authenticated
   using (public.has_financial_access() or auth.uid() = contributor_id);
 
-drop policy if exists "Allow only administrator insert/update OVU records" on public.ovu_contributions;
 create policy "Allow only administrator insert/update OVU records"
   on public.ovu_contributions
   for all
@@ -403,7 +368,6 @@ alter table public.private_contributor_records enable row level security;
 alter table public.onchain_audit_proofs enable row level security;
 
 -- Strict Privacy: Contributors can ONLY view their own private record; Admin/Management can view all
-drop policy if exists "Allow contributors view own private record" on public.private_contributor_records;
 create policy "Allow contributors view own private record"
   on public.private_contributor_records
   for select
@@ -414,7 +378,6 @@ create policy "Allow contributors view own private record"
     public.has_financial_access()
   );
 
-drop policy if exists "Allow administrator manage private contributor records" on public.private_contributor_records;
 create policy "Allow administrator manage private contributor records"
   on public.private_contributor_records
   for all
@@ -429,7 +392,6 @@ create policy "Allow administrator manage private contributor records"
   );
 
 -- Public Audit Transparency: Anyone authenticated or anonymous can verify on-chain hashes
-drop policy if exists "Allow public read of anonymous onchain audit proofs" on public.onchain_audit_proofs;
 create policy "Allow public read of anonymous onchain audit proofs"
   on public.onchain_audit_proofs
   for select

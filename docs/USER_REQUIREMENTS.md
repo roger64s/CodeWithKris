@@ -81,3 +81,6 @@
 - Keep CodeWithKris functional in Vercel production with its registration, contribution, investment, stakeholder-assignment, and RLS schema deployed to Supabase.
 - Maintain final project documentation and effort charts before closing the workspace.
 
+## 2026-08-31
+- Restore the cooperative contribution ledger behavior to the correct prior version shown in the reference screenshot.
+
