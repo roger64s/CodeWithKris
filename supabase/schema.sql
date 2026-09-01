@@ -25,6 +25,71 @@ create table if not exists public.practice_sessions (
   created_at timestamptz not null default now()
 );
 
+-- Private first-login research and opportunity profile, visible only to its owner.
+create table if not exists public.user_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  signup_at timestamptz not null default now(),
+  inactive_at timestamptz,
+  age integer check (age between 13 and 120),
+  gender text,
+  education text,
+  disability_category text check (disability_category in ('None', 'Speech', 'Hearing', 'Visual', 'Physical', 'Other', 'Prefer not to say')),
+  speech_impairment_level text check (speech_impairment_level in ('Not applicable', 'Unintelligible', 'Partial', 'Very clear', 'Prefer not to say')),
+  city text,
+  country text,
+  mother_tongue text,
+  english_reading text check (english_reading in ('No skill', 'Beginner', 'Intermediate', 'Fluent')),
+  english_writing text check (english_writing in ('No skill', 'Beginner', 'Intermediate', 'Fluent')),
+  english_listening text check (english_listening in ('No skill', 'Beginner', 'Intermediate', 'Fluent')),
+  english_speaking text check (english_speaking in ('No skill', 'Beginner', 'Intermediate', 'Fluent')),
+  preferred_language text,
+  sign_language_skills text,
+  identity_statement text,
+  top_skills text[] check (cardinality(top_skills) = 3),
+  aspiration text,
+  hobbies text,
+  fun_fact text,
+  research_consent boolean not null default false,
+  completed_at timestamptz,
+  updated_at timestamptz not null default now(),
+  constraint completed_user_profile_fields check (
+    inactive_at is not null
+    or completed_at is null
+    or (
+      age is not null
+      and gender is not null
+      and education is not null
+      and disability_category is not null
+      and speech_impairment_level is not null
+      and city is not null
+      and country is not null
+      and mother_tongue is not null
+      and english_reading is not null
+      and english_writing is not null
+      and english_listening is not null
+      and english_speaking is not null
+      and preferred_language is not null
+      and sign_language_skills is not null
+      and identity_statement is not null
+      and cardinality(top_skills) = 3
+      and aspiration is not null
+      and hobbies is not null
+      and fun_fact is not null
+      and research_consent
+    )
+  )
+);
+
+alter table public.user_profiles enable row level security;
+drop policy if exists "Users manage their private profile" on public.user_profiles;
+create policy "Users manage their private profile"
+  on public.user_profiles for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+revoke all on public.user_profiles from anon;
+revoke all on public.user_profiles from authenticated;
+grant select, insert, update on public.user_profiles to authenticated;
+
 alter table public.dictionary_words add column if not exists user_id uuid default auth.uid() references auth.users(id) on delete cascade;
 alter table public.recordings add column if not exists user_id uuid default auth.uid() references auth.users(id) on delete cascade;
 alter table public.practice_sessions add column if not exists user_id uuid default auth.uid() references auth.users(id) on delete cascade;

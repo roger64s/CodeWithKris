@@ -14,6 +14,7 @@ import { OnboardingDiagnostic } from "./components/OnboardingDiagnostic";
 import { CooperativeReadinessDashboard } from "./components/CooperativeReadinessDashboard";
 import { PeerReviewQueue } from "./components/PeerReviewQueue";
 import { GtmPilotProject } from "./components/GtmPilotProject";
+import { FirstLoginProfile } from "./components/FirstLoginProfile";
 import { type StakeholderCategory } from "./lib/ovuMatrix";
 
 type Screen =
@@ -29,6 +30,7 @@ type Screen =
   | "diagnostic"
   | "peer-review"
   | "gtm-pilot"
+  | "profile-onboarding"
   | "volunteer";
 type Template = { icon: string; title: string; detail: string; color: string; phase: 1 | 2 | 3 };
 type PracticeSession = {
@@ -167,6 +169,7 @@ function App() {
   const [hasFinancialAccess, setHasFinancialAccess] = useState(false);
   const [stakeholderCategory, setStakeholderCategory] = useState<StakeholderCategory | null>(null);
   const [authenticatedUserId, setAuthenticatedUserId] = useState<string | null>(null);
+  const [signupAt, setSignupAt] = useState("");
   const [authError, setAuthError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
@@ -247,6 +250,10 @@ function App() {
       setFullName("Pilot Client");
       setUserRole("Client");
       setScreen("gtm-pilot");
+    } else if (preview === "profile") {
+      setAuthenticatedUserId("00000000-0000-0000-0000-000000000000");
+      setSignupAt(new Date().toISOString());
+      setScreen("profile-onboarding");
     }
   }, []);
 
@@ -263,6 +270,7 @@ function App() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         setAuthenticatedUserId(data.session.user.id);
+        setSignupAt(data.session.user.created_at);
         const meta = data.session.user?.user_metadata;
         const appMeta = data.session.user?.app_metadata;
         if (meta?.role) setUserRole(meta.role as UserRole);
@@ -278,6 +286,7 @@ function App() {
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         setAuthenticatedUserId(session.user.id);
+        setSignupAt(session.user.created_at);
         const meta = session.user?.user_metadata;
         const appMeta = session.user?.app_metadata;
         if (meta?.role) setUserRole(meta.role as UserRole);
@@ -299,6 +308,17 @@ function App() {
     });
     return () => data.subscription.unsubscribe();
   }, []);
+  useEffect(() => {
+    if (!supabase || !authenticatedUserId) return;
+    supabase.from("user_profiles").select("completed_at, inactive_at").eq("user_id", authenticatedUserId).maybeSingle().then(({ data, error }) => {
+      if (error) return;
+      if (data?.inactive_at) {
+        void signOut();
+      } else if (!data?.completed_at) {
+        setScreen("profile-onboarding");
+      }
+    });
+  }, [authenticatedUserId]);
   useEffect(() => {
     if (!authenticatedUserId) return;
     Promise.all([
@@ -385,7 +405,7 @@ function App() {
       setIsAuthenticating(false);
     }
   };
-  const signOut = async () => {
+  async function signOut() {
     await supabase?.auth.signOut({ scope: "local" });
     setSelectedPhase(null);
     setRole("user");
@@ -393,7 +413,7 @@ function App() {
     setPassword("");
     setAuthError("");
     navigate("signin");
-  };
+  }
   const addWord = async () => {
     const word = newWord.trim().toLowerCase();
     if (!word || words.includes(word)) return;
@@ -739,20 +759,6 @@ function App() {
                     required
                   />
                 </label>
-                {authMode === "register" && userRole === "Persons with Disabilities" && (
-                  <label>
-                    Speech condition <span className="optional">optional</span>
-                    <select defaultValue="">
-                      <option value="" disabled>
-                        Select a condition
-                      </option>
-                      <option>Stuttering</option>
-                      <option>Apraxia</option>
-                      <option>Dysarthria</option>
-                      <option>Prefer not to say</option>
-                    </select>
-                  </label>
-                )}
                 {authError && <p className="auth-error" role="alert">{authError}</p>}
                 <button
                   className={`primary-button ${authMode === "signin" ? "compact-signin" : ""}`}
@@ -1363,6 +1369,8 @@ function App() {
         ? authScreen
         : screen === "volunteer"
           ? volunteerScreen
+          : screen === "profile-onboarding" && authenticatedUserId
+            ? <FirstLoginProfile userId={authenticatedUserId} signupAt={signupAt} onComplete={() => navigate("templates")} onInactive={signOut} />
           : appScreen}
     </>
   );

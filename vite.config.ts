@@ -18,6 +18,9 @@ const metricsPagePlugin: Plugin = {
 export default defineConfig({
   plugins: [react(), tailwindcss(), metricsPagePlugin],
   server: {
+    watch: {
+      ignored: ['**/Doc/**'],
+    },
     proxy: {
       '/api': 'http://127.0.0.1:8787',
     },

@@ -103,4 +103,7 @@
 ## 2026-09-01
 - Link Coop Equity company and contact records to their corresponding Go-To-Market Pilot target.
 - Remove the obsolete “+ Contribute” navigation link and prevent access to its outdated contributions screen from the current user interface.
+- Remove the Speech Condition field from new Persons with Disabilities account registration.
+- After email verification, require every user category to complete a private first-login profile covering demographics, disability and communication context, language proficiency, skills, aspirations, hobbies, and a fun fact.
+- Record signup and voluntary inactivity dates automatically, and use profile information only for research, Gradagig training and earning opportunities, and solution quality improvement.
 

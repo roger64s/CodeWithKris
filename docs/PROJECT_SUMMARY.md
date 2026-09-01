@@ -12,10 +12,10 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 29 | 1 closeout update | 30 after publication |
-| Text lines added | 11,738 | 75 | 11,813 |
-| Text lines deleted | 1,298 | 16 | 1,314 |
-| Net text-line change | 10,440 | 59 | 10,499 |
+| Commits | 30 | 1 closeout update | 31 after publication |
+| Text lines added | 11,813 | 261 | 12,074 |
+| Text lines deleted | 1,314 | 32 | 1,346 |
+| Net text-line change | 10,499 | 229 | 10,728 |
 | Build status | Passed | Passed | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -33,7 +33,7 @@ xychart-beta
     title "Lines Added by Date"
     x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1"]
     y-axis "Lines Added" 0 --> 5500
-    bar [5208, 609, 2538, 3193, 265]
+    bar [5208, 609, 2538, 3193, 549]
 ```
 
 ## Delivered Today
@@ -44,7 +44,7 @@ xychart-beta
 - Added role-based user registration covering 9 comprehensive categories: Persons with Disabilities (PWD), Student, Woman/Carer, Individual, Mentor, Corporate, Investor, NGO, and Government.
 - Added exclusive CodeWithKris Administrator role validation for `roger.s@gradagig.com`.
 - Redesigned registration into squarish category icon boxes with progressive disclosure and dynamic category collapse to eliminate page scrolling.
-- Implemented role-specific conditional speech condition dropdowns (shown exclusively for PWDs).
+- Removed the speech-condition question from initial PWD account creation.
 - Added role-specific dashboard greetings, subtitles, and profile metadata badges.
 - Implemented the AMUL-inspired cooperative sweat-equity computation engine with EVM 18-decimal precision units.
 - Implemented the Outcome Valuation Unit (OVU) Matrix with base tiers and dynamic bonuses/penalties (+25% Reusability, +15% Speed, -30% Quality Penalty).
@@ -70,6 +70,8 @@ xychart-beta
 - Added an authenticated Vercel API for private dictionary, recording, audio-storage, and practice-session persistence using Supabase user JWTs rather than a service-role bypass.
 - Linked Coop Equity company and contact records to GTM Pilot targets with foreign keys, matching selectors, and company/contact consistency validation.
 - Removed the obsolete “+ Contribute” navigation entry while retaining the current authorized Coop Equity workspace.
+- Added required first-login profile onboarding after email verification for every user category, covering demographics, accessibility context, languages, skills, aspirations, hobbies, and consent.
+- Added an owner-only Supabase profile table with automatic signup and voluntary inactivity dates, RLS protection, and database-enforced completion rules.
 
 ## Effort Estimate
 
@@ -80,7 +82,7 @@ xychart-beta
 | Research and product design | 8% |
 | Documentation and release preparation | 7% |
 
-Estimated active work window: approximately 13 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 14 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
@@ -98,6 +100,8 @@ Estimated active work window: approximately 13 hours across implementation, auth
 - `supabase/schema.sql`, `supabase/gtm_pilot_workflow.sql`, and `supabase/crm_schema.sql` are publication-ready; the two new standalone migrations still require application to the remote Supabase project because this workstation has no authenticated Supabase CLI session.
 - The current release removes the obsolete user-facing “+ Contribute” route and keeps Coop Equity available only through its current authorized navigation.
 - Company and contact records can be assigned to GTM targets; the GTM workflow migration enforces matching target links and must be applied after the CRM migration.
+- Verified users without a completed profile are routed to private first-login onboarding before accessing the application.
+- The updated `supabase/schema.sql` must be applied to production Supabase before first-login profiles can be saved.
 
 ## Separation Rule
 
