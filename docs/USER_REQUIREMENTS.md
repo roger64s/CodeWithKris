@@ -106,4 +106,6 @@
 - Remove the Speech Condition field from new Persons with Disabilities account registration.
 - After email verification, require every user category to complete a private first-login profile covering demographics, disability and communication context, language proficiency, skills, aspirations, hobbies, and a fun fact.
 - Record signup and voluntary inactivity dates automatically, and use profile information only for research, Gradagig training and earning opportunities, and solution quality improvement.
+- Provide a Profile menu where authenticated users can edit their details and change their password.
+- Keep all profile information optional without enforced field validation.
 

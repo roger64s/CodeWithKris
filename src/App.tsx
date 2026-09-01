@@ -31,6 +31,7 @@ type Screen =
   | "peer-review"
   | "gtm-pilot"
   | "profile-onboarding"
+  | "profile"
   | "volunteer";
 type Template = { icon: string; title: string; detail: string; color: string; phase: 1 | 2 | 3 };
 type PracticeSession = {
@@ -877,7 +878,7 @@ function App() {
               : "Start practicing"}
           </span>
           <button className="signout-button" onClick={signOut}>Sign out</button>
-          <button className="avatar" aria-label="Open profile">
+          <button className="avatar" aria-label="Open profile" onClick={() => navigate("profile")}>
             KR
           </button>
         </div>
@@ -1338,6 +1339,7 @@ function App() {
               ["admin", "Admin", "▤"],
               ["gtm-pilot", "GTM Pilot", "◇"],
               ["financials", "Coop Equity", "⚖️"],
+              ["profile", "Profile", "○"],
             ]
           : [
               ["templates", "Templates", "▦"],
@@ -1345,6 +1347,7 @@ function App() {
               ["practice", "Practice", "◌"],
               ["progress", "Progress", "▥"],
               ["gtm-pilot", "GTM Pilot", "◇"],
+              ["profile", "Profile", "○"],
             ]
         ).map(([value, label, icon]) => (
           <button
@@ -1369,8 +1372,8 @@ function App() {
         ? authScreen
         : screen === "volunteer"
           ? volunteerScreen
-          : screen === "profile-onboarding" && authenticatedUserId
-            ? <FirstLoginProfile userId={authenticatedUserId} signupAt={signupAt} onComplete={() => navigate("templates")} onInactive={signOut} />
+          : (screen === "profile-onboarding" || screen === "profile") && authenticatedUserId
+            ? <FirstLoginProfile userId={authenticatedUserId} signupAt={signupAt} editing={screen === "profile"} onComplete={() => navigate("templates")} onInactive={signOut} />
           : appScreen}
     </>
   );

@@ -45,40 +45,18 @@ create table if not exists public.user_profiles (
   preferred_language text,
   sign_language_skills text,
   identity_statement text,
-  top_skills text[] check (cardinality(top_skills) = 3),
+  top_skills text[],
   aspiration text,
   hobbies text,
   fun_fact text,
   research_consent boolean not null default false,
   completed_at timestamptz,
-  updated_at timestamptz not null default now(),
-  constraint completed_user_profile_fields check (
-    inactive_at is not null
-    or completed_at is null
-    or (
-      age is not null
-      and gender is not null
-      and education is not null
-      and disability_category is not null
-      and speech_impairment_level is not null
-      and city is not null
-      and country is not null
-      and mother_tongue is not null
-      and english_reading is not null
-      and english_writing is not null
-      and english_listening is not null
-      and english_speaking is not null
-      and preferred_language is not null
-      and sign_language_skills is not null
-      and identity_statement is not null
-      and cardinality(top_skills) = 3
-      and aspiration is not null
-      and hobbies is not null
-      and fun_fact is not null
-      and research_consent
-    )
-  )
+  updated_at timestamptz not null default now()
 );
+
+alter table public.user_profiles
+  drop constraint if exists completed_user_profile_fields,
+  drop constraint if exists user_profiles_top_skills_check;
 
 alter table public.user_profiles enable row level security;
 drop policy if exists "Users manage their private profile" on public.user_profiles;
