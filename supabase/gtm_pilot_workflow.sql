@@ -1,4 +1,4 @@
--- Apply after supabase/schema.sql.
+-- Apply after supabase/schema.sql and supabase/crm_schema.sql.
 -- GTM workflow, contact PII, and compensation use separate security domains.
 
 create table if not exists public.gtm_projects (
@@ -55,6 +55,39 @@ create table if not exists public.gtm_targets (
   unique (id, project_id),
   unique (project_id, target_code)
 );
+
+alter table public.companies
+  add column if not exists gtm_target_id uuid references public.gtm_targets(id) on delete set null;
+alter table public.contacts
+  add column if not exists gtm_target_id uuid references public.gtm_targets(id) on delete set null;
+
+create index if not exists companies_gtm_target_id_idx on public.companies(gtm_target_id);
+create index if not exists contacts_gtm_target_id_idx on public.contacts(gtm_target_id);
+
+create or replace function public.crm_validate_contact_target_link()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+declare company_target_id uuid;
+begin
+  if new.company_id is not null then
+    select company.gtm_target_id into company_target_id
+    from public.companies company
+    where company.id = new.company_id;
+
+    if company_target_id is distinct from new.gtm_target_id then
+      raise exception 'Contact and company must link to the same GTM target.';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists contacts_validate_gtm_target_link on public.contacts;
+create trigger contacts_validate_gtm_target_link
+before insert or update of company_id, gtm_target_id on public.contacts
+for each row execute function public.crm_validate_contact_target_link();
 
 -- Personal contact details never enter the client-safe target table or view.
 create table if not exists public.gtm_target_contacts (

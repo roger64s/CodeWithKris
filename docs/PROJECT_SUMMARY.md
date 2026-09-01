@@ -4,7 +4,7 @@
 
 - **Name:** CodeWithKris Mobile/Web Application Prototype
 - **Repository:** `roger64s/CodeWithKris`
-- **Date measured:** 2026-08-31
+- **Date measured:** 2026-09-01
 - **Scope:** CodeWithKris repository only. Grad-a-Gig Website files and metrics are excluded.
 - **Production URL:** https://codewithkris.vercel.app
 
@@ -12,11 +12,10 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 28 | 1 corrective update | 29 after publication |
-| Text lines added | 11,548 | 190 | 11,738 |
-| Text lines deleted | 1,277 | 21 | 1,298 |
-| Net text-line change | 10,271 | 169 | 10,440 |
-| New release files | 10 | 1 | 11 |
+| Commits | 29 | 1 closeout update | 30 after publication |
+| Text lines added | 11,738 | 75 | 11,813 |
+| Text lines deleted | 1,298 | 16 | 1,314 |
+| Net text-line change | 10,440 | 59 | 10,499 |
 | Build status | Passed | Passed | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -32,9 +31,9 @@ pie title Estimated Effort Distribution by Category
 ```mermaid
 xychart-beta
     title "Lines Added by Date"
-    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31"]
-    y-axis "Lines of Code" 0 --> 3500
-    bar [5208, 609, 2538, 3383]
+    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1"]
+    y-axis "Lines Added" 0 --> 5500
+    bar [5208, 609, 2538, 3193, 265]
 ```
 
 ## Delivered Today
@@ -69,6 +68,8 @@ xychart-beta
 - Added a production-ready CRM migration for companies, contacts, owner history, team pods, audit triggers, indexed access paths, and owner-scoped RLS.
 - Added visible Company, Contact, and Contribution workspace views backed by the owner-scoped CRM and contribution tables.
 - Added an authenticated Vercel API for private dictionary, recording, audio-storage, and practice-session persistence using Supabase user JWTs rather than a service-role bypass.
+- Linked Coop Equity company and contact records to GTM Pilot targets with foreign keys, matching selectors, and company/contact consistency validation.
+- Removed the obsolete “+ Contribute” navigation entry while retaining the current authorized Coop Equity workspace.
 
 ## Effort Estimate
 
@@ -79,7 +80,7 @@ xychart-beta
 | Research and product design | 8% |
 | Documentation and release preparation | 7% |
 
-Estimated active work window: approximately 12.5 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 13 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
@@ -95,6 +96,8 @@ Estimated active work window: approximately 12.5 hours across implementation, au
 - August 31 maintenance restores the cooperative contribution ledger schema structure while retaining the SQL syntax correction for the anonymous audit proof table.
 - The authenticated Vercel API and required Supabase environment variables are configured for production deployment.
 - `supabase/schema.sql`, `supabase/gtm_pilot_workflow.sql`, and `supabase/crm_schema.sql` are publication-ready; the two new standalone migrations still require application to the remote Supabase project because this workstation has no authenticated Supabase CLI session.
+- The current release removes the obsolete user-facing “+ Contribute” route and keeps Coop Equity available only through its current authorized navigation.
+- Company and contact records can be assigned to GTM targets; the GTM workflow migration enforces matching target links and must be applied after the CRM migration.
 
 ## Separation Rule
 

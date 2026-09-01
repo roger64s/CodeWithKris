@@ -1339,7 +1339,6 @@ function App() {
               ["practice", "Practice", "◌"],
               ["progress", "Progress", "▥"],
               ["gtm-pilot", "GTM Pilot", "◇"],
-              ["financials", "Contribute", "+"],
             ]
         ).map(([value, label, icon]) => (
           <button

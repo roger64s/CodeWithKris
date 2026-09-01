@@ -100,3 +100,7 @@
 - Provide a secure CRM database for companies, contacts, ownership history, and team-pod collaboration with owner-scoped access controls.
 - Provide visible Company, Contact, and Contribution workspace views backed by owner-scoped CRM and contribution records.
 
+## 2026-09-01
+- Link Coop Equity company and contact records to their corresponding Go-To-Market Pilot target.
+- Remove the obsolete “+ Contribute” navigation link and prevent access to its outdated contributions screen from the current user interface.
+
