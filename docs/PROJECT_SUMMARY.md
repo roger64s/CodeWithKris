@@ -4,19 +4,19 @@
 
 - **Name:** CodeWithKris Mobile/Web Application Prototype
 - **Repository:** `roger64s/CodeWithKris`
-- **Date measured:** 2026-09-03
+- **Date measured:** 2026-09-03, through implementation release `2c9fa0b`
 - **Scope:** CodeWithKris repository only. Grad-a-Gig Website files and metrics are excluded.
 - **Production URL:** https://codewithkris.vercel.app
 
 ## Today's Metrics
 
-| Metric | Committed to date | Pending locally | Total observed |
-| --- | ---: | ---: | ---: |
-| Commits | 33 | 1 closeout update | 34 after publication |
-| Text lines added | 16,053 | 384 | 16,437 |
-| Text lines deleted | 1,473 | 22 | 1,495 |
-| Net text-line change | 14,580 | 362 | 14,942 |
-| Build status | Passed | Passed | Passed |
+| Metric | Through implementation release |
+| --- | ---: |
+| Commits | 34 |
+| Text lines added | 16,518 |
+| Text lines deleted | 1,495 |
+| Net text-line change | 15,023 |
+| Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
 
@@ -33,7 +33,7 @@ xychart-beta
     title "Lines Added by Date"
     x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 2", "Sep 3"]
     y-axis "Lines Added" 0 --> 5500
-    bar [5208, 609, 2538, 3193, 617, 3207, 1065]
+    bar [5208, 609, 2538, 3193, 617, 3207, 1146]
 ```
 
 ## Delivered Today
