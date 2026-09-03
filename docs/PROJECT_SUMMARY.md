@@ -12,10 +12,10 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 38 |
-| Text lines added | 20,080 |
-| Text lines deleted | 1,985 |
-| Net text-line change | 18,095 |
+| Commits | 39 |
+| Text lines added | 20,134 |
+| Text lines deleted | 1,995 |
+| Net text-line change | 18,139 |
 | Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -33,7 +33,7 @@ xychart-beta
     title "Lines Added by Date"
     x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3"]
     y-axis "Lines Added" 0 --> 7500
-    bar [5208, 609, 2538, 3193, 617, 7915]
+    bar [5208, 609, 2538, 3193, 617, 7969]
 ```
 
 ## Delivered Today
