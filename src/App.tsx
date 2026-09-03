@@ -10,7 +10,7 @@ import {
   getRoleGreeting,
 } from "./components/UserRegistration";
 import { FinancialDashboard } from "./components/FinancialDashboard";
-import { OnboardingDiagnostic } from "./components/OnboardingDiagnostic";
+import { ActionTrialOnboarding } from "./components/ActionTrialOnboarding";
 import { CooperativeReadinessDashboard } from "./components/CooperativeReadinessDashboard";
 import { PeerReviewQueue } from "./components/PeerReviewQueue";
 import { GtmPilotProject } from "./components/GtmPilotProject";
@@ -32,7 +32,7 @@ type Screen =
   | "dictionary"
   | "admin"
   | "financials"
-  | "diagnostic"
+  | "action-trial"
   | "peer-review"
   | "gtm-pilot"
   | "requirements"
@@ -72,71 +72,102 @@ type SpeechRecognitionLike = {
 const templates: Template[] = [
   {
     icon: "01",
-    title: "Phone conversations",
-    detail: "Appointments, introductions, and professional calls",
+    title: "Active listening & de-escalation",
+    detail: "Understand needs, acknowledge concerns, and reduce friction respectfully",
     color: "coral",
     phase: 1,
   },
   {
     icon: "02",
-    title: "Shopping & ordering",
-    detail: "Build confidence asking for what you need",
+    title: "Professional text & email",
+    detail: "Write clear, concise, and appropriately structured workplace messages",
     color: "mint",
     phase: 1,
   },
   {
     icon: "03",
-    title: "Professional meetings",
-    detail: "Clear workplace communication and presentations",
+    title: "Voice clarity",
+    detail: "Practice synchronous calls and asynchronous voice updates at your own pace",
     color: "gold",
     phase: 1,
   },
   {
     icon: "04",
-    title: "Social interactions",
-    detail: "Casual conversations and everyday connection",
-    color: "lilac",
-    phase: 1,
-  },
-  {
-    icon: "05",
-    title: "Client briefs & requirements",
-    detail: "Clarify scope, priorities, and acceptance criteria",
+    title: "Lead Generation",
+    detail: "Prospecting scripts, data hygiene, qualifying criteria, and outreach",
     color: "mint",
     phase: 2,
   },
   {
-    icon: "06",
-    title: "Project status updates",
-    detail: "Explain progress, blockers, and next steps clearly",
+    icon: "05",
+    title: "Appointment Fixing",
+    detail: "Calendar management, scheduling friction, and confirmations",
     color: "gold",
     phase: 2,
   },
   {
-    icon: "07",
-    title: "QA handoffs",
-    detail: "Report checks, findings, and fixes to a delivery team",
+    icon: "06",
+    title: "Follow-Up Management",
+    detail: "Post-check-ins, lead nurturing, and feedback collection",
     color: "coral",
     phase: 2,
   },
   {
+    icon: "07",
+    title: "Customer Service",
+    detail: "Empathy-first troubleshooting, ticket management, and clear messaging",
+    color: "lilac",
+    phase: 2,
+  },
+  {
     icon: "08",
-    title: "Coding & pair programming",
-    detail: "Follow accessible steps, test a change, and explain the result",
+    title: "AI-assisted response drafting",
+    detail: "Draft and revise clear responses while retaining human judgment",
+    color: "mint",
+    phase: 3,
+  },
+  {
+    icon: "09",
+    title: "Text task automation",
+    detail: "Use AI assistance for repeatable text workflows with human checks",
+    color: "gold",
+    phase: 3,
+  },
+  {
+    icon: "10",
+    title: "CRM entry organization",
+    detail: "Structure contact, activity, follow-up, and outcome records consistently",
+    color: "coral",
+    phase: 3,
+  },
+  {
+    icon: "11",
+    title: "Technical & operational execution",
+    detail: "Use accessible steps and tools to complete, verify, and explain work",
     color: "lilac",
     phase: 3,
   },
 ];
 const phases = [
-  { number: 1, title: "Basic Communication", detail: "Build vocabulary and confidence for everyday conversations.", color: "mint" },
-  { number: 2, title: "Go-To-Market Skills", detail: "Practice client briefs, status updates, and QA handoffs.", color: "gold" },
-  { number: 3, title: "Learn Coding & Pair Programming", detail: "Use accessible task steps to make, test, and explain software changes.", color: "lilac" },
+  { number: 1, title: "Universal Foundation", detail: "Build professional vocabulary, confidence, digital etiquette, and work readiness.", color: "mint" },
+  { number: 2, title: "Commercial Task Tracks", detail: "Choose practical Lead Generation, Appointment Fixing, Follow-Up, or Customer Service work.", color: "gold" },
+  { number: 3, title: "Applied AI & Workflow Execution", detail: "Use technical tools and AI assistance to complete and improve real workflows.", color: "lilac" },
 ] as const;
-const defaultWords = ["appointment", "conversation", "confidence"];
-const phraseFor = (template: Template) =>
-  template.title === "Phone conversations"
-    ? "Good morning, I am calling to confirm my appointment."
-    : `I feel confident practicing ${template.title.toLowerCase()}.`;
+const defaultWords = ["listen", "follow-up", "support"];
+const missionPhrases: Record<string, string> = {
+  "Active listening & de-escalation": "I hear your concern, and I will confirm the next step with you.",
+  "Professional text & email": "Thank you for your message. I will send a clear update by tomorrow.",
+  "Voice clarity": "Here is a concise update on what is complete, blocked, and needed next.",
+  "Lead Generation": "I am reaching out because your team may benefit from a short conversation about this service.",
+  "Appointment Fixing": "Would Tuesday at ten or Wednesday at two work better for a brief call?",
+  "Follow-Up Management": "I am following up with the promised information and one clear next step.",
+  "Customer Service": "I understand the issue, and I will update you after I verify the account details.",
+  "AI-assisted response drafting": "I will review the AI draft for accuracy, tone, privacy, and a clear next action.",
+  "Text task automation": "I will check every automated message before it is approved or sent.",
+  "CRM entry organization": "I recorded the contact, conversation, agreed action, owner, and follow-up date.",
+  "Technical & operational execution": "I completed the step, checked the result, and documented what happens next.",
+};
+const phraseFor = (template: Template) => missionPhrases[template.title] || `I am practicing ${template.title.toLowerCase()}.`;
 const api = async <T,>(path: string, options?: RequestInit): Promise<T> => {
   const { data } = await supabase?.auth.getSession() || { data: { session: null } };
   const accessToken = data.session?.access_token;
@@ -188,8 +219,8 @@ function App() {
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [peerReviewContributions, setPeerReviewContributions] = useState(0);
-  const [codeQualityScore, setCodeQualityScore] = useState<number | null>(null);
-  const [diagnosticCompleted, setDiagnosticCompleted] = useState(false);
+  const [formativeEvidenceCount, setFormativeEvidenceCount] = useState(0);
+  const [actionTrialCompleted, setActionTrialCompleted] = useState(false);
   const [currentTime] = useState(() => Date.now());
   const [newWord, setNewWord] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -242,10 +273,10 @@ function App() {
       setUserRole("CodeWithKris Administrator");
       setRole("admin");
       setScreen("financials");
-    } else if (preview === "diagnostic") {
+    } else if (preview === "action-trial") {
       setFullName("Developer");
       setUserRole("Student");
-      setScreen("diagnostic");
+      setScreen("action-trial");
     } else if (preview === "dashboard") {
       setFullName("Developer");
       setUserRole("Student");
@@ -374,11 +405,12 @@ function App() {
     if (!supabase || !authenticatedUserId) return;
     Promise.all([
       supabase.from("peer_review_submissions").select("id", { count: "exact", head: true }).eq("submitter_id", authenticatedUserId),
-      supabase.from("peer_review_feedback").select("quality_score,peer_review_submissions!inner(submitter_id)").eq("peer_review_submissions.submitter_id", authenticatedUserId).not("quality_score", "is", null),
-    ]).then(([submissionResult, scoreResult]) => {
+      supabase.from("learning_pod_progress_events").select("id", { count: "exact", head: true }).eq("learner_user_id", authenticatedUserId),
+      supabase.from("learner_action_trials").select("status").eq("user_id", authenticatedUserId).maybeSingle(),
+    ]).then(([submissionResult, progressResult, trialResult]) => {
       setPeerReviewContributions(submissionResult.count || 0);
-      const scores = (scoreResult.data || []).map((item) => Number(item.quality_score)).filter(Number.isFinite);
-      setCodeQualityScore(scores.length ? Math.round(scores.reduce((total, score) => total + score, 0) / scores.length) : null);
+      setFormativeEvidenceCount(progressResult.count || 0);
+      setActionTrialCompleted(trialResult.data?.status === "completed");
     });
   }, [authenticatedUserId]);
 
@@ -955,17 +987,17 @@ function App() {
                     completedMissions={completedMissionsByPhase}
                     totalMissions={totalMissionsByPhase}
                     peerReviewContributions={peerReviewContributions}
-                    codeQualityScore={codeQualityScore}
-                    diagnosticCompleted={diagnosticCompleted}
+                    formativeEvidenceCount={formativeEvidenceCount}
+                    actionTrialCompleted={actionTrialCompleted}
                     onSelectPhase={setSelectedPhase}
-                    onStartDiagnostic={() => navigate("diagnostic")}
+                    onStartActionTrial={() => navigate("action-trial")}
                     onOpenPeerReviews={() => navigate("peer-review")}
                   />
                 </section>
               ) : (
                 <>
                   <div className="page-intro">
-                    <span className="section-kicker">Communication to work readiness</span>
+                    <span className="section-kicker">Inclusion-first learning pathway</span>
                     <h1>{phases[selectedPhase - 1].title}</h1>
                     <p>{phases[selectedPhase - 1].detail} Choose a mission below to continue at your own pace.</p>
                   </div>
@@ -1338,8 +1370,8 @@ function App() {
             />
           </section>
         )}
-        {screen === "diagnostic" && (
-          <OnboardingDiagnostic onBack={() => navigate("templates")} onComplete={() => setDiagnosticCompleted(true)} />
+        {screen === "action-trial" && (
+          <ActionTrialOnboarding userId={authenticatedUserId} onBack={() => navigate("templates")} onComplete={() => setActionTrialCompleted(true)} />
         )}
         {screen === "peer-review" && (
           <PeerReviewQueue

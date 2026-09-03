@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
-  Code2,
+  ClipboardCheck,
   GitPullRequestArrow,
   MessageSquareText,
   Plus,
@@ -55,8 +55,8 @@ export function PeerReviewQueue({
     userRole === "CodeWithKris Administrator",
   );
   const [title, setTitle] = useState("");
-  const [track, setTrack] = useState("Frontend");
-  const [language, setLanguage] = useState("TypeScript");
+  const [track, setTrack] = useState("Lead Generation");
+  const [language, setLanguage] = useState("Call Script");
   const [context, setContext] = useState("");
   const [code, setCode] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -226,7 +226,7 @@ export function PeerReviewQueue({
             aria-selected={mode === "submit"}
           >
             <Plus size={15} aria-hidden="true" />
-            Submit code
+            Submit work
           </button>
         </div>
       </header>
@@ -279,24 +279,25 @@ export function PeerReviewQueue({
                 value={track}
                 onChange={(event) => setTrack(event.target.value)}
               >
-                <option>Frontend</option>
-                <option>Backend</option>
-                <option>DevOps</option>
+                <option>Lead Generation</option>
+                <option>Appointment Fixing</option>
+                <option>Follow-Up Management</option>
+                <option>Customer Service</option>
               </select>
             </label>
             <label className="text-sm font-bold text-slate-800">
-              Language
+              Work format
               <select
                 className="mt-2 block h-11 w-full rounded-md border border-slate-300 px-3 font-normal"
                 value={language}
                 onChange={(event) => setLanguage(event.target.value)}
               >
-                <option>TypeScript</option>
-                <option>JavaScript</option>
-                <option>Python</option>
-                <option>HTML / CSS</option>
-                <option>SQL</option>
-                <option>Shell</option>
+                <option>Call Script</option>
+                <option>Email / Message</option>
+                <option>CRM Entry</option>
+                <option>Follow-Up Plan</option>
+                <option>Support Ticket</option>
+                <option>Technical Artifact</option>
               </select>
             </label>
           </div>
@@ -311,12 +312,12 @@ export function PeerReviewQueue({
             />
           </label>
           <label className="text-sm font-bold text-slate-800 md:col-span-2">
-            Code snippet
+            Focused work sample
             <textarea
               className="mt-2 block min-h-56 w-full resize-y rounded-md border border-slate-800 bg-slate-950 p-4 font-mono text-sm leading-6 text-emerald-300"
               value={code}
               onChange={(event) => setCode(event.target.value)}
-              placeholder="Paste a focused snippet with no secrets or personal data."
+              placeholder="Share a focused script, message, CRM note, workflow, or technical artifact with no secrets or personal data."
               spellCheck={false}
               required
             />
@@ -329,7 +330,7 @@ export function PeerReviewQueue({
               className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-emerald-700 px-5 text-sm font-bold text-white"
               type="submit"
             >
-              <Code2 size={17} aria-hidden="true" />
+              <ClipboardCheck size={17} aria-hidden="true" />
               Share for review
             </button>
           </div>
@@ -338,22 +339,22 @@ export function PeerReviewQueue({
         <div className="review-queue-layout grid min-w-0 gap-4">
           <div
             className="min-w-0 space-y-2"
-            aria-label="Code review submissions"
+            aria-label="Peer work review submissions"
           >
             {submissions.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
-                <Code2 className="mx-auto text-slate-400" aria-hidden="true" />
+                <ClipboardCheck className="mx-auto text-slate-400" aria-hidden="true" />
                 <strong className="mt-3 block text-slate-900">
-                  No code awaiting review
+                  No work awaiting review
                 </strong>
                 <span className="mt-1 block text-sm text-slate-500">
-                  Share a focused snippet to begin the community feedback loop.
+                  Share a focused work sample to begin the community feedback loop.
                 </span>
                 <button
                   className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white"
                   onClick={() => setMode("submit")}
                 >
-                  Submit the first snippet
+                  Submit the first work sample
                 </button>
               </div>
             ) : (

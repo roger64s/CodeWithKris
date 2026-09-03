@@ -172,7 +172,7 @@ create table if not exists public.peer_review_submissions (
   submitter_name text not null,
   submitter_email text not null,
   title text not null,
-  track text not null check (track in ('Frontend', 'Backend', 'DevOps')),
+  track text not null check (track in ('Lead Generation', 'Appointment Fixing', 'Follow-Up Management', 'Customer Service')),
   language text not null,
   context text not null,
   code_snippet text not null,

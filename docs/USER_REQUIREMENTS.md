@@ -29,7 +29,7 @@
 - Research Duolingo-inspired bite-sized learning, progress, habit support, and accessibility patterns for CodeWithKris.
 - Enable a future large-scale CodeWithKris learning and application pathway that connects practice, work artifacts, and supervised opportunities with privacy safeguards.
 - Research Quorum's accessible, block-like programming approach to help learners progress toward knowledge-economy contributions at their own pace.
-- Include all three CodeWithKris prototype phases: Basic Communication, Go-To-Market Skills, and Learn Coding & Pair Programming.
+- Include all three CodeWithKris phases: Universal Foundation, Commercial Task Tracks, and Applied AI & Workflow Execution.
 - Show all three phases in the prototype demo with a lightweight selectable coding mission that can be expanded later.
 - Group Phase 1, Phase 2, and Phase 3 tasks behind a left-side phase menu instead of showing every task in one page.
 - Increase the CodeWithKris app header logo size for the overall page layout.
@@ -83,15 +83,15 @@
 
 ## 2026-08-31
 - Restore the cooperative contribution ledger behavior to the correct prior version shown in the reference screenshot.
-- Provide a five-question onboarding diagnostic for Frontend, Backend, and DevOps proficiency.
-- Generate a tailored JSON result and three-phase pathway from free learning modules to cooperative client sprint eligibility.
-- Keep the diagnostic pathway free of paywalls and credit card prompts.
+- Provide low-stakes Lead Generation, Appointment Fixing, Follow-Up Management, and Customer Service trials built around real-world scenarios.
+- Build learning pathways from practical artifacts, learner questions, iteration, goals, and human-reviewed collaboration evidence.
+- Keep the practical pathway free of paywalls and credit card prompts.
 - Replace generic dashboard progress bars with a three-phase Cooperative Readiness tracker.
 - Show peer-review contributions, reviewed code-quality scores, and live client sprint eligibility without inventing unavailable activity.
 - Add a Client Project Impact widget for cooperative sprint and accepted-output activity.
 - Show timestamped co-op impact metrics for active client projects, reinvested revenue, and member-owner contribution hours.
 - Frame client impact around collective outcomes and shared training capacity rather than individual course purchases.
-- Provide a collaborative queue where trainees submit focused code snippets for producer-owner peer validation.
+- Provide a collaborative queue where trainees submit focused commercial or technical work samples for producer-owner peer validation.
 - Emphasize human governance, collective code ownership, and constructive revision feedback instead of automated instructor scoring.
 - Provide a customizable Go-To-Market pilot workflow for client briefs, open-ended tasks, diverse participant assignments, anonymized target review, multilingual outreach, and conversion tracking.
 - Compensate verified milestone effort separately from an 8% to 10% revenue success fee, with editable department splits and pricing visible only to the owning client and authorized administrators.
@@ -142,4 +142,11 @@
 - Assign core demo environments, final pricing, contract execution, and technical escalation to the foreign client.
 - Integrate cross-party task handoffs, approvals, revenue controls, and audit history into the existing CRM, GTM, project operations, sprint, quality, and Coop Equity modules.
 - Map the existing Management, Delivery, Finance & Admin, Sales & Marketing, Customer Service, and Profit departments to local-partner, foreign-client, or shared responsibility in the project UI and database.
+- Use micro-task trials and practical play supported by assistant-guided reflection, without fixed learner scores or labels.
+- Track progress formatively within learning pods through mentorship engagement, tool use, collaboration, and iteration evidence.
+- Capture goals, availability, passion areas, and support preferences through agency-preserving conversational onboarding.
+- Provide a shareable document describing the Universal Foundation, four commercial task tracks, Applied AI workflow training, practical trials, progress evidence, and readiness process.
+- Support active listening, de-escalation, professional text and email communication, and synchronous or asynchronous voice clarity in the Universal Foundation.
+- Let learners flexibly specialize in Lead Generation, Appointment Fixing, Follow-Up Management, or Customer Service.
+- Teach responsible AI-assisted response drafting, text-task automation, CRM organization, and technical or operational workflow execution.
 

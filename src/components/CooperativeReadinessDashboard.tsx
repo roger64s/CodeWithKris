@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Bot,
   Check,
   CircleDot,
   ClipboardCheck,
@@ -24,14 +25,14 @@ type CooperativeReadinessDashboardProps = {
   completedMissions: readonly number[];
   totalMissions: readonly number[];
   peerReviewContributions: number;
-  codeQualityScore: number | null;
-  diagnosticCompleted: boolean;
+  formativeEvidenceCount: number;
+  actionTrialCompleted: boolean;
   onSelectPhase: (phase: 1 | 2 | 3) => void;
-  onStartDiagnostic: () => void;
+  onStartActionTrial: () => void;
   onOpenPeerReviews: () => void;
 };
 
-const phaseIcons = [MessageSquareMore, Users, CodeXml];
+const phaseIcons = [MessageSquareMore, Users, Bot];
 
 export function CooperativeReadinessDashboard({
   headline,
@@ -40,15 +41,15 @@ export function CooperativeReadinessDashboard({
   completedMissions,
   totalMissions,
   peerReviewContributions,
-  codeQualityScore,
-  diagnosticCompleted,
+  formativeEvidenceCount,
+  actionTrialCompleted,
   onSelectPhase,
-  onStartDiagnostic,
+  onStartActionTrial,
   onOpenPeerReviews,
 }: CooperativeReadinessDashboardProps) {
   const totalComplete = completedMissions.reduce((sum, count) => sum + count, 0);
   const totalRequired = totalMissions.reduce((sum, count) => sum + count, 0);
-  const isSprintEligible = diagnosticCompleted && totalComplete === totalRequired && peerReviewContributions > 0 && codeQualityScore !== null;
+  const isSprintEligible = actionTrialCompleted && totalComplete === totalRequired && peerReviewContributions > 0;
   const currentPhaseIndex = completedMissions.findIndex((count, index) => count < totalMissions[index]);
   const activePhaseIndex = currentPhaseIndex === -1 ? 2 : currentPhaseIndex;
 
@@ -62,15 +63,15 @@ export function CooperativeReadinessDashboard({
           <h1 id="dashboard-title" className="text-3xl font-bold leading-tight text-slate-950">{headline}</h1>
           <div className="mt-2 max-w-xl text-sm leading-6 text-slate-600">{message}</div>
         </div>
-        <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-emerald-800" onClick={onStartDiagnostic}>
-          Skill diagnostic <ArrowRight size={17} aria-hidden="true" />
+        <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-emerald-800" onClick={onStartActionTrial}>
+          Commercial task trial <ArrowRight size={17} aria-hidden="true" />
         </button>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3" aria-label="Readiness metrics">
         <Metric icon={ClipboardCheck} label="Peer reviews" value={String(peerReviewContributions)} detail="Open community queue" onClick={onOpenPeerReviews} />
-        <Metric icon={CodeXml} label="Code quality" value={codeQualityScore === null ? "Not scored" : `${codeQualityScore}%`} detail="From reviewed coding work" />
-        <Metric icon={Radio} label="Live client sprints" value={isSprintEligible ? "Eligible" : "Building readiness"} detail={isSprintEligible ? "Ready for team matching" : "Complete diagnostic, missions, and reviewed work"} accent={isSprintEligible} />
+        <Metric icon={CodeXml} label="Pod progress evidence" value={String(formativeEvidenceCount)} detail="Mentorship, tools, iteration, and collaboration" />
+        <Metric icon={Radio} label="Live client sprints" value={isSprintEligible ? "Eligible" : "Building readiness"} detail={isSprintEligible ? "Ready for human-reviewed team matching" : "Complete a practical trial, missions, and collaborative work"} accent={isSprintEligible} />
       </div>
 
       <section aria-labelledby="readiness-path-title">

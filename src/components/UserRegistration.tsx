@@ -37,13 +37,13 @@ export const BASE_USER_ROLES: RoleOption[] = [
     value: "Persons with Disabilities",
     label: "PWD",
     icon: "♿",
-    description: "Personalized speech therapy, accessible coding paths, and inclusive community support.",
+    description: "Accessible communication, commercial task practice, applied AI workflows, and inclusive community support.",
   },
   {
     value: "Student",
     label: "Student",
     icon: "🎓",
-    description: "Access learning resources, speech practice, and coding challenges.",
+    description: "Build work-ready communication, commercial task, and applied AI skills.",
   },
   {
     value: "Woman/Carer",
@@ -115,12 +115,12 @@ export function getRoleGreeting(role: UserRole, name?: string): { headline: stri
     case "Persons with Disabilities":
       return {
         headline: `Welcome to your Accessible Training Hub${displayName}! ♿`,
-        message: "Your voice, your pace. Access tailored voice exercises, adaptive pair programming missions, and assistive community tools.",
+        message: "Your pace, your goals. Build communication confidence, choose commercial task tracks, and use accessible AI workflow support.",
       };
     case "Student":
       return {
         headline: `Welcome to your Learning Hub${displayName}! 🎓`,
-        message: "Ready to practice? Check out today's speech exercises, pair programming missions, and progress streaks.",
+        message: "Build your universal foundation, choose a commercial task track, and practice applied AI workflows with pod support.",
       };
     case "Woman/Carer":
       return {
@@ -130,7 +130,7 @@ export function getRoleGreeting(role: UserRole, name?: string): { headline: stri
     case "Individual":
       return {
         headline: `Welcome to your Personal Growth Dashboard${displayName}! ✨`,
-        message: "Explore tailored speech practice modules, set personal milestones, and track your communication confidence.",
+        message: "Build professional communication, practice flexible commercial tasks, and track progress through real work.",
       };
     case "Mentor":
       return {
@@ -155,7 +155,7 @@ export function getRoleGreeting(role: UserRole, name?: string): { headline: stri
     case "NGO":
       return {
         headline: `Welcome to the Impact & NGO Network${displayName}! 🌍`,
-        message: "Collaborate on community empowerment, track inclusion initiatives, and support speech and digital skills development.",
+        message: "Collaborate on community empowerment, track inclusion initiatives, and support communication, commercial, and digital skills.",
       };
     case "Government":
       return {

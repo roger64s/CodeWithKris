@@ -629,7 +629,6 @@ h1, h2, p { margin: 0; } h1, h2 { color: var(--ink); font-weight: 700; letter-sp
 }
 
 @media (min-width: 901px) {
-  .diagnostic-wrap { width: 100%; max-width: none; margin: 0; padding: 0; }
   .peer-review-wrap { width: 100%; max-width: none; margin: 0; padding: 0; }
   .gtm-pilot-wrap { width: 100%; max-width: none; margin: 0; padding: 0; }
   .cooperative-dashboard h1 { font-size: 2rem; line-height: 1.08; letter-spacing: 0; }

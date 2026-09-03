@@ -35,6 +35,47 @@ const TASK_STATUSES = new Set(['backlog', 'assigned', 'in_progress', 'awaiting_r
 const QUALITY_METRICS = new Set(['code_quality', 'test_quality', 'delivery_quality'])
 const isAdministrator = (user) => user.email?.toLowerCase() === 'roger.s@gradagig.com' || user.app_metadata?.role === 'CodeWithKris Administrator'
 
+app.post('/api/action-trial-guidance', async (request, response) => {
+  const assistantUrl = process.env.AI_ASSISTANT_API_URL
+  const assistantKey = process.env.AI_ASSISTANT_API_KEY
+  const assistantModel = process.env.AI_ASSISTANT_MODEL
+  const pathway = String(request.body.pathway || '')
+  const scenario = String(request.body.scenario || '').trim()
+  const firstApproach = String(request.body.firstApproach || '').trim()
+  const learnerQuestion = String(request.body.learnerQuestion || '').trim()
+  if (!['Lead Generation', 'Appointment Fixing', 'Follow-Up Management', 'Customer Service'].includes(pathway) || !scenario || !firstApproach || !learnerQuestion) {
+    return response.status(400).json({ error: 'Pathway, scenario, first approach, and learner question are required.' })
+  }
+  if (scenario.length > 1000 || firstApproach.length > 4000 || learnerQuestion.length > 2000) {
+    return response.status(400).json({ error: 'The trial context is too long for coaching guidance.' })
+  }
+  if (!assistantUrl || !assistantKey || !assistantModel) {
+    return response.status(503).json({ error: 'The coaching assistant is not configured yet. You may still complete the trial with your own reflection.' })
+  }
+  try {
+    const assistantResponse = await fetch(assistantUrl, {
+      method: 'POST',
+      signal: AbortSignal.timeout(20_000),
+      headers: { Authorization: `Bearer ${assistantKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: assistantModel,
+        temperature: 0.3,
+        messages: [
+          { role: 'system', content: 'You are an inclusion-first commercial workflow coach. Focus only on the submitted work, do not score or rank learners, and do not make hiring decisions. Respond with one concise observation about the approach, one accessible next experiment, and one clarifying question.' },
+          { role: 'user', content: JSON.stringify({ pathway, scenario, firstApproach, learnerQuestion }) },
+        ],
+      }),
+    })
+    if (!assistantResponse.ok) return response.status(502).json({ error: 'The coaching assistant could not respond. You may continue with your own reflection.' })
+    const payload = await assistantResponse.json()
+    const guidance = String(payload.choices?.[0]?.message?.content || '').trim()
+    if (!guidance) return response.status(502).json({ error: 'The coaching assistant returned no guidance.' })
+    return response.json({ guidance, modelReference: assistantModel })
+  } catch {
+    return response.status(502).json({ error: 'The coaching assistant is temporarily unavailable. You may continue with your own reflection.' })
+  }
+})
+
 const getProjectAccess = async (request, projectId) => {
   const [{ data: project }, { data: membership }] = await Promise.all([
     request.supabase.from('gtm_projects').select('id, client_user_id, name, status').eq('id', projectId).maybeSingle(),

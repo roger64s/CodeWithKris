@@ -106,7 +106,12 @@ begin
     and responsibility.department_category = mapping.value->>'departmentCategory'
     and responsibility.allocation_percent = (mapping.value->>'allocationPercent')::numeric;
 
-  get diagnostics updated_count = row_count;
+  select count(*) into updated_count
+  from public.project_department_responsibilities responsibility
+  join jsonb_array_elements(mappings_input) mapping(value)
+    on responsibility.department_category = mapping.value->>'departmentCategory'
+    and responsibility.responsibility_side = mapping.value->>'responsibilitySide'
+  where responsibility.workspace_id = workspace_id_input;
   if updated_count <> 6 then
     raise exception 'Department map did not update all six departments';
   end if;
