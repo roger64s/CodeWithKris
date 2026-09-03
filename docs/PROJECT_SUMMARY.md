@@ -4,7 +4,7 @@
 
 - **Name:** CodeWithKris Mobile/Web Application Prototype
 - **Repository:** `roger64s/CodeWithKris`
-- **Date measured:** 2026-09-01
+- **Date measured:** 2026-09-03
 - **Scope:** CodeWithKris repository only. Grad-a-Gig Website files and metrics are excluded.
 - **Production URL:** https://codewithkris.vercel.app
 
@@ -12,28 +12,28 @@
 
 | Metric | Committed to date | Pending locally | Total observed |
 | --- | ---: | ---: | ---: |
-| Commits | 30 | 1 closeout update | 31 after publication |
-| Text lines added | 11,813 | 261 | 12,074 |
-| Text lines deleted | 1,314 | 32 | 1,346 |
-| Net text-line change | 10,499 | 229 | 10,728 |
+| Commits | 32 | 1 closeout update | 33 after publication |
+| Text lines added | 12,165 | 3,888 | 16,053 |
+| Text lines deleted | 1,418 | 55 | 1,473 |
+| Net text-line change | 10,747 | 3,833 | 14,580 |
 | Build status | Passed | Passed | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
 
 ```mermaid
 pie title Estimated Effort Distribution by Category
-    "Coding and UI" : 66
-    "Testing and Verification" : 19
-    "Research and Architecture" : 8
+    "Coding and UI" : 58
+    "Testing and Verification" : 20
+    "Research and Architecture" : 15
     "Documentation" : 7
 ```
 
 ```mermaid
 xychart-beta
     title "Lines Added by Date"
-    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1"]
+    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 2", "Sep 3"]
     y-axis "Lines Added" 0 --> 5500
-    bar [5208, 609, 2538, 3193, 549]
+    bar [5208, 609, 2538, 3193, 617, 3207, 681]
 ```
 
 ## Delivered Today
@@ -72,21 +72,29 @@ xychart-beta
 - Removed the obsolete “+ Contribute” navigation entry while retaining the current authorized Coop Equity workspace.
 - Added required first-login profile onboarding after email verification for every user category, covering demographics, accessibility context, languages, skills, aspirations, hobbies, and consent.
 - Added an owner-only Supabase profile table with automatic signup and voluntary inactivity dates, RLS protection, and database-enforced completion rules.
+- Added operational roles that remain separate from registration categories, with secure project membership and mentor oversight boundaries.
+- Added hierarchical Requirements Management with collaborative rich-text editing, automatic traceability, and impact analysis.
+- Added public/private planning folders, releases, sprints, task assignment, and controlled reviewer-approved Kanban transitions.
+- Added requirement-derived test cases, environment variants, evidence-backed test execution, and automatic linked defects.
+- Added immutable release baselines, structured differences, and live project activity analytics.
+- Linked Coop Equity effort to CRM Clients, Requirements Projects, and optional sprint tasks so approved contributions feed lifecycle activity.
+- Added the Grad-a-Gig Operations workspace for scope, prefunding, milestones, inclusive human-reviewed matching, delivery quality, protected contributor distributions, impact, and PDCA.
+- Made Coop Equity permanently visible in authenticated navigation and embedded its project-linked approved hours and weighted units in Operations.
 
 ## Effort Estimate
 
 | Category | Estimated share |
 | --- | ---: |
-| Coding and UI implementation | 66% |
-| Testing and browser validation | 19% |
-| Research and product design | 8% |
+| Coding and UI implementation | 58% |
+| Testing and browser validation | 20% |
+| Research and product design | 15% |
 | Documentation and release preparation | 7% |
 
-Estimated active work window: approximately 14 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 24 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, diagnostics, readiness, peer review, GTM, CRM, lifecycle governance, operations controls, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
-- This closeout release includes authenticated effort and expense tracking, stakeholder-category OVU calculation, readiness diagnostics, peer review, GTM pilots, CRM migrations, and a Vercel-compatible authenticated API.
+- This closeout release includes authenticated effort and expense tracking, stakeholder-category OVU calculation, readiness diagnostics, peer review, GTM pilots, CRM, a complete Requirements-to-release lifecycle, and Grad-a-Gig project operations.
 - Production deployment: Vercel production site is live at https://codewithkris.vercel.app
 - Closeout validation: `npm run build` passed cleanly with Vite and TypeScript.
 - The all-pages no-scroll layouts and 12-screen browser audit are included in this release.
@@ -98,10 +106,11 @@ Estimated active work window: approximately 14 hours across implementation, auth
 - August 31 maintenance restores the cooperative contribution ledger schema structure while retaining the SQL syntax correction for the anonymous audit proof table.
 - The authenticated Vercel API and required Supabase environment variables are configured for production deployment.
 - `supabase/schema.sql`, `supabase/gtm_pilot_workflow.sql`, and `supabase/crm_schema.sql` are publication-ready; the two new standalone migrations still require application to the remote Supabase project because this workstation has no authenticated Supabase CLI session.
-- The current release removes the obsolete user-facing “+ Contribute” route and keeps Coop Equity available only through its current authorized navigation.
+- The current release removes the obsolete user-facing “+ Contribute” route while keeping Coop Equity permanently visible in authenticated navigation and integrated into Client Project operations.
 - Company and contact records can be assigned to GTM targets; the GTM workflow migration enforces matching target links and must be applied after the CRM migration.
 - Verified users without a completed profile are routed to private first-login onboarding before accessing the application.
 - The updated `supabase/schema.sql` must be applied to production Supabase before first-login profiles can be saved.
+- The latest hosted database deployment must apply `requirements_management.sql`, `sprint_task_board.sql`, `project_operations.sql`, `test_quality_issues.sql`, and `baselines_activity.sql` in the documented order; this workstation has no authenticated Supabase SQL runtime.
 
 ## Separation Rule
 

@@ -68,6 +68,72 @@ revoke all on public.user_profiles from anon;
 revoke all on public.user_profiles from authenticated;
 grant select, insert, update on public.user_profiles to authenticated;
 
+-- Platform categories are captured at signup and remain separate from project execution roles.
+create table if not exists public.user_accounts (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  platform_category text not null check (platform_category in (
+    'Persons with Disabilities', 'Student', 'Woman/Carer', 'Individual', 'Mentor',
+    'Corporate', 'Client', 'Investor', 'NGO', 'Government', 'CodeWithKris Administrator'
+  )),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create or replace function public.register_user_platform_category()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare requested_category text;
+begin
+  requested_category := coalesce(new.raw_user_meta_data->>'role', 'Individual');
+  if requested_category not in (
+    'Persons with Disabilities', 'Student', 'Woman/Carer', 'Individual', 'Mentor',
+    'Corporate', 'Client', 'Investor', 'NGO', 'Government', 'CodeWithKris Administrator'
+  ) then
+    requested_category := 'Individual';
+  end if;
+  if requested_category = 'CodeWithKris Administrator' and lower(new.email) <> 'roger.s@gradagig.com' then
+    requested_category := 'Individual';
+  end if;
+  insert into public.user_accounts (user_id, platform_category)
+  values (new.id, requested_category)
+  on conflict (user_id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists register_user_platform_category_after_signup on auth.users;
+create trigger register_user_platform_category_after_signup
+  after insert on auth.users
+  for each row execute function public.register_user_platform_category();
+
+insert into public.user_accounts (user_id, platform_category, created_at)
+select id,
+  case
+    when raw_user_meta_data->>'role' in (
+      'Persons with Disabilities', 'Student', 'Woman/Carer', 'Individual', 'Mentor',
+      'Corporate', 'Client', 'Investor', 'NGO', 'Government', 'CodeWithKris Administrator'
+    ) and (raw_user_meta_data->>'role' <> 'CodeWithKris Administrator' or lower(email) = 'roger.s@gradagig.com')
+      then raw_user_meta_data->>'role'
+    else 'Individual'
+  end,
+  created_at
+from auth.users
+on conflict (user_id) do nothing;
+
+alter table public.user_accounts enable row level security;
+drop policy if exists "Users read own platform category" on public.user_accounts;
+create policy "Users read own platform category" on public.user_accounts
+  for select to authenticated using (
+    user_id = auth.uid()
+    or lower(coalesce(auth.jwt() ->> 'email', '')) = 'roger.s@gradagig.com'
+    or (auth.jwt() -> 'app_metadata' ->> 'role') = 'CodeWithKris Administrator'
+  );
+revoke all on public.user_accounts from anon, authenticated;
+grant select on public.user_accounts to authenticated;
+
 alter table public.dictionary_words add column if not exists user_id uuid default auth.uid() references auth.users(id) on delete cascade;
 alter table public.recordings add column if not exists user_id uuid default auth.uid() references auth.users(id) on delete cascade;
 alter table public.practice_sessions add column if not exists user_id uuid default auth.uid() references auth.users(id) on delete cascade;

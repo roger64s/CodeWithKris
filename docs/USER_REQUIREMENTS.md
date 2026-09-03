@@ -109,3 +109,32 @@
 - Provide a Profile menu where authenticated users can edit their details and change their password.
 - Keep all profile information optional without enforced field validation.
 
+## 2026-09-02
+- Preserve all registration categories while separating them from project-specific Developer, Tester, and Project Manager operational roles.
+- Map project memberships and operational roles to task allocation, contributions, and quality monitoring with secure session-aware access controls.
+- Restrict Mentor users to project oversight views and exclude them from direct execution task queues.
+- Provide hierarchical requirements management from product requirements through features, user stories, and tasks or technical specifications, with a persistent Table of Contents.
+- Allow multiple authenticated collaborators to view and edit structured rich content together.
+- Automatically trace requirements, features, stories, test cases, and issues with forward and backward impact analysis.
+- Organize each product workspace into public and private Product, Backlog, Test Library, Release 1-4, and Sprint 1-3 folders.
+- Provide a Kanban task board with Not Started, In Progress, Ready for Review, and Done workflow columns and drag-and-drop movement.
+- Allocate tasks, reviewers, and approvals directly to registered CodeWithKris users with controlled, auditable workflow state changes.
+- Generate test cases directly from features and user stories with ordered actions, expected results, and inline step notes.
+- Generate and execute test runs across environment variants such as operating system, hardware heat range, and salinity.
+- Track each test step as passed, failed, or blocked.
+- Require a problem statement and attachment for every failed test step, then automatically create a linked issue or defect.
+- Freeze and duplicate complete project, folder, document, sprint, task, test, and issue states into immutable versioned release baselines.
+- Compare release baselines with added, changed, and removed items plus field-by-field and test-step telemetry.
+- Provide a real-time contributor dashboard tracking activity, effort hours, lines changed, rework, and code-quality metrics from active workspace state.
+- Require every new Requirements Project to link to a CRM Company classified as Client; select that Client and Project rather than free text when recording Coop Equity effort, with optional sprint-task traceability and approved hours included in activity analytics.
+
+## 2026-09-03
+- Manage each Grad-a-Gig Client Project from AI-assisted marketing and scope through milestones, budget, payment terms, work breakdown, and timeline.
+- Assess skills and work preferences with consent-based accessibility support for Persons with Disabilities, women and carers, and students.
+- Use AI to recommend suitable contributors while requiring a recorded human review before matching or assignment.
+- Agree contributor roles, effort, and budgets before mentored delivery begins.
+- Track quality, rework, timeliness, integration, client acceptance, milestone billing, and contributor performance without bypassing existing task gates.
+- Protect contributor funds before allocating department and overhead shares.
+- Measure inclusive participation, mentoring, paid effort, and accepted outputs, then manage improvements through PDCA cycles.
+- Keep Coop Equity permanently visible and integrated with Client Projects, operations, sprint tasks, approved effort, and lifecycle activity.
+

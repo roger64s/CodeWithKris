@@ -114,6 +114,9 @@ export interface ContributionRecord {
   status: ContributionStatus;
   contributedAt: string;
   l2TxHash?: string;
+  clientCompanyId?: string;
+  workspaceId?: string;
+  lifecycleTaskId?: string;
 }
 
 export type InvestmentCategory = "Tax & Accounting" | "Software & AI" | "Hosting & Infrastructure" | "Legal" | "Marketing" | "Equipment" | "Other";

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 import {
@@ -17,6 +17,11 @@ import { GtmPilotProject } from "./components/GtmPilotProject";
 import { FirstLoginProfile } from "./components/FirstLoginProfile";
 import { type StakeholderCategory } from "./lib/ovuMatrix";
 
+const RequirementsWorkspace = lazy(() => import("./components/RequirementsWorkspace").then((module) => ({ default: module.RequirementsWorkspace })));
+const SprintTaskBoard = lazy(() => import("./components/SprintTaskBoard").then((module) => ({ default: module.SprintTaskBoard })));
+const QualityWorkspace = lazy(() => import("./components/QualityWorkspace").then((module) => ({ default: module.QualityWorkspace })));
+const BaselineActivityDashboard = lazy(() => import("./components/BaselineActivityDashboard").then((module) => ({ default: module.BaselineActivityDashboard })));
+
 type Screen =
   | "register"
   | "signin"
@@ -30,6 +35,10 @@ type Screen =
   | "diagnostic"
   | "peer-review"
   | "gtm-pilot"
+  | "requirements"
+  | "sprints"
+  | "quality"
+  | "baselines"
   | "profile-onboarding"
   | "profile"
   | "volunteer";
@@ -251,6 +260,25 @@ function App() {
       setFullName("Pilot Client");
       setUserRole("Client");
       setScreen("gtm-pilot");
+    } else if (preview === "requirements") {
+      setEmail(ADMIN_EMAIL);
+      setFullName("Project Manager");
+      setHasFinancialAccess(true);
+      setStakeholderCategory("Founders & Core Operating Team");
+      setUserRole("CodeWithKris Administrator");
+      setScreen("requirements");
+    } else if (preview === "sprints") {
+      setFullName("Project Manager");
+      setUserRole("CodeWithKris Administrator");
+      setScreen("sprints");
+    } else if (preview === "quality") {
+      setFullName("QA Lead");
+      setUserRole("CodeWithKris Administrator");
+      setScreen("quality");
+    } else if (preview === "baselines") {
+      setFullName("Delivery Lead");
+      setUserRole("CodeWithKris Administrator");
+      setScreen("baselines");
     } else if (preview === "profile") {
       setAuthenticatedUserId("00000000-0000-0000-0000-000000000000");
       setSignupAt(new Date().toISOString());
@@ -1329,6 +1357,10 @@ function App() {
             onBack={() => navigate("templates")}
           />
         )}
+        {screen === "requirements" && <Suspense fallback={<div className="empty-state">Loading Requirements Management...</div>}><RequirementsWorkspace onOpenCoopEquity={() => navigate("financials")} /></Suspense>}
+        {screen === "sprints" && <Suspense fallback={<div className="empty-state">Loading Sprint Board...</div>}><SprintTaskBoard /></Suspense>}
+        {screen === "quality" && <Suspense fallback={<div className="empty-state">Loading Testing & Issues...</div>}><QualityWorkspace /></Suspense>}
+        {screen === "baselines" && <Suspense fallback={<div className="empty-state">Loading Baselines & Activity...</div>}><BaselineActivityDashboard /></Suspense>}
       </div>
       <nav className="bottom-nav" aria-label="Main navigation">
         {((hasFinancialAccess ||
@@ -1338,6 +1370,10 @@ function App() {
               ["progress", "User view", "◎"],
               ["admin", "Admin", "▤"],
               ["gtm-pilot", "GTM Pilot", "◇"],
+              ["requirements", "Requirements", "≡"],
+              ["sprints", "Sprints", "▥"],
+              ["quality", "Testing", "✓"],
+              ["baselines", "Activity", "◫"],
               ["financials", "Coop Equity", "⚖️"],
               ["profile", "Profile", "○"],
             ]
@@ -1347,6 +1383,11 @@ function App() {
               ["practice", "Practice", "◌"],
               ["progress", "Progress", "▥"],
               ["gtm-pilot", "GTM Pilot", "◇"],
+              ["requirements", "Requirements", "≡"],
+              ["sprints", "Sprints", "▥"],
+              ["quality", "Testing", "✓"],
+              ["baselines", "Activity", "◫"],
+              ["financials", "Coop Equity", "⚖️"],
               ["profile", "Profile", "○"],
             ]
         ).map(([value, label, icon]) => (

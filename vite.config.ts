@@ -17,6 +17,9 @@ const metricsPagePlugin: Plugin = {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), metricsPagePlugin],
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
   server: {
     watch: {
       ignored: ['**/Doc/**'],

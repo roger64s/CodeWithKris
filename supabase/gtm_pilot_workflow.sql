@@ -23,6 +23,14 @@ create table if not exists public.gtm_project_members (
   primary key (project_id, user_id)
 );
 
+alter table public.gtm_project_members
+  add column if not exists operational_role text check (operational_role in ('Developer', 'Tester', 'Project Manager')),
+  add column if not exists assigned_by uuid references auth.users(id) on delete set null,
+  add column if not exists role_assigned_at timestamptz;
+
+create unique index if not exists gtm_project_member_operational_role_idx
+  on public.gtm_project_members(project_id, user_id, operational_role) nulls not distinct;
+
 create table if not exists public.gtm_tasks (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.gtm_projects(id) on delete cascade,
@@ -39,6 +47,96 @@ create table if not exists public.gtm_tasks (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.gtm_tasks
+  add column if not exists required_operational_role text check (required_operational_role in ('Developer', 'Tester', 'Project Manager'));
+
+create table if not exists public.gtm_quality_metrics (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.gtm_projects(id) on delete cascade,
+  task_id uuid not null references public.gtm_tasks(id) on delete cascade,
+  subject_user_id uuid not null references auth.users(id) on delete cascade,
+  reviewer_user_id uuid not null default auth.uid() references auth.users(id) on delete restrict,
+  metric_type text not null check (metric_type in ('code_quality', 'test_quality', 'delivery_quality')),
+  score integer not null check (score between 0 and 100),
+  notes text not null default '',
+  recorded_at timestamptz not null default now()
+);
+
+create index if not exists gtm_quality_metrics_project_task_idx
+  on public.gtm_quality_metrics(project_id, task_id, recorded_at desc);
+
+create or replace function public.validate_gtm_quality_metric()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if not exists (
+    select 1 from public.gtm_tasks task
+    where task.id = new.task_id and task.project_id = new.project_id
+  ) then
+    raise exception 'Quality metric task must belong to the project';
+  end if;
+  if not exists (
+    select 1 from public.gtm_project_members member
+    where member.project_id = new.project_id and member.user_id = new.subject_user_id
+      and member.operational_role is not null
+  ) then
+    raise exception 'Quality metric subject must hold a project operational role';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_gtm_quality_metric on public.gtm_quality_metrics;
+create trigger validate_gtm_quality_metric before insert or update on public.gtm_quality_metrics
+for each row execute function public.validate_gtm_quality_metric();
+
+alter table public.contribution_records
+  add column if not exists gtm_project_id uuid references public.gtm_projects(id) on delete set null,
+  add column if not exists operational_role text check (operational_role in ('Developer', 'Tester', 'Project Manager'));
+
+create or replace function public.validate_gtm_operational_assignment()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare category text;
+begin
+  select platform_category into category from public.user_accounts where user_id = new.user_id;
+  if category is null then raise exception 'Registered platform category is required'; end if;
+  if category = 'Mentor' and new.operational_role is not null then
+    raise exception 'Mentors are restricted to project oversight and cannot receive execution roles';
+  end if;
+  if tg_op = 'INSERT' or new.operational_role is distinct from old.operational_role then
+    new.role_assigned_at := case when new.operational_role is null then null else now() end;
+    new.assigned_by := case when new.operational_role is null then null else auth.uid() end;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_gtm_operational_assignment on public.gtm_project_members;
+create trigger validate_gtm_operational_assignment
+before insert or update of operational_role on public.gtm_project_members
+for each row execute function public.validate_gtm_operational_assignment();
+
+create or replace function public.validate_gtm_task_allocation()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if new.assignee_user_id is not null
+    and new.required_operational_role is not null
+    and not exists (
+      select 1 from public.gtm_project_members member
+      where member.project_id = new.project_id
+        and member.user_id = new.assignee_user_id
+        and member.operational_role = new.required_operational_role
+    ) then
+    raise exception 'Task assignee must hold the required operational role on this project';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_gtm_task_allocation on public.gtm_tasks;
+create trigger validate_gtm_task_allocation
+before insert or update of project_id, assignee_user_id, required_operational_role on public.gtm_tasks
+for each row execute function public.validate_gtm_task_allocation();
 
 -- Client-safe target context contains no personal contact details.
 create table if not exists public.gtm_targets (
@@ -188,6 +286,7 @@ alter table public.gtm_compensation_terms enable row level security;
 alter table public.gtm_milestones enable row level security;
 alter table public.gtm_compensation_splits enable row level security;
 alter table public.gtm_milestone_claims enable row level security;
+alter table public.gtm_quality_metrics enable row level security;
 
 create or replace function public.is_gtm_project_client(project_id_input uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
@@ -204,12 +303,22 @@ returns boolean language sql stable security definer set search_path = '' as $$
   select public.has_financial_access() or public.is_gtm_project_client(project_id_input);
 $$;
 
+create or replace function public.has_gtm_operational_role(project_id_input uuid, roles_input text[])
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (
+    select 1 from public.gtm_project_members
+    where project_id = project_id_input and user_id = auth.uid() and operational_role = any(roles_input)
+  );
+$$;
+
 revoke all on function public.is_gtm_project_client(uuid) from public;
 revoke all on function public.is_gtm_project_member(uuid) from public;
 revoke all on function public.can_manage_gtm_project(uuid) from public;
 grant execute on function public.is_gtm_project_client(uuid) to authenticated;
 grant execute on function public.is_gtm_project_member(uuid) to authenticated;
 grant execute on function public.can_manage_gtm_project(uuid) to authenticated;
+revoke all on function public.has_gtm_operational_role(uuid, text[]) from public;
+grant execute on function public.has_gtm_operational_role(uuid, text[]) to authenticated;
 
 do $$
 declare policy_record record;
@@ -230,6 +339,16 @@ begin
 end
 $$;
 
+drop policy if exists "Project participants read quality metrics" on public.gtm_quality_metrics;
+create policy "Project participants read quality metrics" on public.gtm_quality_metrics for select to authenticated
+  using (public.can_manage_gtm_project(project_id) or public.is_gtm_project_member(project_id));
+drop policy if exists "Testers and managers record quality metrics" on public.gtm_quality_metrics;
+create policy "Testers and managers record quality metrics" on public.gtm_quality_metrics for insert to authenticated
+  with check (
+    reviewer_user_id = auth.uid()
+    and (public.can_manage_gtm_project(project_id) or public.has_gtm_operational_role(project_id, array['Tester', 'Project Manager']))
+  );
+
 create policy "Allow clients create own GTM pilots" on public.gtm_projects for insert to authenticated
   with check (client_user_id = auth.uid());
 create policy "Allow project participants read GTM pilots" on public.gtm_projects for select to authenticated
@@ -245,10 +364,10 @@ create policy "Allow clients and admins manage memberships" on public.gtm_projec
 create policy "Allow project participants read GTM tasks" on public.gtm_tasks for select to authenticated
   using (public.can_manage_gtm_project(project_id) or public.is_gtm_project_member(project_id));
 create policy "Allow managers create GTM tasks" on public.gtm_tasks for insert to authenticated
-  with check (public.can_manage_gtm_project(project_id) or public.is_producer_owner());
+  with check (public.can_manage_gtm_project(project_id) or public.has_gtm_operational_role(project_id, array['Project Manager']));
 create policy "Allow assignees and managers update GTM tasks" on public.gtm_tasks for update to authenticated
-  using (assignee_user_id = auth.uid() or public.can_manage_gtm_project(project_id) or public.is_producer_owner())
-  with check (assignee_user_id = auth.uid() or public.can_manage_gtm_project(project_id) or public.is_producer_owner());
+  using (assignee_user_id = auth.uid() or public.can_manage_gtm_project(project_id) or public.has_gtm_operational_role(project_id, array['Project Manager']))
+  with check (assignee_user_id = auth.uid() or public.can_manage_gtm_project(project_id) or public.has_gtm_operational_role(project_id, array['Project Manager']));
 
 create or replace function public.validate_new_gtm_task()
 returns trigger language plpgsql set search_path = '' as $$
@@ -267,7 +386,7 @@ for each row execute function public.validate_new_gtm_task();
 create or replace function public.protect_gtm_task_verification()
 returns trigger language plpgsql set search_path = '' as $$
 begin
-  if not public.can_manage_gtm_project(old.project_id) and not public.is_producer_owner() and (
+  if not public.can_manage_gtm_project(old.project_id) and not public.has_gtm_operational_role(old.project_id, array['Project Manager']) and (
     new.project_id is distinct from old.project_id
     or new.task_type is distinct from old.task_type
     or new.title is distinct from old.title
@@ -275,6 +394,7 @@ begin
     or new.participant_group is distinct from old.participant_group
     or new.assignee_user_id is distinct from old.assignee_user_id
     or new.assignee_name is distinct from old.assignee_name
+    or new.required_operational_role is distinct from old.required_operational_role
     or new.task_data is distinct from old.task_data
   ) then
     raise exception 'Assignees may update workflow state only.';
@@ -452,11 +572,13 @@ begin
   insert into public.contribution_records (
     contribution_key, contributor_id, contributor_name, contributor_email, role,
     client_code, project_code, department_category, effort_category,
-    contribution_type, description, logged_hours, weighted_units, status, gtm_task_id
+    contribution_type, description, logged_hours, weighted_units, status, gtm_task_id,
+    gtm_project_id, operational_role
   ) values (
     'gtm-task-' || task_record.id::text, task_record.assignee_user_id, contributor_name, contributor_email, contributor_role,
     project_record.client_name, project_record.name, 'Delivery', 'Marketing', task_record.title, task_record.description,
-    approved_hours_input, approved_ovu_input, 'verified', task_record.id
+    approved_hours_input, approved_ovu_input, 'verified', task_record.id,
+    task_record.project_id, task_record.required_operational_role
   ) on conflict (contribution_key) do update set
     contributor_id = excluded.contributor_id,
     contributor_name = excluded.contributor_name,
@@ -471,7 +593,9 @@ begin
     logged_hours = excluded.logged_hours,
     weighted_units = excluded.weighted_units,
     status = 'verified',
-    gtm_task_id = excluded.gtm_task_id;
+    gtm_task_id = excluded.gtm_task_id,
+    gtm_project_id = excluded.gtm_project_id,
+    operational_role = excluded.operational_role;
 
   insert into public.ovu_contributions (
     contributor_address, contributor_id, task_id, tier, base_ovu, final_ovu,
@@ -499,3 +623,5 @@ revoke all on function public.verify_gtm_task_contribution(uuid, numeric, numeri
 grant execute on function public.verify_gtm_task_contribution(uuid, numeric, numeric, text) to authenticated;
 
 grant select on public.gtm_anonymized_targets to authenticated;
+revoke all on public.gtm_quality_metrics from anon, authenticated;
+grant select, insert on public.gtm_quality_metrics to authenticated;

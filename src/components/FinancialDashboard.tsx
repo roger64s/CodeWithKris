@@ -48,7 +48,41 @@ interface ContributionRow {
   status: ContributionRecord["status"];
   contributed_at: string;
   l2_tx_hash: string | null;
+  client_company_id: string | null;
+  workspace_id: string | null;
+  lifecycle_task_id: string | null;
 }
+
+interface LifecycleWorkspace {
+  id: string;
+  client_company_id: string | null;
+  name: string;
+}
+
+interface ClientCompany {
+  id: string;
+  co_name: string;
+}
+
+interface LifecycleTask {
+  id: string;
+  workspace_id: string;
+  title: string;
+  workflow_status: string;
+}
+
+const isFinancialPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("preview") === "financials";
+const previewClients: ClientCompany[] = [
+  { id: "preview-client-1", co_name: "Inclusive Learning Co." },
+  { id: "preview-client-2", co_name: "Community Access Labs" },
+];
+const previewProjects: LifecycleWorkspace[] = [
+  { id: "preview-project-1", client_company_id: "preview-client-1", name: "Accessible Learning Platform" },
+  { id: "preview-project-2", client_company_id: "preview-client-2", name: "Community Outreach Portal" },
+];
+const previewLifecycleTasks: LifecycleTask[] = [
+  { id: "preview-task-1", workspace_id: "preview-project-1", title: "Integrate contribution analytics", workflow_status: "in_progress" },
+];
 
 interface InvestmentRow {
   id: string;
@@ -84,6 +118,9 @@ const fromDatabase = (row: ContributionRow): ContributionRecord => ({
   status: row.status,
   contributedAt: row.contributed_at,
   l2TxHash: row.l2_tx_hash || undefined,
+  clientCompanyId: row.client_company_id || undefined,
+  workspaceId: row.workspace_id || undefined,
+  lifecycleTaskId: row.lifecycle_task_id || undefined,
 });
 
 const investmentFromDatabase = (row: InvestmentRow): FinancialInvestmentRecord => ({
@@ -118,6 +155,11 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
   const [contributionType, setContributionType] = useState("");
   const [description, setDescription] = useState("");
   const [loggedHours, setLoggedHours] = useState("");
+  const [clientCompanies, setClientCompanies] = useState<ClientCompany[]>(isFinancialPreview ? previewClients : []);
+  const [lifecycleWorkspaces, setLifecycleWorkspaces] = useState<LifecycleWorkspace[]>(isFinancialPreview ? previewProjects : []);
+  const [lifecycleTasks, setLifecycleTasks] = useState<LifecycleTask[]>(isFinancialPreview ? previewLifecycleTasks : []);
+  const [workspaceId, setWorkspaceId] = useState("");
+  const [lifecycleTaskId, setLifecycleTaskId] = useState("");
   const [investmentCategory, setInvestmentCategory] = useState<InvestmentCategory>("Software & AI");
   const [supplier, setSupplier] = useState("");
   const [investmentAmount, setInvestmentAmount] = useState("");
@@ -135,17 +177,23 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
   const [saveStatus, setSaveStatus] = useState("");
 
   useEffect(() => {
-    if (!supabase || !canSubmit) return;
+    if (!supabase || !canSubmit || isFinancialPreview) return;
     Promise.all([
       supabase.from("contribution_records").select("*").order("contributed_at", { ascending: false }),
       supabase.from("financial_investments").select("*").order("incurred_at", { ascending: false }),
-    ]).then(([contributionResult, investmentResult]) => {
+      supabase.from("companies").select("id,co_name").eq("co_type", "Client").order("co_name"),
+      supabase.from("requirement_workspaces").select("id,client_company_id,name").order("updated_at", { ascending: false }),
+      supabase.from("sprint_tasks").select("id,workspace_id,title,workflow_status").order("updated_at", { ascending: false }),
+    ]).then(([contributionResult, investmentResult, clientResult, workspaceResult, taskResult]) => {
       if (!contributionResult.error && contributionResult.data?.length) {
         setContributions((contributionResult.data as ContributionRow[]).map(fromDatabase));
       }
       if (!investmentResult.error && investmentResult.data?.length) {
         setInvestments((investmentResult.data as InvestmentRow[]).map(investmentFromDatabase));
       }
+      if (!clientResult.error) setClientCompanies((clientResult.data || []) as ClientCompany[]);
+      if (!workspaceResult.error) setLifecycleWorkspaces((workspaceResult.data || []) as LifecycleWorkspace[]);
+      if (!taskResult.error) setLifecycleTasks((taskResult.data || []) as LifecycleTask[]);
       if (!contributionResult.error && !investmentResult.error) {
         setSaveStatus("Connected to the secured Supabase contribution ledger.");
       } else {
@@ -158,6 +206,8 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
   const totalUnits = contributions.reduce((total, item) => total + (item.weightedUnits || 0), 0);
   const totalInvestedUsd = investments.filter((item) => item.currency === "USD").reduce((total, item) => total + item.amount, 0);
   const valuedCount = contributions.filter((item) => item.status !== "unvalued").length;
+  const availableProjects = lifecycleWorkspaces.filter((item) => item.client_company_id === clientCode);
+  const availableLifecycleTasks = lifecycleTasks.filter((item) => item.workspace_id === workspaceId);
 
   const handleCalculate = (event: React.FormEvent) => {
     event.preventDefault();
@@ -179,18 +229,21 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
 
   const handleAddContribution = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!canSubmit || !contributionType.trim() || !clientCode.trim() || !projectCode.trim()) return;
+    const selectedClient = clientCompanies.find((item) => item.id === clientCode);
+    const selectedProject = lifecycleWorkspaces.find((item) => item.id === workspaceId && item.client_company_id === clientCode);
+    if (!canSubmit || !contributionType.trim() || !selectedClient || !selectedProject) return;
 
     const hours = isAuthorized && loggedHours ? Number(loggedHours) : null;
     const weightedUnits = hours === null ? null : Number((hours * ROLE_WEIGHTS[currentUserRole]).toFixed(2));
     const record: ContributionRecord = {
       id: crypto.randomUUID(), contributorName: authenticatedName, contributorEmail: normalizedEmail,
-      role: currentUserRole, clientCode: clientCode.trim(), projectCode: projectCode.trim(), departmentCategory,
+      role: currentUserRole, clientCode: selectedClient.co_name, projectCode: selectedProject.name, departmentCategory,
       effortCategory, contributionType: contributionType.trim(), description: description.trim(), loggedHours: hours,
       weightedUnits, status: isAuthorized && hours !== null ? "valued" : "unvalued", contributedAt: new Date().toISOString(),
+      clientCompanyId: selectedClient.id, workspaceId: selectedProject.id, lifecycleTaskId: lifecycleTaskId || undefined,
     };
 
-    if (supabase) {
+    if (supabase && !isFinancialPreview) {
       const { error } = await supabase.from("contribution_records").insert({
         id: record.id, contribution_key: record.id, contributor_name: record.contributorName,
         contributor_email: record.contributorEmail, role: record.role, client_code: record.clientCode,
@@ -198,6 +251,8 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
         effort_category: record.effortCategory, contribution_type: record.contributionType, description: record.description,
         logged_hours: record.loggedHours, weighted_units: record.weightedUnits,
         status: record.status, contributed_at: record.contributedAt,
+        client_company_id: record.clientCompanyId, workspace_id: record.workspaceId,
+        lifecycle_task_id: record.lifecycleTaskId || null,
       });
       setSaveStatus(error ? `Saved locally only: ${error.message}` : "Contribution saved to the secured Supabase ledger.");
     } else {
@@ -205,7 +260,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
     }
 
     setContributions((current) => [record, ...current]);
-    setClientCode(""); setProjectCode(""); setContributionType(""); setDescription(""); setLoggedHours("");
+    setClientCode(""); setProjectCode(""); setContributionType(""); setDescription(""); setLoggedHours(""); setWorkspaceId(""); setLifecycleTaskId("");
     setActiveTab("ledger");
   };
 
@@ -247,8 +302,8 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
           <button className={`tab-btn ${activeTab === "companies" ? "active" : ""}`} onClick={() => setActiveTab("companies")}>Company</button>
           <button className={`tab-btn ${activeTab === "contacts" ? "active" : ""}`} onClick={() => setActiveTab("contacts")}>Contact</button>
           <button className={`tab-btn ${activeTab === "ledger" ? "active" : ""}`} onClick={() => setActiveTab("ledger")}>Contribution</button>
-          <button className={`tab-btn ${activeTab === "effort" ? "active" : ""}`} onClick={() => { setDepartmentCategory("Delivery"); setActiveTab("effort"); }}>Add effort</button>
-          <button className={`tab-btn ${activeTab === "investment" ? "active" : ""}`} onClick={() => { setDepartmentCategory("Finance & Admin"); setActiveTab("investment"); }}>Add expense</button>
+          <button className={`tab-btn ${activeTab === "effort" ? "active" : ""}`} onClick={() => { setClientCode(""); setProjectCode(""); setWorkspaceId(""); setLifecycleTaskId(""); setDepartmentCategory("Delivery"); setActiveTab("effort"); }}>Add effort</button>
+          <button className={`tab-btn ${activeTab === "investment" ? "active" : ""}`} onClick={() => { setClientCode(""); setProjectCode(""); setWorkspaceId(""); setLifecycleTaskId(""); setDepartmentCategory("Finance & Admin"); setActiveTab("investment"); }}>Add expense</button>
           {isAuthorized && <button className={`tab-btn ${activeTab === "calculator" ? "active" : ""}`} onClick={() => setActiveTab("calculator")}>Calculator</button>}
           {isAuthorized && <button className={`tab-btn ${activeTab === "l2" ? "active" : ""}`} onClick={() => setActiveTab("l2")}>L2 audit</button>}
         </div>
@@ -268,7 +323,7 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
         <div className="admin-section contribution-ledger">
           <div className="section-row"><h3>Contribution register</h3><span>{valuedCount} valued · {contributions.length - valuedCount} awaiting valuation</span></div>
           <div className="table-scroll"><table className="coop-table"><thead><tr><th>Contributor</th><th>Work reference</th><th>Department</th><th>Effort</th><th>Hours</th><th>Units</th><th>Status</th></tr></thead><tbody>
-            {contributions.map((item) => <tr key={item.id}><td><strong>{item.contributorName}</strong><small>{item.role}</small></td><td><strong>{item.clientCode}</strong><small>{item.projectCode}</small></td><td>{item.departmentCategory}<small>{DEPARTMENT_ALLOCATIONS[item.departmentCategory]}% guide</small></td><td><strong>{item.effortCategory}</strong><small>{item.contributionType}: {item.description}</small></td><td>{item.loggedHours ?? "Pending"}</td><td>{item.weightedUnits ?? "Pending"}</td><td><span className={`contribution-status ${item.status}`}>{item.status}</span></td></tr>)}
+            {contributions.map((item) => <tr key={item.id}><td><strong>{item.contributorName}</strong><small>{item.role}</small></td><td><strong>{item.clientCode}</strong><small>{item.projectCode}{item.lifecycleTaskId ? ` · ${lifecycleTasks.find((task) => task.id === item.lifecycleTaskId)?.title || "Lifecycle task"}` : ""}</small></td><td>{item.departmentCategory}<small>{DEPARTMENT_ALLOCATIONS[item.departmentCategory]}% guide</small></td><td><strong>{item.effortCategory}</strong><small>{item.contributionType}: {item.description}</small></td><td>{item.loggedHours ?? "Pending"}</td><td>{item.weightedUnits ?? "Pending"}</td><td><span className={`contribution-status ${item.status}`}>{item.status}</span></td></tr>)}
           </tbody></table></div>
         </div>
         <div className="admin-section contribution-ledger investment-ledger">
@@ -283,8 +338,9 @@ export const FinancialDashboard: React.FC<FinancialDashboardProps> = ({ currentU
       {activeTab === "effort" && canSubmit && <form className="admin-section contribution-form entry-panel" onSubmit={handleAddContribution}>
         <div className="section-row"><div><span className="section-kicker">Time contribution</span><h3>Record effort hours</h3></div><span>Leave hours blank until evidence is reviewed</span></div>
         <div className="authenticated-identity"><span>Logged-in contributor</span><strong>{authenticatedName}</strong><small>{normalizedEmail} · {currentUserRole}</small></div>
-        <label>Client Code<input value={clientCode} onChange={(event) => setClientCode(event.target.value)} placeholder="Free text, e.g. INTERNAL" required /></label>
-        <label>Project Code<input value={projectCode} onChange={(event) => setProjectCode(event.target.value)} placeholder="Free text, e.g. CWK-APP" required /></label>
+        <label>Client<select value={clientCode} onChange={(event) => { setClientCode(event.target.value); setWorkspaceId(""); setLifecycleTaskId(""); }} required><option value="">Select Client</option>{clientCompanies.map((client) => <option key={client.id} value={client.id}>{client.co_name}</option>)}</select></label>
+        <label>Project<select value={workspaceId} disabled={!clientCode} onChange={(event) => { setWorkspaceId(event.target.value); setLifecycleTaskId(""); }} required><option value="">Select Project</option>{availableProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
+        <label>Lifecycle task<select value={lifecycleTaskId} disabled={!workspaceId} onChange={(event) => setLifecycleTaskId(event.target.value)}><option value="">Project-level effort</option>{availableLifecycleTasks.map((task) => <option key={task.id} value={task.id}>{task.title} · {task.workflow_status.replaceAll("_", " ")}</option>)}</select></label>
         <label>Department Category<select value={departmentCategory} onChange={(event) => setDepartmentCategory(event.target.value as DepartmentCategory)}>{Object.entries(DEPARTMENT_ALLOCATIONS).map(([category, allocation]) => <option key={category} value={category}>{category} · ~{allocation}%</option>)}</select></label>
         <label>Effort category<select value={effortCategory} onChange={(event) => setEffortCategory(event.target.value as EffortCategory)}>{EFFORT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></label>
         {isAuthorized && <label>Approved hours<input type="number" min="0" step="0.25" value={loggedHours} onChange={(event) => setLoggedHours(event.target.value)} placeholder="Pending" /></label>}
