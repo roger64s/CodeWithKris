@@ -137,4 +137,9 @@
 - Protect contributor funds before allocating department and overhead shares.
 - Measure inclusive participation, mentoring, paid effort, and accepted outputs, then manage improvements through PDCA cycles.
 - Keep Coop Equity permanently visible and integrated with Client Projects, operations, sprint tasks, approved effort, and lifecycle activity.
+- Preserve the current application architecture and established design patterns while adding a hybrid local-partner and foreign-client workflow.
+- Assign discovery, lead generation, local outreach, and tier-1 support to the local partner.
+- Assign core demo environments, final pricing, contract execution, and technical escalation to the foreign client.
+- Integrate cross-party task handoffs, approvals, revenue controls, and audit history into the existing CRM, GTM, project operations, sprint, quality, and Coop Equity modules.
+- Map the existing Management, Delivery, Finance & Admin, Sales & Marketing, Customer Service, and Profit departments to local-partner, foreign-client, or shared responsibility in the project UI and database.
 

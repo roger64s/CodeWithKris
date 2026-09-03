@@ -22,7 +22,7 @@ CodeWithKris is an accessibility-first voice practice, work-readiness, and coope
 - Public/private planning folders, release and sprint backlogs, and an allocated Kanban task board with controlled review and approval.
 - Requirement-derived test cases, variant test runs, evidence-backed execution, and automatic linked defect tracking.
 - Immutable release baselines, field-level lifecycle differences, and Realtime contributor activity analytics synchronized from approved lifecycle-linked Coop Equity effort.
-- Client Project operations spanning AI-assisted scope and marketing, prefunded milestones, consent-based inclusive matching, mentored delivery, quality and client acceptance, protected contributor distributions, impact measures, and PDCA improvement.
+- Client Project operations spanning AI-assisted scope and marketing, prefunded milestones, consent-based inclusive matching, department-level local-partner and foreign-client responsibilities, mentored delivery, quality and client acceptance, protected contributor distributions, impact measures, and PDCA improvement.
 
 ## Local development
 
@@ -30,4 +30,4 @@ Run `npm run dev` to start the React app and API together. The API runs on `http
 
 Create `.env` from `.env.example` and add the project URL and keys. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` enable browser sign-in and may contain only Supabase public client credentials. Never expose or commit service-role, database, or signing secrets.
 
-Apply the repeatable Supabase migrations in this order: `supabase/schema.sql`, `supabase/crm_schema.sql`, `supabase/gtm_pilot_workflow.sql`, `supabase/requirements_management.sql`, `supabase/sprint_task_board.sql`, `supabase/project_operations.sql`, `supabase/test_quality_issues.sql`, then `supabase/baselines_activity.sql`. The lifecycle migrations enable requirements traceability, controlled delivery and quality workflows, commercial and inclusive project operations, immutable release snapshots, structured differences, and Realtime contributor analytics.
+Apply the repeatable Supabase migrations in this order: `supabase/schema.sql`, `supabase/crm_schema.sql`, `supabase/gtm_pilot_workflow.sql`, `supabase/requirements_management.sql`, `supabase/sprint_task_board.sql`, `supabase/project_operations.sql`, `supabase/hybrid_partner_workflow.sql`, `supabase/test_quality_issues.sql`, then `supabase/baselines_activity.sql`. The lifecycle migrations enable requirements traceability, controlled delivery and quality workflows, commercial and inclusive project operations, hybrid department responsibility mapping, immutable release snapshots, structured differences, and Realtime contributor analytics.
