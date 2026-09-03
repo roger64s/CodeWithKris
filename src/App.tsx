@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from "react";
+import { lazy, startTransition, Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 import {
@@ -15,7 +15,9 @@ import { CooperativeReadinessDashboard } from "./components/CooperativeReadiness
 import { PeerReviewQueue } from "./components/PeerReviewQueue";
 import { GtmPilotProject } from "./components/GtmPilotProject";
 import { FirstLoginProfile } from "./components/FirstLoginProfile";
+import { RbacSettings } from "./components/RbacSettings";
 import { type StakeholderCategory } from "./lib/ovuMatrix";
+import { defaultPolicy, isRbacResource, mergePolicy, roleSlugFromCategory, type RbacPolicy } from "./lib/rbac";
 
 const RequirementsWorkspace = lazy(() => import("./components/RequirementsWorkspace").then((module) => ({ default: module.RequirementsWorkspace })));
 const SprintTaskBoard = lazy(() => import("./components/SprintTaskBoard").then((module) => ({ default: module.SprintTaskBoard })));
@@ -41,7 +43,22 @@ type Screen =
   | "baselines"
   | "profile-onboarding"
   | "profile"
+  | "access-denied"
   | "volunteer";
+const NAV_ITEMS: Array<{ screen: Screen; label: string; icon: string }> = [
+  { screen: "templates", label: "Templates", icon: "▦" },
+  { screen: "record", label: "Record", icon: "●" },
+  { screen: "practice", label: "Practice", icon: "◌" },
+  { screen: "progress", label: "Progress", icon: "▥" },
+  { screen: "gtm-pilot", label: "GTM Pilot", icon: "◇" },
+  { screen: "requirements", label: "Requirements", icon: "≡" },
+  { screen: "sprints", label: "Sprints", icon: "▥" },
+  { screen: "quality", label: "Testing", icon: "✓" },
+  { screen: "baselines", label: "Activity", icon: "◫" },
+  { screen: "financials", label: "Coop Equity", icon: "⚖" },
+  { screen: "admin", label: "Admin", icon: "▤" },
+  { screen: "profile", label: "Profile", icon: "○" },
+];
 type Template = { icon: string; title: string; detail: string; color: string; phase: 1 | 2 | 3 };
 type PracticeSession = {
   id: string;
@@ -250,8 +267,12 @@ function similarity(expected: string, actual: string) {
 
 function App() {
   const [screen, setScreen] = useState<Screen>("signin");
-  const [role, setRole] = useState<"user" | "admin">("user");
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [rbacRoleSlug, setRbacRoleSlug] = useState("student");
+  const [rbacPolicy, setRbacPolicy] = useState<RbacPolicy>(() => defaultPolicy("student"));
+  const [rbacRevision, setRbacRevision] = useState(0);
+  const [rbacReady, setRbacReady] = useState(false);
+  const [accessNotice, setAccessNotice] = useState("");
   const [authMode, setAuthMode] = useState<"register" | "signin">("signin");
   const [verificationSent, setVerificationSent] = useState(false);
   const [email, setEmail] = useState("");
@@ -331,7 +352,6 @@ function App() {
       setHasFinancialAccess(true);
       setStakeholderCategory("Founders & Core Operating Team");
       setUserRole("CodeWithKris Administrator");
-      setRole("admin");
       setScreen("financials");
     } else if (preview === "action-trial") {
       setFullName("Developer");
@@ -445,6 +465,64 @@ function App() {
       }
     });
   }, [authenticatedUserId]);
+
+  useEffect(() => {
+    const previewMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("preview");
+    let cancelled = false;
+    const loadPolicy = async () => {
+      try {
+        if (previewMode) {
+          const previewRole = roleSlugFromCategory(userRole);
+          if (!cancelled) {
+            setRbacRoleSlug(previewRole);
+            setRbacPolicy(defaultPolicy(previewRole));
+            setRbacReady(true);
+          }
+          return;
+        }
+        if (!supabase || !authenticatedUserId) return;
+        const { data: assignment, error: assignmentError } = await supabase.from("user_rbac_assignments").select("role_id").eq("user_id", authenticatedUserId).maybeSingle();
+        if (assignmentError) throw assignmentError;
+        const roleId = assignment?.role_id;
+        if (!roleId) throw new Error("No RBAC role is assigned.");
+        const { data: assignedRole, error: roleError } = await supabase.from("rbac_roles").select("slug").eq("id", roleId).single();
+        if (roleError) throw roleError;
+        const roleSlug = assignedRole.slug;
+        const { data: permissions, error: permissionError } = await supabase.from("rbac_permissions").select("resource_key, can_view, can_access").eq("role_id", roleId);
+        if (permissionError) throw permissionError;
+        if (!cancelled) {
+          setRbacRoleSlug(roleSlug);
+          setRbacPolicy(mergePolicy(permissions || []));
+          setRbacReady(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setRbacRoleSlug("unassigned");
+          setRbacPolicy(defaultPolicy("unassigned"));
+          setRbacReady(true);
+        }
+      }
+    };
+    void loadPolicy();
+    return () => { cancelled = true; };
+  }, [authenticatedUserId, rbacRevision, userRole]);
+  useEffect(() => {
+    if (!supabase || !authenticatedUserId) return;
+    const client = supabase;
+    const channel = client.channel(`rbac-session-${authenticatedUserId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_rbac_assignments", filter: `user_id=eq.${authenticatedUserId}` }, () => setRbacRevision((revision) => revision + 1))
+      .on("postgres_changes", { event: "*", schema: "public", table: "rbac_permissions" }, () => setRbacRevision((revision) => revision + 1))
+      .subscribe();
+    return () => { void client.removeChannel(channel); };
+  }, [authenticatedUserId]);
+  useEffect(() => {
+    if (!rbacReady || !isRbacResource(screen) || rbacPolicy[screen].canAccess) return;
+    const fallback = NAV_ITEMS.find(({ screen: itemScreen }) => isRbacResource(itemScreen) && rbacPolicy[itemScreen].canAccess)?.screen;
+    startTransition(() => {
+      setAccessNotice(`Your ${rbacRoleSlug} role no longer has access to that area.`);
+      setScreen(fallback || "access-denied");
+    });
+  }, [rbacPolicy, rbacReady, rbacRoleSlug, screen]);
   useEffect(() => {
     if (!authenticatedUserId) return;
     Promise.all([
@@ -482,7 +560,14 @@ function App() {
     });
   }, [authenticatedUserId]);
 
-  const navigate = (next: Screen) => setScreen(next);
+  const navigate = (next: Screen) => {
+    if (rbacReady && isRbacResource(next) && !rbacPolicy[next].canAccess) {
+      setAccessNotice(`Your ${rbacRoleSlug} role does not have access to that area.`);
+      return;
+    }
+    setAccessNotice("");
+    setScreen(next);
+  };
   const authenticate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setAuthError("");
@@ -537,7 +622,9 @@ function App() {
   async function signOut() {
     await supabase?.auth.signOut({ scope: "local" });
     setSelectedPhase(null);
-    setRole("user");
+    setRbacReady(false);
+    setRbacRoleSlug("student");
+    setRbacPolicy(defaultPolicy("student"));
     setAuthMode("signin");
     setPassword("");
     setAuthError("");
@@ -759,12 +846,6 @@ function App() {
   const totalMissionsByPhase = phases.map(
     (phase) => templates.filter((template) => template.phase === phase.number).length,
   );
-  const switchRole = () => {
-    const nextRole = role === "user" ? "admin" : "user";
-    setRole(nextRole);
-    navigate(nextRole === "admin" ? "admin" : "templates");
-  };
-
   const authScreen = (
     <main className="auth-layout">
       <section className="welcome-panel">
@@ -1056,6 +1137,8 @@ function App() {
         </div>
       </header>
       <div className={`content-wrap ${screen}-wrap`}>
+        {accessNotice && <div className="access-notice" role="alert">{accessNotice}</div>}
+        {screen === "access-denied" && <section className="page-content empty-state"><h1>Access unavailable</h1><p>Ask an administrator to assign a role with access to at least one application area.</p></section>}
         {screen === "templates" && (
           <section className="workspace-layout">
             <aside className="phase-sidebar" aria-label="Learning phases">
@@ -1102,8 +1185,8 @@ function App() {
                     formativeEvidenceCount={formativeEvidenceCount}
                     actionTrialCompleted={actionTrialCompleted}
                     onSelectPhase={setSelectedPhase}
-                    onStartActionTrial={() => navigate("action-trial")}
-                    onOpenPeerReviews={() => navigate("peer-review")}
+                    onStartActionTrial={rbacPolicy["action-trial"].canView ? () => navigate("action-trial") : undefined}
+                    onOpenPeerReviews={rbacPolicy["peer-review"].canView ? () => navigate("peer-review") : undefined}
                   />
                 </section>
               ) : (
@@ -1113,7 +1196,7 @@ function App() {
                     <h1>{phases[selectedPhase - 1].title}</h1>
                     <p>{phases[selectedPhase - 1].detail} Choose a mission below to continue at your own pace.</p>
                   </div>
-                  <div className="template-grid">
+                  {rbacPolicy.record.canView && <div className="template-grid">
                     {phaseTemplates.map((template) => (
                       <button
                         key={template.title}
@@ -1133,13 +1216,14 @@ function App() {
                         <span className="item-arrow">↗</span>
                       </button>
                     ))}
-                  </div>
-                  <button
+                  </div>}
+                  {rbacPolicy.dictionary.canView && <button
                     className="outline-wide"
                     onClick={() => navigate("dictionary")}
+                    disabled={!rbacPolicy.dictionary.canAccess}
                   >
                     My word dictionary <span>{words.length} words&nbsp; ＋</span>
-                  </button>
+                  </button>}
                 </>
               )}
             </div>
@@ -1476,6 +1560,9 @@ function App() {
                 ))
               )}
             </div>
+            {(rbacRoleSlug === "administrator" || rbacRoleSlug === "security-admin") && (
+              <RbacSettings onPoliciesChanged={() => setRbacRevision((revision) => revision + 1)} />
+            )}
           </section>
         )}
         {screen === "financials" && (
@@ -1514,47 +1601,18 @@ function App() {
         {screen === "baselines" && <Suspense fallback={<div className="empty-state">Loading Baselines & Activity...</div>}><BaselineActivityDashboard /></Suspense>}
       </div>
       <nav className="bottom-nav" aria-label="Main navigation">
-        {((hasFinancialAccess ||
-          email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase())
-          ? [
-              ["templates", "Practice", "▦"],
-              ["progress", "User view", "◎"],
-              ["admin", "Admin", "▤"],
-              ["gtm-pilot", "GTM Pilot", "◇"],
-              ["requirements", "Requirements", "≡"],
-              ["sprints", "Sprints", "▥"],
-              ["quality", "Testing", "✓"],
-              ["baselines", "Activity", "◫"],
-              ["financials", "Coop Equity", "⚖️"],
-              ["profile", "Profile", "○"],
-            ]
-          : [
-              ["templates", "Templates", "▦"],
-              ["record", "Record", "●"],
-              ["practice", "Practice", "◌"],
-              ["progress", "Progress", "▥"],
-              ["gtm-pilot", "GTM Pilot", "◇"],
-              ["requirements", "Requirements", "≡"],
-              ["sprints", "Sprints", "▥"],
-              ["quality", "Testing", "✓"],
-              ["baselines", "Activity", "◫"],
-              ["financials", "Coop Equity", "⚖️"],
-              ["profile", "Profile", "○"],
-            ]
-        ).map(([value, label, icon]) => (
+        {NAV_ITEMS.filter(({ screen: itemScreen }) => !isRbacResource(itemScreen) || rbacPolicy[itemScreen].canView).map(({ screen: value, label, icon }) => (
           <button
             className={screen === value ? "active" : ""}
             key={value}
-            onClick={() => navigate(value as Screen)}
+            onClick={() => navigate(value)}
+            disabled={isRbacResource(value) && !rbacPolicy[value].canAccess}
+            title={isRbacResource(value) && !rbacPolicy[value].canAccess ? "Visible to your role, but access is disabled" : undefined}
           >
             <span aria-hidden="true">{icon}</span>
             {label}
           </button>
         ))}
-        <button className="role-switch" onClick={switchRole}>
-          <span aria-hidden="true">⇄</span>
-          {role === "admin" ? "User demo" : "Admin demo"}
-        </button>
       </nav>
     </main>
   );
@@ -1564,6 +1622,8 @@ function App() {
         ? authScreen
         : screen === "volunteer"
           ? volunteerScreen
+          : !rbacReady
+            ? <main className="rbac-loading" aria-live="polite"><div><strong>Loading your access</strong><span>Checking your assigned role and permissions.</span></div></main>
           : (screen === "profile-onboarding" || screen === "profile") && authenticatedUserId
             ? <FirstLoginProfile userId={authenticatedUserId} signupAt={signupAt} editing={screen === "profile"} onComplete={() => navigate("templates")} onInactive={signOut} />
           : appScreen}

@@ -36,6 +36,26 @@ const QUALITY_METRICS = new Set(['code_quality', 'test_quality', 'delivery_quali
 const isAdministrator = (user) => user.email?.toLowerCase() === 'roger.s@gradagig.com' || user.app_metadata?.role === 'CodeWithKris Administrator'
 const recordingFields = 'id, template, task_id, task_config_version, duration, size, mime_type, storage_path, source_type, original_filename, reference_phrase, expected_subtask, model_training_consent, transcript, transcription_status, transcription_model_reference, transcript_match, analysis_status, predicted_subtask, prediction_confidence, inference_latency_ms, inference_model_version, workflow_version, predicted_response_block, workflow_state_match, diarization, created_at'
 
+const rbacResourceForPath = (path) => {
+  if (path.startsWith('/dictionary')) return 'dictionary'
+  if (path.startsWith('/recordings')) return 'record'
+  if (path.startsWith('/sessions')) return 'practice'
+  if (path.startsWith('/model-metrics')) return 'progress'
+  if (path.startsWith('/action-trial')) return 'action-trial'
+  if (path.startsWith('/projects/')) return 'gtm-pilot'
+  if (path.startsWith('/session-context')) return 'gtm-pilot'
+  return null
+}
+
+app.use('/api', async (request, response, next) => {
+  const resource = rbacResourceForPath(request.path)
+  if (!resource) return next()
+  const { data, error } = await request.supabase.rpc('has_rbac_access', { resource_key_input: resource })
+  if (error) return response.status(503).json({ error: 'Role-based access control is unavailable.' })
+  if (!data) return response.status(403).json({ error: `Your assigned role cannot access ${resource}.` })
+  next()
+})
+
 const transcriptMatch = (reference, transcript) => {
   const words = (value) => String(value).toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean)
   const expected = words(reference)

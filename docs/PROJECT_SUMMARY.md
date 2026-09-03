@@ -12,10 +12,10 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 37 |
-| Text lines added | 19,244 |
-| Text lines deleted | 1,913 |
-| Net text-line change | 17,331 |
+| Commits | 38 |
+| Text lines added | 20,080 |
+| Text lines deleted | 1,985 |
+| Net text-line change | 18,095 |
 | Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -33,7 +33,7 @@ xychart-beta
     title "Lines Added by Date"
     x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3"]
     y-axis "Lines Added" 0 --> 7500
-    bar [5208, 609, 2538, 3193, 617, 7079]
+    bar [5208, 609, 2538, 3193, 617, 7915]
 ```
 
 ## Delivered Today
@@ -93,6 +93,11 @@ xychart-beta
 - Added inclusion-first curation gates for consent, dual human review, adjudication, Krippendorff's alpha, VAD/clipping review, and retention-bias auditing.
 - Replaced the hardcoded Appointment Fixing pipeline with versioned task configurations for Lead Generation, Appointment Fixing, Follow-Up Management, and Customer Service.
 - Added task-aware model artifacts, API routing, recording provenance, flexible Supabase state storage, and tests proving non-appointment model training.
+- Replaced the fixed bottom navigation overlay with a compact responsive sticky menu and restored natural document flow so dictionary, workflow, and audio-history content remains reachable without overlap.
+- Added an administrator RBAC settings interface for creating roles, assigning users, and independently controlling visibility and access across 15 dashboard, module, navigation, account, and restricted resources.
+- Added built-in Student, Instructor, Security Admin, and Administrator policies with conservative defaults and protected built-in identities.
+- Centralized frontend permission checks, fail-closed loading, revoked-screen eviction, disabled visible-only actions, and realtime policy refresh while removing the insecure Admin demo elevation switch.
+- Enforced RBAC in the authenticated API, direct Supabase table access, private profile records, quality evidence, and voice-recording storage while preserving existing ownership and workspace policies.
 
 ## Effort Estimate
 
@@ -103,7 +108,7 @@ xychart-beta
 | Research and product design | 17% |
 | Documentation and release preparation | 8% |
 
-Estimated active work window: approximately 32 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 35 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, RBAC security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
@@ -125,6 +130,9 @@ Estimated active work window: approximately 32 hours across implementation, auth
 - Verified users without a completed profile are routed to private first-login onboarding before accessing the application.
 - The audio pipeline is configuration-driven and supports four commercial tracks without hardcoded database state enums; model artifacts remain undeployed until representative consented audio is curated and measured.
 - Closeout validation passed 18 Python tests, explicit manifest curation, Node syntax checking, TypeScript/Vite production build, and workspace diagnostics.
+- RBAC browser validation passed on desktop and mobile with four built-in roles, 15 permission rows, 30 visibility/access toggles, role-filtered navigation, no demo privilege switch, and no horizontal page overflow.
+- Apply `supabase/rbac_access_control.sql` to production Supabase before enabling RBAC persistence and enforcement; local execution was unavailable because this workspace has no Supabase CLI or configured local API credentials.
+- Final RBAC production build and API syntax checks passed; lint reports only six pre-existing React warnings.
 
 ## Separation Rule
 

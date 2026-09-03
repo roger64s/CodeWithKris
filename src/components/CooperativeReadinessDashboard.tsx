@@ -28,8 +28,8 @@ type CooperativeReadinessDashboardProps = {
   formativeEvidenceCount: number;
   actionTrialCompleted: boolean;
   onSelectPhase: (phase: 1 | 2 | 3) => void;
-  onStartActionTrial: () => void;
-  onOpenPeerReviews: () => void;
+  onStartActionTrial?: () => void;
+  onOpenPeerReviews?: () => void;
 };
 
 const phaseIcons = [MessageSquareMore, Users, Bot];
@@ -63,13 +63,13 @@ export function CooperativeReadinessDashboard({
           <h1 id="dashboard-title" className="text-3xl font-bold leading-tight text-slate-950">{headline}</h1>
           <div className="mt-2 max-w-xl text-sm leading-6 text-slate-600">{message}</div>
         </div>
-        <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-emerald-800" onClick={onStartActionTrial}>
+        {onStartActionTrial && <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-emerald-800" onClick={onStartActionTrial}>
           Commercial task trial <ArrowRight size={17} aria-hidden="true" />
-        </button>
+        </button>}
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3" aria-label="Readiness metrics">
-        <Metric icon={ClipboardCheck} label="Peer reviews" value={String(peerReviewContributions)} detail="Open community queue" onClick={onOpenPeerReviews} />
+        {onOpenPeerReviews && <Metric icon={ClipboardCheck} label="Peer reviews" value={String(peerReviewContributions)} detail="Open community queue" onClick={onOpenPeerReviews} />}
         <Metric icon={CodeXml} label="Pod progress evidence" value={String(formativeEvidenceCount)} detail="Mentorship, tools, iteration, and collaboration" />
         <Metric icon={Radio} label="Live client sprints" value={isSprintEligible ? "Eligible" : "Building readiness"} detail={isSprintEligible ? "Ready for human-reviewed team matching" : "Complete a practical trial, missions, and collaborative work"} accent={isSprintEligible} />
       </div>

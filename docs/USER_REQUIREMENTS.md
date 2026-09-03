@@ -169,4 +169,6 @@
 - Measure response-block selection, adjacent state transitions, and complete four-step conversations in addition to class-level model quality.
 - Preserve the workflow version, predicted response block, expected-state match, and optional speaker-turn evidence with each analyzed recording.
 - Generalize the consent-gated audio workflow engine so Lead Generation, Appointment Fixing, Follow-Up Management, Customer Service, and future tracks can define their own states, transitions, acoustic settings, model classes, and evaluation rules through versioned configuration rather than code changes.
+- Keep authenticated content in natural document flow with compact spacing and a responsive sticky header menu that never overlaps lower cards, the word dictionary, audio history, or workflow blocks.
+- Let administrators define access roles, assign them to users, and independently control whether each dashboard action, module, and navigation item is visible or accessible to the logged-in user.
 
