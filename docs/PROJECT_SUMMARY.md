@@ -12,28 +12,28 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 36 |
-| Text lines added | 17,143 |
-| Text lines deleted | 1,866 |
-| Net text-line change | 15,277 |
+| Commits | 37 |
+| Text lines added | 19,244 |
+| Text lines deleted | 1,913 |
+| Net text-line change | 17,331 |
 | Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
 
 ```mermaid
 pie title Estimated Effort Distribution by Category
-    "Coding and UI" : 58
-    "Testing and Verification" : 20
-    "Research and Architecture" : 15
-    "Documentation" : 7
+    "Coding and UI" : 54
+    "Testing and Verification" : 21
+    "Research and Architecture" : 17
+    "Documentation" : 8
 ```
 
 ```mermaid
 xychart-beta
     title "Lines Added by Date"
-    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 2", "Sep 3"]
-    y-axis "Lines Added" 0 --> 5500
-    bar [5208, 609, 2538, 3193, 617, 3207, 1756]
+    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3"]
+    y-axis "Lines Added" 0 --> 7500
+    bar [5208, 609, 2538, 3193, 617, 7079]
 ```
 
 ## Delivered Today
@@ -86,17 +86,24 @@ xychart-beta
 - Added a hybrid local-partner and foreign-client responsibility map using the existing six cost-control departments and allocation percentages.
 - Added workspace-seeded database mappings, RLS-protected updates, and automatic sprint-task responsibility derivation from the selected department.
 - Added a responsive Operations panel for viewing and editing each department's primary party and local/client task scope.
+- Added durable private playback, transcription correction, consent provenance, and progress evidence for every recorded or uploaded audio sample.
+- Implemented configurable MFCC, delta, and delta-delta extraction with a two-hidden-layer MLP and multiclass probabilities.
+- Added speaker-disjoint stratified 80/20 evaluation with dynamic accuracy, precision, recall, F1, confusion matrix, and classifier latency metrics.
+- Added optional diarization with separately reported latency and conversational turn evidence.
+- Added inclusion-first curation gates for consent, dual human review, adjudication, Krippendorff's alpha, VAD/clipping review, and retention-bias auditing.
+- Replaced the hardcoded Appointment Fixing pipeline with versioned task configurations for Lead Generation, Appointment Fixing, Follow-Up Management, and Customer Service.
+- Added task-aware model artifacts, API routing, recording provenance, flexible Supabase state storage, and tests proving non-appointment model training.
 
 ## Effort Estimate
 
 | Category | Estimated share |
 | --- | ---: |
-| Coding and UI implementation | 58% |
-| Testing and browser validation | 20% |
-| Research and product design | 15% |
-| Documentation and release preparation | 7% |
+| Coding and UI implementation | 54% |
+| Testing and browser validation | 21% |
+| Research and product design | 17% |
+| Documentation and release preparation | 8% |
 
-Estimated active work window: approximately 30 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 32 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
@@ -116,6 +123,8 @@ Estimated active work window: approximately 30 hours across implementation, auth
 - The current release removes the obsolete user-facing “+ Contribute” route while keeping Coop Equity permanently visible in authenticated navigation and integrated into Client Project operations.
 - Company and contact records can be assigned to GTM targets; the GTM workflow migration enforces matching target links and must be applied after the CRM migration.
 - Verified users without a completed profile are routed to private first-login onboarding before accessing the application.
+- The audio pipeline is configuration-driven and supports four commercial tracks without hardcoded database state enums; model artifacts remain undeployed until representative consented audio is curated and measured.
+- Closeout validation passed 18 Python tests, explicit manifest curation, Node syntax checking, TypeScript/Vite production build, and workspace diagnostics.
 
 ## Separation Rule
 

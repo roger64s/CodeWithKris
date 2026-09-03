@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "taskId": "customer-service",
+  "taskName": "Customer Service",
+  "version": "2026-09-03.v1",
+  "language": "English",
+  "expectedSpeakerCount": 2,
+  "features": {"sampleRate": 16000, "mfccCount": 13, "nFft": 400, "hopLength": 160, "nMels": 32, "includeDelta": true, "includeDeltaDelta": true},
+  "model": {"hiddenLayerSizes": [128, 64], "activation": "relu", "solver": "adam", "maxIterations": 500},
+  "evaluation": {"folds": 5, "testFraction": 0.2, "randomState": 42, "minimumSamplesPerClass": 5, "minimumDistinctSpeakersPerClass": 5},
+  "states": [
+    {"sequence": 1, "label": "AcknowledgeIssue", "expectedResult": "I understand the issue and I will help you with it.", "responseBlock": "AcknowledgeIssueResponse", "receiverDialogue": "Thank you. I need help resolving this.", "nextState": "ClarifyDetails"},
+    {"sequence": 2, "label": "ClarifyDetails", "expectedResult": "Could you share when the issue started and what you observed?", "responseBlock": "ClarifyDetailsResponse", "receiverDialogue": "It started today when I tried to continue my work.", "nextState": "OfferResolution"},
+    {"sequence": 3, "label": "OfferResolution", "expectedResult": "I can guide you through the next steps to resolve this.", "responseBlock": "OfferResolutionResponse", "receiverDialogue": "Yes, please guide me through the steps.", "nextState": "ConfirmResolution"},
+    {"sequence": 4, "label": "ConfirmResolution", "expectedResult": "Can you confirm that the issue is now resolved?", "responseBlock": "ConfirmResolutionResponse", "receiverDialogue": "Yes, it is working now. Thank you.", "nextState": null}
+  ]
+}

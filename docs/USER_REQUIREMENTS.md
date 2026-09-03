@@ -150,3 +150,23 @@
 - Let learners flexibly specialize in Lead Generation, Appointment Fixing, Follow-Up Management, or Customer Service.
 - Teach responsible AI-assisted response drafting, text-task automation, CRM organization, and technical or operational workflow execution.
 
+## 2026-09-03 (Audio History Update)
+- Keep a durable private history of every directly recorded and uploaded audio sample.
+- Provide authenticated playback and a corresponding transcript for every saved audio sample, with manual transcript entry or correction when automated transcription is unavailable.
+- Show progress over time using transparent phrase-recognition consistency evidence without presenting it as a clinical assessment or measure of a person's ability.
+- Use `Doc/Abstract 25072_Short_2025Sep04.docx` as the requested research source; because the supplied document contains only its title, do not attribute unsupported MFCC, MLP, methodology, or outcome claims to it.
+- Divide Appointment Fixing audio practice into Greeting, Ask Availability, Check Schedule, and Confirm Appointment subtasks.
+- Provide a consent-gated MFCC and two-hidden-layer MLP baseline that measures four-class task predictions, inference latency, and held-out accuracy, weighted precision, recall, and F1 from actual data.
+- Keep model-training participation optional per recording and exclude private practice recordings by default.
+- Support optional speaker diarization while displaying its measured latency separately from task-classification latency.
+- Do not publish the proposed 92% accuracy, 90% precision, 88% recall, 89% F1, or 35 ms latency unless a representative consented benchmark independently produces those values.
+- Broaden Appointment Fixing collection across accessible prompt variants, languages and locales, devices, environments, noise conditions, pacing, pauses, repetitions, and assistive communication without requiring standardized speech.
+- Require two independent human labels, resolved adjudication, normalized labels and transcripts, and Krippendorff's alpha of at least 0.80 before model training.
+- Audit VAD, clipping, and curation retention by approved aggregate groups so valid non-standard speech is routed to manual review rather than systematically removed.
+- Keep train and test speakers separate while preserving the stratified 80/20 evaluation target and reproducible split seed.
+- Follow the reviewed Appointment Fixing workflow in the exact order Greeting, Ask Availability, Check Schedule, and Confirm Appointment, with the specified Expected Results, response blocks, Receiver dialogue, and state transitions.
+- Treat caller speech as the model target and Receiver dialogue only as conversation and turn-taking context.
+- Measure response-block selection, adjacent state transitions, and complete four-step conversations in addition to class-level model quality.
+- Preserve the workflow version, predicted response block, expected-state match, and optional speaker-turn evidence with each analyzed recording.
+- Generalize the consent-gated audio workflow engine so Lead Generation, Appointment Fixing, Follow-Up Management, Customer Service, and future tracks can define their own states, transitions, acoustic settings, model classes, and evaluation rules through versioned configuration rather than code changes.
+

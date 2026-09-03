@@ -13,8 +13,48 @@ create table if not exists public.recordings (
   size integer not null default 0,
   mime_type text not null,
   storage_path text not null unique,
+  source_type text not null default 'recorded' check (source_type in ('recorded', 'uploaded')),
+  original_filename text,
+  reference_phrase text not null default '',
+  expected_subtask text,
+  model_training_consent boolean not null default false,
+  transcript text not null default '',
+  transcription_status text not null default 'unavailable' check (transcription_status in ('completed', 'unavailable', 'failed')),
+  transcription_model_reference text,
+  transcript_match integer check (transcript_match between 0 and 100),
+  analysis_status text not null default 'unavailable' check (analysis_status in ('completed', 'unavailable', 'failed')),
+  task_id text check (task_id is null or task_id ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
+  task_config_version text,
+  predicted_subtask text,
+  prediction_confidence numeric check (prediction_confidence between 0 and 1),
+  inference_latency_ms numeric check (inference_latency_ms >= 0),
+  inference_model_version text,
+  workflow_version text,
+  predicted_response_block text,
+  workflow_state_match boolean,
+  diarization jsonb,
   created_at timestamptz not null default now()
 );
+alter table public.recordings add column if not exists source_type text not null default 'recorded';
+alter table public.recordings add column if not exists original_filename text;
+alter table public.recordings add column if not exists reference_phrase text not null default '';
+alter table public.recordings add column if not exists expected_subtask text;
+alter table public.recordings add column if not exists model_training_consent boolean not null default false;
+alter table public.recordings add column if not exists transcript text not null default '';
+alter table public.recordings add column if not exists transcription_status text not null default 'unavailable';
+alter table public.recordings add column if not exists transcription_model_reference text;
+alter table public.recordings add column if not exists transcript_match integer;
+alter table public.recordings add column if not exists analysis_status text not null default 'unavailable';
+alter table public.recordings add column if not exists task_id text;
+alter table public.recordings add column if not exists task_config_version text;
+alter table public.recordings add column if not exists predicted_subtask text;
+alter table public.recordings add column if not exists prediction_confidence numeric;
+alter table public.recordings add column if not exists inference_latency_ms numeric;
+alter table public.recordings add column if not exists inference_model_version text;
+alter table public.recordings add column if not exists workflow_version text;
+alter table public.recordings add column if not exists predicted_response_block text;
+alter table public.recordings add column if not exists workflow_state_match boolean;
+alter table public.recordings add column if not exists diarization jsonb;
 create table if not exists public.practice_sessions (
   id uuid primary key,
   user_id uuid default auth.uid() references auth.users(id) on delete cascade,

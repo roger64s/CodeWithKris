@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "taskId": "appointment-fixing",
+  "taskName": "Appointment Fixing",
+  "version": "2026-09-03.table-1",
+  "language": "English",
+  "expectedSpeakerCount": 2,
+  "features": {
+    "sampleRate": 16000,
+    "mfccCount": 13,
+    "nFft": 400,
+    "hopLength": 160,
+    "nMels": 32,
+    "includeDelta": true,
+    "includeDeltaDelta": true
+  },
+  "model": {
+    "hiddenLayerSizes": [128, 64],
+    "activation": "relu",
+    "solver": "adam",
+    "maxIterations": 500
+  },
+  "evaluation": {
+    "folds": 5,
+    "testFraction": 0.2,
+    "randomState": 42,
+    "minimumSamplesPerClass": 5,
+    "minimumDistinctSpeakersPerClass": 5
+  },
+  "states": [
+    {
+      "sequence": 1,
+      "label": "Greeting",
+      "visualAudioCue": "How are you?",
+      "expectedResult": "How are you, David?",
+      "responseBlock": "GreetingResponse",
+      "receiverDialogue": "I am fine, Josy. How are you?",
+      "nextState": "AskAvailability"
+    },
+    {
+      "sequence": 2,
+      "label": "AskAvailability",
+      "visualAudioCue": "Are you available for a meeting next Tuesday?",
+      "expectedResult": "I am doing great, David. Are you available next Tuesday at 5 PM California time to meet Roger regarding the Haz360 demo?",
+      "responseBlock": "AskAvailabilityResponse",
+      "receiverDialogue": "Sorry, Josy. Tuesday is not good. How about Wednesday at 4 PM?",
+      "nextState": "CheckSchedule"
+    },
+    {
+      "sequence": 3,
+      "label": "CheckSchedule",
+      "visualAudioCue": "Let me check the schedule. Please give me a minute.",
+      "expectedResult": "Sure, David. Let me check Roger's calendar. Please give me a minute.",
+      "responseBlock": "CheckScheduleResponse",
+      "receiverDialogue": "OK, thank you.",
+      "nextState": "ConfirmAppointment"
+    },
+    {
+      "sequence": 4,
+      "label": "ConfirmAppointment",
+      "visualAudioCue": "The appointment is confirmed. I am sending a meeting invitation.",
+      "expectedResult": "Confirmed. I am sending you a meeting invitation. Thank you, David.",
+      "responseBlock": "ConfirmAppointmentResponse",
+      "receiverDialogue": "Thank you, Josy. I received it and will talk to Roger on Wednesday. Bye.",
+      "nextState": null
+    }
+  ]
+}

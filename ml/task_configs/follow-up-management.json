@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "taskId": "follow-up-management",
+  "taskName": "Follow-Up Management",
+  "version": "2026-09-03.v1",
+  "language": "English",
+  "expectedSpeakerCount": 2,
+  "features": {"sampleRate": 16000, "mfccCount": 13, "nFft": 400, "hopLength": 160, "nMels": 32, "includeDelta": true, "includeDeltaDelta": true},
+  "model": {"hiddenLayerSizes": [128, 64], "activation": "relu", "solver": "adam", "maxIterations": 500},
+  "evaluation": {"folds": 5, "testFraction": 0.2, "randomState": 42, "minimumSamplesPerClass": 5, "minimumDistinctSpeakersPerClass": 5},
+  "states": [
+    {"sequence": 1, "label": "ReferenceContext", "expectedResult": "I am following up on our previous conversation.", "responseBlock": "ReferenceContextResponse", "receiverDialogue": "Yes, I remember our conversation.", "nextState": "CheckProgress"},
+    {"sequence": 2, "label": "CheckProgress", "expectedResult": "Have you had an opportunity to review the information?", "responseBlock": "CheckProgressResponse", "receiverDialogue": "I reviewed it and have one question.", "nextState": "ResolveBlocker"},
+    {"sequence": 3, "label": "ResolveBlocker", "expectedResult": "Please share your question so I can help resolve it.", "responseBlock": "ResolveBlockerResponse", "receiverDialogue": "I need clarification about the delivery timeline.", "nextState": "ConfirmAction"},
+    {"sequence": 4, "label": "ConfirmAction", "expectedResult": "I will confirm the timeline and update you today.", "responseBlock": "ConfirmActionResponse", "receiverDialogue": "Thank you. I will wait for your update.", "nextState": null}
+  ]
+}

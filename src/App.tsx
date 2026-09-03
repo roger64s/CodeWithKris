@@ -54,9 +54,49 @@ type PracticeSession = {
 type Recording = {
   id: string;
   template: string;
+  taskId: string | null;
+  taskConfigVersion: string | null;
   duration: number;
   createdAt: string;
   size: number;
+  sourceType: "recorded" | "uploaded";
+  originalFilename: string | null;
+  referencePhrase: string;
+  expectedSubtask: string | null;
+  modelTrainingConsent: boolean;
+  transcript: string;
+  transcriptionStatus: "completed" | "unavailable" | "failed";
+  transcriptionModelReference: string | null;
+  transcriptMatch: number | null;
+  analysisStatus: "completed" | "unavailable" | "failed";
+  predictedSubtask: string | null;
+  predictionConfidence: number | null;
+  inferenceLatencyMs: number | null;
+  inferenceModelVersion: string | null;
+  workflowVersion: string | null;
+  predictedResponseBlock: string | null;
+  workflowStateMatch: boolean | null;
+  diarization: { speakerCount: number; latencyMs: number; modelReference: string } | null;
+};
+type ModelMetrics = {
+  modelVersion: string;
+  taskId: string;
+  taskName: string;
+  trainingSamples: number;
+  testSamples: number;
+  accuracy: number;
+  precisionWeighted: number;
+  recallWeighted: number;
+  f1Weighted: number;
+  classifierLatencyMs: { p50: number; p95: number };
+  workflowEvaluation: {
+    workflowVersion: string;
+    responseBlockAccuracy: number;
+    transitionPairAccuracy: number | null;
+    completeConversationAccuracy: number;
+    evaluatedConversations: number;
+    evaluatedTransitions: number;
+  };
 };
 type SpeechRecognitionLike = {
   continuous: boolean;
@@ -148,6 +188,10 @@ const templates: Template[] = [
     phase: 3,
   },
 ];
+
+const taskIdForTemplate = (template: Template) => template.phase === 2
+  ? template.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+  : null;
 const phases = [
   { number: 1, title: "Universal Foundation", detail: "Build professional vocabulary, confidence, digital etiquette, and work readiness.", color: "mint" },
   { number: 2, title: "Commercial Task Tracks", detail: "Choose practical Lead Generation, Appointment Fixing, Follow-Up, or Customer Service work.", color: "gold" },
@@ -167,6 +211,12 @@ const missionPhrases: Record<string, string> = {
   "CRM entry organization": "I recorded the contact, conversation, agreed action, owner, and follow-up date.",
   "Technical & operational execution": "I completed the step, checked the result, and documented what happens next.",
 };
+const appointmentSubtasks = [
+  { key: "Greeting", title: "Greeting", phrase: "How are you, David?", receiver: "I am fine, Josy. How are you?", responseBlock: "GreetingResponse" },
+  { key: "AskAvailability", title: "Ask availability", phrase: "I am doing great, David. Are you available next Tuesday at 5 PM California time to meet Roger regarding the Haz360 demo?", receiver: "Sorry, Josy. Tuesday is not good. How about Wednesday at 4 PM?", responseBlock: "AskAvailabilityResponse" },
+  { key: "CheckSchedule", title: "Check schedule", phrase: "Sure, David. Let me check Roger's calendar. Please give me a minute.", receiver: "OK, thank you.", responseBlock: "CheckScheduleResponse" },
+  { key: "ConfirmAppointment", title: "Confirm appointment", phrase: "Confirmed. I am sending you a meeting invitation. Thank you, David.", receiver: "Thank you, Josy. I received it and will talk to Roger on Wednesday. Bye.", responseBlock: "ConfirmAppointmentResponse" },
+] as const;
 const phraseFor = (template: Template) => missionPhrases[template.title] || `I am practicing ${template.title.toLowerCase()}.`;
 const api = async <T,>(path: string, options?: RequestInit): Promise<T> => {
   const { data } = await supabase?.auth.getSession() || { data: { session: null } };
@@ -214,10 +264,13 @@ function App() {
   const [authError, setAuthError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
+  const [appointmentSubtaskIndex, setAppointmentSubtaskIndex] = useState(0);
+  const [modelTrainingConsent, setModelTrainingConsent] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3 | null>(null);
   const [words, setWords] = useState<string[]>(defaultWords);
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [modelMetrics, setModelMetrics] = useState<ModelMetrics | null>(null);
   const [peerReviewContributions, setPeerReviewContributions] = useState(0);
   const [formativeEvidenceCount, setFormativeEvidenceCount] = useState(0);
   const [actionTrialCompleted, setActionTrialCompleted] = useState(false);
@@ -225,15 +278,22 @@ function App() {
   const [newWord, setNewWord] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [audioUrls, setAudioUrls] = useState<Record<string, string>>({});
+  const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
   const [liveText, setLiveText] = useState(
     "Your words will appear here as you speak.",
   );
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "saved" | "error">("idle");
   const [isListening, setIsListening] = useState(false);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const recordingSecondsRef = useRef(0);
+  const audioUrlsRef = useRef<Record<string, string>>({});
   const chunks = useRef<Blob[]>([]);
   const recognition = useRef<SpeechRecognitionLike | null>(null);
   const uploadInput = useRef<HTMLInputElement | null>(null);
+  const activePracticePhrase = selectedTemplate.title === "Appointment Fixing"
+    ? appointmentSubtasks[appointmentSubtaskIndex].phrase
+    : phraseFor(selectedTemplate);
 
   const isEligibleForAdmin = email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
@@ -320,11 +380,17 @@ function App() {
   useEffect(() => {
     if (!isRecording) return;
     const timer = window.setInterval(
-      () => setRecordingSeconds((seconds) => seconds + 1),
+      () => setRecordingSeconds((seconds) => {
+        recordingSecondsRef.current = seconds + 1;
+        return seconds + 1;
+      }),
       1000,
     );
     return () => window.clearInterval(timer);
   }, [isRecording]);
+  useEffect(() => () => {
+    Object.values(audioUrlsRef.current).forEach((url) => URL.revokeObjectURL(url));
+  }, []);
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => {
@@ -385,8 +451,9 @@ function App() {
       api<{ word: string }[]>("/api/dictionary"),
       api<PracticeSession[]>("/api/sessions"),
       api<Recording[]>("/api/recordings"),
+      api<ModelMetrics>("/api/model-metrics").catch(() => null),
     ])
-      .then(([dictionary, savedSessions, savedRecordings]) => {
+      .then(([dictionary, savedSessions, savedRecordings, measuredMetrics]) => {
         setWords(
           dictionary.length
             ? dictionary.map((item) => item.word)
@@ -394,6 +461,7 @@ function App() {
         );
         setSessions(savedSessions);
         setRecordings(savedRecordings);
+        setModelMetrics(measuredMetrics);
       })
       .catch(() =>
         setLiveText(
@@ -516,7 +584,13 @@ function App() {
         const form = new FormData();
         form.append("audio", blob, "practice.webm");
         form.append("template", selectedTemplate.title);
-        form.append("duration", String(recordingSeconds));
+        const taskId = taskIdForTemplate(selectedTemplate);
+        if (taskId) form.append("taskId", taskId);
+        form.append("duration", String(recordingSecondsRef.current));
+        form.append("sourceType", "recorded");
+        form.append("referencePhrase", activePracticePhrase);
+        if (selectedTemplate.title === "Appointment Fixing") form.append("expectedSubtask", appointmentSubtasks[appointmentSubtaskIndex].key);
+        form.append("modelTrainingConsent", String(modelTrainingConsent));
         try {
           const saved = await api<Recording>("/api/recordings", {
             method: "POST",
@@ -531,6 +605,7 @@ function App() {
       };
       recorder.start();
       mediaRecorder.current = recorder;
+      recordingSecondsRef.current = 0;
       setRecordingSeconds(0);
       setIsRecording(true);
     } catch {
@@ -551,7 +626,13 @@ function App() {
     const form = new FormData();
     form.append("audio", file, file.name);
     form.append("template", selectedTemplate.title);
+    const taskId = taskIdForTemplate(selectedTemplate);
+    if (taskId) form.append("taskId", taskId);
     form.append("duration", "0");
+    form.append("sourceType", "uploaded");
+    form.append("referencePhrase", activePracticePhrase);
+    if (selectedTemplate.title === "Appointment Fixing") form.append("expectedSubtask", appointmentSubtasks[appointmentSubtaskIndex].key);
+    form.append("modelTrainingConsent", String(modelTrainingConsent));
     try {
       const saved = await api<Recording>("/api/recordings", {
         method: "POST",
@@ -562,6 +643,37 @@ function App() {
     } catch {
       setUploadStatus("error");
     }
+  };
+  const loadRecordingAudio = async (recordingId: string) => {
+    if (audioUrls[recordingId] || loadingAudioId) return;
+    setLoadingAudioId(recordingId);
+    try {
+      const { data } = await supabase?.auth.getSession() || { data: { session: null } };
+      if (!data.session?.access_token) throw new Error("Authentication required");
+      const response = await fetch(`/api/recordings/${recordingId}/audio`, {
+        headers: { Authorization: `Bearer ${data.session.access_token}` },
+      });
+      if (!response.ok) throw new Error("Audio unavailable");
+      const url = URL.createObjectURL(await response.blob());
+      audioUrlsRef.current[recordingId] = url;
+      setAudioUrls((current) => ({ ...current, [recordingId]: url }));
+    } catch {
+      setLiveText("This private recording could not be loaded. Check the API connection and try again.");
+    } finally {
+      setLoadingAudioId(null);
+    }
+  };
+  const saveRecordingTranscript = async (recordingId: string, transcript: string) => {
+    const { data } = await supabase?.auth.getSession() || { data: { session: null } };
+    if (!data.session?.access_token) throw new Error("Authentication required");
+    const response = await fetch(`/api/recordings/${recordingId}/transcript`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${data.session.access_token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript }),
+    });
+    if (!response.ok) throw new Error("Transcript could not be saved");
+    const updated = await response.json() as Recording;
+    setRecordings((current) => current.map((item) => item.id === updated.id ? updated : item));
   };
   const toggleListening = () => {
     const speechWindow = window as Window & {
@@ -596,7 +708,7 @@ function App() {
     setIsListening(true);
   };
   const finishPractice = async () => {
-    const phrase = phraseFor(selectedTemplate);
+    const phrase = activePracticePhrase;
     const accuracy = similarity(phrase, liveText);
     try {
       const saved = await api<PracticeSession>("/api/sessions", {
@@ -1091,14 +1203,17 @@ function App() {
               <span className="section-kicker">Voice warm-up</span>
               <h1>Let&apos;s hear your voice.</h1>
               <p>
-                Record a sample. It is saved privately in this browser for your
-                review.
+                Record or upload a sample. Each attempt is saved privately with
+                playback, transcription status, and progress evidence.
               </p>
             </div>
+            {selectedTemplate.title === "Appointment Fixing" && <AppointmentTaskSteps selectedIndex={appointmentSubtaskIndex} recordings={recordings} onSelect={setAppointmentSubtaskIndex} />}
+            {selectedTemplate.title === "Appointment Fixing" && <label className="model-consent"><input type="checkbox" checked={modelTrainingConsent} onChange={(event) => setModelTrainingConsent(event.target.checked)} /><span><strong>Contribute this sample to model improvement</strong><small>Optional. The recording stays private and excluded from training unless you select this before recording or upload.</small></span></label>}
             <div className="record-stage">
               <span className="stage-label">Selected template</span>
               <strong>{selectedTemplate.title}</strong>
-              <p>“{phraseFor(selectedTemplate)}”</p>
+              <p>“{activePracticePhrase}”</p>
+              {selectedTemplate.title === "Appointment Fixing" && <small className="receiver-dialogue"><b>{appointmentSubtasks[appointmentSubtaskIndex].responseBlock}</b> · Receiver: “{appointmentSubtasks[appointmentSubtaskIndex].receiver}”</small>}
               <button
                 className={`record-button ${isRecording ? "recording" : ""}`}
                 onClick={isRecording ? stopRecording : startRecording}
@@ -1153,6 +1268,7 @@ function App() {
             >
               Continue to practice <span>→</span>
             </button>
+            <RecordingHistory recordings={recordings} audioUrls={audioUrls} loadingAudioId={loadingAudioId} onLoadAudio={loadRecordingAudio} onSaveTranscript={saveRecordingTranscript} compact />
           </section>
         )}
         {screen === "practice" && (
@@ -1168,9 +1284,10 @@ function App() {
               <h1>Take your time.</h1>
               <p>Speak the phrase, then compare what CodeWithKris heard.</p>
             </div>
+            {selectedTemplate.title === "Appointment Fixing" && <AppointmentTaskSteps selectedIndex={appointmentSubtaskIndex} recordings={recordings} onSelect={setAppointmentSubtaskIndex} />}
             <div className="phrase-card">
               <span>Practice phrase</span>
-              <strong>{phraseFor(selectedTemplate)}</strong>
+              <strong>{activePracticePhrase}</strong>
             </div>
             <button
               className={`listen-button ${isListening ? "active" : ""}`}
@@ -1194,13 +1311,13 @@ function App() {
                 <strong>
                   {liveText.startsWith("Your words")
                     ? "—"
-                    : `${similarity(phraseFor(selectedTemplate), liveText)}%`}
+                    : `${similarity(activePracticePhrase, liveText)}%`}
                 </strong>
               </div>
               <div className="progress-track">
                 <span
                   style={{
-                    width: `${similarity(phraseFor(selectedTemplate), liveText)}%`,
+                    width: `${similarity(activePracticePhrase, liveText)}%`,
                   }}
                 />
               </div>
@@ -1238,7 +1355,7 @@ function App() {
               </div>
               <div>
                 <strong>{sessions.length ? `${average}%` : "—"}</strong>
-                <span>Average accuracy</span>
+                <span>Average practice match</span>
               </div>
               <div>
                 <strong>{recordings.length}</strong>
@@ -1249,6 +1366,8 @@ function App() {
                 <span>This week</span>
               </div>
             </div>
+            <ModelEvaluationCard metrics={modelMetrics} />
+            <RecordingHistory recordings={recordings} audioUrls={audioUrls} loadingAudioId={loadingAudioId} onLoadAudio={loadRecordingAudio} onSaveTranscript={saveRecordingTranscript} />
             <div className="sessions">
               <div className="section-row">
                 <h2>Recent sessions</h2>
@@ -1451,5 +1570,109 @@ function App() {
     </>
   );
 }
+
+function RecordingHistory({ recordings, audioUrls, loadingAudioId, onLoadAudio, onSaveTranscript, compact = false }: { recordings: Recording[]; audioUrls: Record<string, string>; loadingAudioId: string | null; onLoadAudio: (recordingId: string) => Promise<void>; onSaveTranscript: (recordingId: string, transcript: string) => Promise<void>; compact?: boolean }) {
+  return <section className={`recording-history ${compact ? "compact" : ""}`} aria-labelledby={compact ? "record-history-title" : "progress-record-history-title"}>
+    <div className="section-row">
+      <h2 id={compact ? "record-history-title" : "progress-record-history-title"}>Audio & transcript history</h2>
+      <span>{recordings.length} saved</span>
+    </div>
+    {recordings.length === 0 ? <div className="empty-state">Your recorded and uploaded audio will appear here.</div> : recordings.map((recording, index) => {
+      const previous = recordings.slice(index + 1).find((item) => item.template === recording.template && item.transcriptMatch !== null);
+      const change = recording.transcriptMatch !== null && previous?.transcriptMatch !== null && previous?.transcriptMatch !== undefined
+        ? recording.transcriptMatch - previous.transcriptMatch
+        : null;
+      return <RecordingHistoryItem key={recording.id} recording={recording} audioUrl={audioUrls[recording.id]} isLoadingAudio={loadingAudioId === recording.id} change={change} onLoadAudio={onLoadAudio} onSaveTranscript={onSaveTranscript} />;
+    })}
+  </section>;
+}
+
+function ModelEvaluationCard({ metrics }: { metrics: ModelMetrics | null }) {
+  return <section className="model-evaluation" aria-labelledby="model-evaluation-title">
+    <div><span className="section-kicker">Held-out evaluation</span><h2 id="model-evaluation-title">Appointment task model</h2></div>
+    {metrics ? <>
+      <div className="model-metric-grid">
+        <div><strong>{Math.round(metrics.accuracy * 100)}%</strong><span>Accuracy</span></div>
+        <div><strong>{Math.round(metrics.precisionWeighted * 100)}%</strong><span>Weighted precision</span></div>
+        <div><strong>{Math.round(metrics.recallWeighted * 100)}%</strong><span>Weighted recall</span></div>
+        <div><strong>{Math.round(metrics.f1Weighted * 100)}%</strong><span>Weighted F1</span></div>
+      </div>
+      <div className="workflow-metric-row">
+        <span><strong>{Math.round(metrics.workflowEvaluation.responseBlockAccuracy * 100)}%</strong> Response blocks</span>
+        <span><strong>{metrics.workflowEvaluation.transitionPairAccuracy === null ? "—" : `${Math.round(metrics.workflowEvaluation.transitionPairAccuracy * 100)}%`}</strong> State transitions</span>
+        <span><strong>{Math.round(metrics.workflowEvaluation.completeConversationAccuracy * 100)}%</strong> Complete conversations</span>
+      </div>
+      <small>{metrics.modelVersion} · {metrics.trainingSamples} training / {metrics.testSamples} test samples · measured 80/20 split · classifier latency p50 {metrics.classifierLatencyMs.p50.toFixed(1)} ms / p95 {metrics.classifierLatencyMs.p95.toFixed(1)} ms</small>
+    </> : <p>No validated model evaluation is available yet. Metrics appear here only after consented, labeled data is trained and tested.</p>}
+  </section>;
+}
+
+function AppointmentTaskSteps({ selectedIndex, recordings, onSelect }: { selectedIndex: number; recordings: Recording[]; onSelect: (index: number) => void }) {
+  return <section className="appointment-task-steps" aria-labelledby="appointment-task-title">
+    <div className="section-row">
+      <div><span className="section-kicker">Appointment scheduling</span><h2 id="appointment-task-title">Complete four audio subtasks</h2></div>
+      <span>{appointmentSubtasks.filter((step) => recordings.some((recording) => recording.template === "Appointment Fixing" && recording.referencePhrase === step.phrase)).length} / 4 recorded</span>
+    </div>
+    <div className="appointment-step-list">
+      {appointmentSubtasks.map((step, index) => {
+        const complete = recordings.some((recording) => recording.template === "Appointment Fixing" && recording.referencePhrase === step.phrase);
+        return <button className={selectedIndex === index ? "active" : ""} type="button" key={step.key} onClick={() => onSelect(index)} aria-pressed={selectedIndex === index}>
+          <span>{complete ? "✓" : index + 1}</span><strong>{step.title}</strong>
+        </button>;
+      })}
+    </div>
+  </section>;
+}
+
+function RecordingHistoryItem({ recording, audioUrl, isLoadingAudio, change, onLoadAudio, onSaveTranscript }: { recording: Recording; audioUrl?: string; isLoadingAudio: boolean; change: number | null; onLoadAudio: (recordingId: string) => Promise<void>; onSaveTranscript: (recordingId: string, transcript: string) => Promise<void> }) {
+  const [draft, setDraft] = useState(recording.transcript);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
+  const saveTranscript = async () => {
+    if (!draft.trim()) return;
+    setSaveState("saving");
+    try {
+      await onSaveTranscript(recording.id, draft.trim());
+      setSaveState("idle");
+    } catch {
+      setSaveState("error");
+    }
+  };
+  return <article className="recording-history-item">
+    <div className="recording-history-heading">
+      <div><strong>{recording.template}</strong><small>{new Date(recording.createdAt).toLocaleString()} · {recording.sourceType === "uploaded" ? `Uploaded audio${recording.originalFilename ? ` · ${recording.originalFilename}` : ""}` : `Direct recording · ${formatRecordingDuration(recording.duration)}`}</small></div>
+      {recording.transcriptMatch !== null && <span className="recording-match">{recording.transcriptMatch}% phrase match</span>}
+    </div>
+    {audioUrl
+      ? <audio controls preload="metadata" src={audioUrl}>Your browser does not support audio playback.</audio>
+      : <button className="play-recording-button" type="button" disabled={isLoadingAudio} onClick={() => void onLoadAudio(recording.id)}>{isLoadingAudio ? "Loading audio..." : "▶ Play recording"}</button>}
+    <div className="recording-transcript">
+      <span>Transcript</span>
+      <p>{recording.transcript || transcriptionMessage(recording.transcriptionStatus)}</p>
+    </div>
+    <details className="transcript-editor">
+      <summary>{recording.transcript ? "Correct transcript" : "Add transcript manually"}</summary>
+      <textarea value={draft} onChange={(event) => setDraft(event.target.value)} aria-label={`Transcript for ${recording.template}`} />
+      <button type="button" onClick={() => void saveTranscript()} disabled={!draft.trim() || saveState === "saving"}>{saveState === "saving" ? "Saving..." : "Save transcript"}</button>
+      {saveState === "error" && <small role="alert">Transcript could not be saved. Try again.</small>}
+    </details>
+    <div className="recording-evidence">
+      <span>{change === null ? "First transcribed sample for this mission" : change > 0 ? `Improved by ${change} points from the previous sample` : change < 0 ? `${Math.abs(change)} points below the previous sample` : "Same phrase match as the previous sample"}</span>
+      <small>Phrase match is transcript evidence only; it does not measure a person&apos;s ability or diagnose speech.</small>
+    </div>
+    {recording.template === "Appointment Fixing" && <small className="consent-evidence">{recording.modelTrainingConsent ? `Consented model-improvement sample · Expected: ${formatSubtask(recording.expectedSubtask)}` : "Private practice only · Excluded from model training"}</small>}
+    {recording.analysisStatus === "completed" && <div className="model-evidence">
+      <strong>Model output: {formatSubtask(recording.predictedSubtask)}</strong>
+      <span>{recording.predictedResponseBlock} · {recording.workflowStateMatch ? "matches expected state" : "requires state review"}</span>
+      <span>{Math.round((recording.predictionConfidence || 0) * 100)}% model probability · {recording.inferenceLatencyMs?.toFixed(1)} ms inference</span>
+      <small>{recording.inferenceModelVersion}{recording.diarization ? ` · ${recording.diarization.speakerCount} speaker(s), ${recording.diarization.latencyMs.toFixed(1)} ms diarization` : " · Diarization not configured"}</small>
+    </div>}
+  </article>;
+}
+
+const formatRecordingDuration = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+const transcriptionMessage = (status: Recording["transcriptionStatus"]) => status === "unavailable"
+  ? "Transcription is not configured. The audio remains available in your private history."
+  : "Transcription could not be completed. The audio remains available for playback.";
+const formatSubtask = (subtask: Recording["predictedSubtask"]) => appointmentSubtasks.find((item) => item.key === subtask)?.title || "Unknown subtask";
 
 export default App;

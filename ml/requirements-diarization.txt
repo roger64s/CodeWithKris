@@ -1,0 +1,2 @@
+# Optional and substantially larger than the baseline inference environment.
+pyannote.audio==3.3.2

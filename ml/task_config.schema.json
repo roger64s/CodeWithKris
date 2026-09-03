@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codewithkris.local/schemas/task-config.schema.json",
+  "title": "CodeWithKris speech task configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "taskId", "taskName", "version", "features", "model", "evaluation", "states"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "taskId": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+    "taskName": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "language": {"type": "string"},
+    "expectedSpeakerCount": {"type": "integer", "minimum": 1},
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sampleRate", "mfccCount", "nFft", "hopLength", "nMels", "includeDelta", "includeDeltaDelta"],
+      "properties": {
+        "sampleRate": {"type": "integer", "minimum": 1},
+        "mfccCount": {"type": "integer", "minimum": 1},
+        "nFft": {"type": "integer", "minimum": 1},
+        "hopLength": {"type": "integer", "minimum": 1},
+        "nMels": {"type": "integer", "minimum": 1},
+        "includeDelta": {"type": "boolean"},
+        "includeDeltaDelta": {"type": "boolean"}
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hiddenLayerSizes", "activation", "solver", "maxIterations"],
+      "properties": {
+        "hiddenLayerSizes": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 1}},
+        "activation": {"type": "string", "enum": ["identity", "logistic", "tanh", "relu"]},
+        "solver": {"type": "string", "enum": ["lbfgs", "sgd", "adam"]},
+        "maxIterations": {"type": "integer", "minimum": 1}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["folds", "testFraction", "randomState", "minimumSamplesPerClass", "minimumDistinctSpeakersPerClass"],
+      "properties": {
+        "folds": {"const": 5},
+        "testFraction": {"const": 0.2},
+        "randomState": {"type": "integer"},
+        "minimumSamplesPerClass": {"type": "integer", "minimum": 1},
+        "minimumDistinctSpeakersPerClass": {"type": "integer", "minimum": 1}
+      }
+    },
+    "states": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "label", "expectedResult", "responseBlock", "receiverDialogue", "nextState"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1},
+          "label": {"type": "string", "minLength": 1},
+          "visualAudioCue": {"type": "string"},
+          "expectedResult": {"type": "string", "minLength": 1},
+          "responseBlock": {"type": "string", "minLength": 1},
+          "receiverDialogue": {"type": "string", "minLength": 1},
+          "nextState": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

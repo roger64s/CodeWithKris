@@ -296,4 +296,7 @@ For monetization, prefer a cooperative model with transparent task rates and no 
 - Cooperative readiness, producer-owner peer review, client impact snapshots, and the GTM Pilot workflow are implemented in the application.
 - GTM and CRM database migrations are publication-ready but still require application to the remote Supabase project.
 - External email, WhatsApp, and social-platform delivery adapters remain future work; approved GTM outreach is currently tracked as workflow evidence rather than sent through provider APIs.
-- Production MFCC/MLP/Softmax inference and representative consented-speech benchmarking remain future work.
+- A deployable four-class Appointment Fixing baseline now implements 16 kHz audio decoding, MFCC/delta feature extraction, a two-hidden-layer MLP with probabilistic multiclass output, measured inference latency, optional diarization, and a stratified 80/20 evaluation artifact.
+- The learner UI now captures the expected subtask and explicit model-improvement consent per recording; private practice is excluded by default.
+- All eight supplied Opus files decode into the expected feature vector, but they have no verified subtask labels or per-file training consent. No trained artifact or benchmark claim can be produced from them yet.
+- Representative consented-speech collection, independent evaluation, production model deployment, and any substantiated accuracy or latency claim remain future work.

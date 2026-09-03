@@ -34,6 +34,126 @@ const OPERATIONAL_ROLES = new Set(['Developer', 'Tester', 'Project Manager'])
 const TASK_STATUSES = new Set(['backlog', 'assigned', 'in_progress', 'awaiting_review'])
 const QUALITY_METRICS = new Set(['code_quality', 'test_quality', 'delivery_quality'])
 const isAdministrator = (user) => user.email?.toLowerCase() === 'roger.s@gradagig.com' || user.app_metadata?.role === 'CodeWithKris Administrator'
+const recordingFields = 'id, template, task_id, task_config_version, duration, size, mime_type, storage_path, source_type, original_filename, reference_phrase, expected_subtask, model_training_consent, transcript, transcription_status, transcription_model_reference, transcript_match, analysis_status, predicted_subtask, prediction_confidence, inference_latency_ms, inference_model_version, workflow_version, predicted_response_block, workflow_state_match, diarization, created_at'
+
+const transcriptMatch = (reference, transcript) => {
+  const words = (value) => String(value).toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean)
+  const expected = words(reference)
+  const heard = words(transcript)
+  if (!expected.length || !heard.length) return null
+  const matches = heard.filter((word) => expected.includes(word)).length
+  return Math.min(100, Math.round((matches / Math.max(expected.length, heard.length)) * 100))
+}
+
+const transcribeRecording = async (file) => {
+  const transcriptionUrl = process.env.AI_TRANSCRIPTION_API_URL
+  const transcriptionKey = process.env.AI_TRANSCRIPTION_API_KEY
+  const transcriptionModel = process.env.AI_TRANSCRIPTION_MODEL
+  if (!transcriptionUrl || !transcriptionKey || !transcriptionModel) {
+    return { transcript: '', status: 'unavailable', modelReference: null }
+  }
+  try {
+    const body = new FormData()
+    body.append('model', transcriptionModel)
+    body.append('file', new Blob([file.buffer], { type: file.mimetype }), file.originalname || 'recording.webm')
+    const transcriptionResponse = await fetch(transcriptionUrl, {
+      method: 'POST',
+      signal: AbortSignal.timeout(60_000),
+      headers: { Authorization: `Bearer ${transcriptionKey}` },
+      body,
+    })
+    if (!transcriptionResponse.ok) return { transcript: '', status: 'failed', modelReference: transcriptionModel }
+    const payload = await transcriptionResponse.json()
+    const transcript = String(payload.text || '').trim()
+    return { transcript, status: transcript ? 'completed' : 'failed', modelReference: transcriptionModel }
+  } catch {
+    return { transcript: '', status: 'failed', modelReference: transcriptionModel }
+  }
+}
+
+const taskIdFor = (template, suppliedTaskId = '') => {
+  const candidate = suppliedTaskId.trim() || template.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(candidate) ? candidate : null
+}
+
+const analyzeRecording = async (file, taskId, expectedSubtask) => {
+  const inferenceUrl = process.env.ML_INFERENCE_API_URL
+  const inferenceKey = process.env.ML_SERVICE_API_KEY
+  if (!taskId || !inferenceUrl || !inferenceKey) {
+    return { status: 'unavailable', predictedSubtask: null, confidence: null, latencyMs: null, modelVersion: null, workflowVersion: null, responseBlock: null, stateMatch: null, diarization: null }
+  }
+  try {
+    const body = new FormData()
+    body.append('audio', new Blob([file.buffer], { type: file.mimetype }), file.originalname || 'recording.webm')
+    body.append('task_id', taskId)
+    if (expectedSubtask) body.append('expected_state', expectedSubtask)
+    const analysisResponse = await fetch(`${inferenceUrl.replace(/\/$/, '')}/infer`, {
+      method: 'POST',
+      signal: AbortSignal.timeout(60_000),
+      headers: { 'X-API-Key': inferenceKey },
+      body,
+    })
+    if (!analysisResponse.ok) return { status: analysisResponse.status === 503 ? 'unavailable' : 'failed', predictedSubtask: null, confidence: null, latencyMs: null, modelVersion: null, workflowVersion: null, responseBlock: null, stateMatch: null, diarization: null }
+    const payload = await analysisResponse.json()
+    return {
+      status: 'completed',
+      predictedSubtask: String(payload.label || ''),
+      confidence: Number(payload.confidence),
+      latencyMs: Number(payload.latencyMs),
+      modelVersion: String(payload.modelVersion || ''),
+      taskId: String(payload.workflow?.taskId || taskId),
+      workflowVersion: String(payload.workflow?.workflowVersion || ''),
+      responseBlock: String(payload.workflow?.responseBlock || ''),
+      stateMatch: Boolean(payload.workflow?.matchesExpectedState),
+      diarization: payload.diarization || null,
+    }
+  } catch {
+    return { status: 'failed', predictedSubtask: null, confidence: null, latencyMs: null, modelVersion: null, workflowVersion: null, responseBlock: null, stateMatch: null, diarization: null }
+  }
+}
+
+app.get('/api/model-metrics', async (request, response) => {
+  const inferenceUrl = process.env.ML_INFERENCE_API_URL
+  const inferenceKey = process.env.ML_SERVICE_API_KEY
+  if (!inferenceUrl || !inferenceKey) return response.status(503).json({ error: 'The measured model is not configured.' })
+  try {
+    const taskId = taskIdFor(String(request.query.taskId || 'appointment-fixing')) || 'appointment-fixing'
+    const metricsResponse = await fetch(`${inferenceUrl.replace(/\/$/, '')}/metrics?task_id=${encodeURIComponent(taskId)}`, {
+      signal: AbortSignal.timeout(10_000),
+      headers: { 'X-API-Key': inferenceKey },
+    })
+    if (!metricsResponse.ok) return response.status(metricsResponse.status).json({ error: 'No measured model evaluation is available.' })
+    response.json(await metricsResponse.json())
+  } catch {
+    response.status(503).json({ error: 'The measured model service is unavailable.' })
+  }
+})
+
+const presentRecording = (item) => ({
+  ...item,
+  mimeType: item.mime_type,
+  storagePath: item.storage_path,
+  sourceType: item.source_type,
+  originalFilename: item.original_filename,
+  referencePhrase: item.reference_phrase,
+  expectedSubtask: item.expected_subtask,
+  taskId: item.task_id,
+  taskConfigVersion: item.task_config_version,
+  modelTrainingConsent: item.model_training_consent,
+  transcriptionStatus: item.transcription_status,
+  transcriptionModelReference: item.transcription_model_reference,
+  transcriptMatch: item.transcript_match,
+  analysisStatus: item.analysis_status,
+  predictedSubtask: item.predicted_subtask,
+  predictionConfidence: item.prediction_confidence === null ? null : Number(item.prediction_confidence),
+  inferenceLatencyMs: item.inference_latency_ms === null ? null : Number(item.inference_latency_ms),
+  inferenceModelVersion: item.inference_model_version,
+  workflowVersion: item.workflow_version,
+  predictedResponseBlock: item.predicted_response_block,
+  workflowStateMatch: item.workflow_state_match,
+  diarization: item.diarization,
+  createdAt: item.created_at,
+})
 
 app.post('/api/action-trial-guidance', async (request, response) => {
   const assistantUrl = process.env.AI_ASSISTANT_API_URL
@@ -197,9 +317,9 @@ app.delete('/api/dictionary/:id', async (request, response) => {
 })
 
 app.get('/api/recordings', async (request, response) => {
-  const { data, error } = await request.supabase.from('recordings').select('id, template, duration, size, mime_type, storage_path, created_at').order('created_at', { ascending: false })
+  const { data, error } = await request.supabase.from('recordings').select(recordingFields).order('created_at', { ascending: false })
   if (error) return response.status(500).json({ error: error.message })
-  response.json(data.map((item) => ({ ...item, mimeType: item.mime_type, storagePath: item.storage_path, createdAt: item.created_at })))
+  response.json(data.map(presentRecording))
 })
 
 app.post('/api/recordings', upload.single('audio'), async (request, response) => {
@@ -209,13 +329,72 @@ app.post('/api/recordings', upload.single('audio'), async (request, response) =>
   const storagePath = `${request.user.id}/${id}${extension}`
   const uploadResult = await request.supabase.storage.from('voice-recordings').upload(storagePath, request.file.buffer, { contentType: request.file.mimetype, upsert: false })
   if (uploadResult.error) return response.status(500).json({ error: uploadResult.error.message })
-  const recording = { id, user_id: request.user.id, template: String(request.body.template || 'General practice'), duration: Number(request.body.duration || 0), size: request.file.size, mime_type: request.file.mimetype, storage_path: storagePath }
-  const { data, error } = await request.supabase.from('recordings').insert(recording).select('id, template, duration, size, mime_type, storage_path, created_at').single()
+  const referencePhrase = String(request.body.referencePhrase || '')
+  const transcription = await transcribeRecording(request.file)
+  const template = String(request.body.template || 'General practice')
+  const taskId = taskIdFor(template, String(request.body.taskId || ''))
+  const expectedSubtask = String(request.body.expectedSubtask || '') || null
+  const analysis = await analyzeRecording(request.file, taskId, expectedSubtask)
+  const recording = {
+    id,
+    user_id: request.user.id,
+    template,
+    task_id: taskId,
+    task_config_version: analysis.workflowVersion,
+    duration: Number(request.body.duration || 0),
+    size: request.file.size,
+    mime_type: request.file.mimetype,
+    storage_path: storagePath,
+    source_type: request.body.sourceType === 'uploaded' ? 'uploaded' : 'recorded',
+    original_filename: String(request.file.originalname || ''),
+    reference_phrase: referencePhrase,
+    expected_subtask: expectedSubtask,
+    model_training_consent: request.body.modelTrainingConsent === 'true',
+    transcript: transcription.transcript,
+    transcription_status: transcription.status,
+    transcription_model_reference: transcription.modelReference,
+    transcript_match: transcriptMatch(referencePhrase, transcription.transcript),
+    analysis_status: analysis.status,
+    predicted_subtask: analysis.predictedSubtask,
+    prediction_confidence: analysis.confidence,
+    inference_latency_ms: analysis.latencyMs,
+    inference_model_version: analysis.modelVersion,
+    workflow_version: analysis.workflowVersion,
+    predicted_response_block: analysis.responseBlock,
+    workflow_state_match: analysis.stateMatch,
+    diarization: analysis.diarization,
+  }
+  const { data, error } = await request.supabase.from('recordings').insert(recording).select(recordingFields).single()
   if (error) {
     await request.supabase.storage.from('voice-recordings').remove([storagePath])
     return response.status(500).json({ error: error.message })
   }
-  response.status(201).json({ ...data, mimeType: data.mime_type, storagePath: data.storage_path, createdAt: data.created_at })
+  response.status(201).json(presentRecording(data))
+})
+
+app.patch('/api/recordings/:id/transcript', async (request, response) => {
+  const transcript = String(request.body.transcript || '').trim()
+  if (!transcript) return response.status(400).json({ error: 'Transcript text is required.' })
+  if (transcript.length > 20_000) return response.status(400).json({ error: 'Transcript is too long.' })
+  const { data: recording, error: findError } = await request.supabase
+    .from('recordings')
+    .select('reference_phrase')
+    .eq('id', request.params.id)
+    .single()
+  if (findError || !recording) return response.status(404).json({ error: 'Recording not found.' })
+  const { data, error } = await request.supabase
+    .from('recordings')
+    .update({
+      transcript,
+      transcription_status: 'completed',
+      transcription_model_reference: 'manual',
+      transcript_match: transcriptMatch(recording.reference_phrase, transcript),
+    })
+    .eq('id', request.params.id)
+    .select(recordingFields)
+    .single()
+  if (error) return response.status(500).json({ error: error.message })
+  response.json(presentRecording(data))
 })
 
 app.get('/api/recordings/:id/audio', async (request, response) => {

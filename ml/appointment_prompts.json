@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "usage": "Offer a prompt in text and audio. Permit repetition, extra time, AAC support, or an equivalent learner-authored response without penalty.",
+  "subtasks": {
+    "Greeting": [
+      "How are you, David?",
+      "Good afternoon. I am following up to schedule the conversation you requested.",
+      "Hello. I can help arrange the meeting by phone, video, or an accessible alternative."
+    ],
+    "AskAvailability": [
+      "I am doing great, David. Are you available next Tuesday at 5 PM California time to meet Roger regarding the Haz360 demo?",
+      "Which day, time zone, and communication format work best for you?",
+      "Would you prefer morning, afternoon, or an asynchronous reply with suitable times?"
+    ],
+    "CheckSchedule": [
+      "Sure, David. Let me check Roger's calendar. Please give me a minute.",
+      "I will verify both calendars before I reserve the appointment.",
+      "That time may overlap across time zones, so I will check and offer the nearest option."
+    ],
+    "ConfirmAppointment": [
+      "Confirmed. I am sending you a meeting invitation. Thank you, David.",
+      "I have reserved the time and will send the calendar invitation in your preferred format.",
+      "The appointment is confirmed. Please tell me if you need a different channel or accessibility support."
+    ]
+  },
+  "collectionContexts": [
+    "quiet room",
+    "moderate household noise",
+    "workplace background noise",
+    "mobile network compression",
+    "headset and built-in microphone",
+    "synchronous and asynchronous response",
+    "time-zone clarification",
+    "rescheduling after a missed contact"
+  ]
+}

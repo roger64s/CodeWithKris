@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "taskId": "lead-generation",
+  "taskName": "Lead Generation",
+  "version": "2026-09-03.v1",
+  "language": "English",
+  "expectedSpeakerCount": 2,
+  "features": {"sampleRate": 16000, "mfccCount": 13, "nFft": 400, "hopLength": 160, "nMels": 32, "includeDelta": true, "includeDeltaDelta": true},
+  "model": {"hiddenLayerSizes": [128, 64], "activation": "relu", "solver": "adam", "maxIterations": 500},
+  "evaluation": {"folds": 5, "testFraction": 0.2, "randomState": 42, "minimumSamplesPerClass": 5, "minimumDistinctSpeakersPerClass": 5},
+  "states": [
+    {"sequence": 1, "label": "Introduce", "expectedResult": "Hello, I am calling from the project team.", "responseBlock": "IntroduceResponse", "receiverDialogue": "Hello. How can I help?", "nextState": "DiscoverNeed"},
+    {"sequence": 2, "label": "DiscoverNeed", "expectedResult": "May I ask what challenge your team is trying to solve?", "responseBlock": "DiscoverNeedResponse", "receiverDialogue": "We are reviewing options for our current process.", "nextState": "QualifyInterest"},
+    {"sequence": 3, "label": "QualifyInterest", "expectedResult": "Would it be useful to review a short demonstration with your team?", "responseBlock": "QualifyInterestResponse", "receiverDialogue": "Yes, please send more information.", "nextState": "AgreeNextStep"},
+    {"sequence": 4, "label": "AgreeNextStep", "expectedResult": "I will send the information and confirm the next step.", "responseBlock": "AgreeNextStepResponse", "receiverDialogue": "Thank you. I will look out for it.", "nextState": null}
+  ]
+}
