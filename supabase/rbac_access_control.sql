@@ -134,11 +134,11 @@ select role.id, resources.resource_key,
     when role.slug = 'support-agent' and resources.resource_key in ('support', 'profile') then true
     when role.slug = 'instructor' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
-      'learning', 'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
+      'learning', 'peer-review', 'support', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
     ) then true
     when role.slug = 'student' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
-      'learning', 'peer-review', 'profile'
+      'learning', 'peer-review', 'support', 'profile'
     ) then true
     else false
   end,
@@ -147,17 +147,24 @@ select role.id, resources.resource_key,
     when role.slug = 'support-agent' and resources.resource_key in ('support', 'profile') then true
     when role.slug = 'instructor' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
-      'learning', 'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
+      'learning', 'peer-review', 'support', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
     ) then true
     when role.slug = 'student' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
-      'learning', 'peer-review', 'profile'
+      'learning', 'peer-review', 'support', 'profile'
     ) then true
     else false
   end
 from public.rbac_roles role cross join resources
 where role.slug in ('student', 'instructor', 'support-agent', 'security-admin', 'administrator')
 on conflict (role_id, resource_key) do nothing;
+
+update public.rbac_permissions permission
+set can_view = true, can_access = true, updated_at = now()
+from public.rbac_roles role
+where permission.role_id = role.id
+  and role.slug in ('student', 'instructor')
+  and permission.resource_key = 'support';
 
 create or replace function public.assign_initial_rbac_role()
 returns trigger
