@@ -3,6 +3,7 @@ import { Check, Flame, Lock, Play, RefreshCw, Trophy, Zap } from "lucide-react";
 import { supabase } from "../supabase";
 import { VocabularyPractice } from "./VocabularyPractice";
 import { ReframingCueSwitcher } from "./ReframingCueSwitcher";
+import { CooperativeReadinessDashboard } from "./CooperativeReadinessDashboard";
 import "./LearningWorkspace.css";
 
 type LearningProfile = {
@@ -89,7 +90,24 @@ export function SkillTreeMilestoneMap({ nodes, completions, onStartMission }: {
   </div>;
 }
 
-export function LearningWorkspace({ onStartMission }: { onStartMission: (missionTitle: string) => void }) {
+type LearningWorkspaceProps = {
+  onStartMission: (missionTitle: string) => void;
+  readiness: {
+    headline: string;
+    message: string;
+    phases: readonly { number: 1 | 2 | 3; title: string; detail: string }[];
+    completedMissions: readonly number[];
+    totalMissions: readonly number[];
+    peerReviewContributions: number;
+    formativeEvidenceCount: number;
+    actionTrialCompleted: boolean;
+    onSelectPhase: (phase: 1 | 2 | 3) => void;
+    onStartActionTrial?: () => void;
+    onOpenPeerReviews?: () => void;
+  };
+};
+
+export function LearningWorkspace({ onStartMission, readiness }: LearningWorkspaceProps) {
   const [dashboard, setDashboard] = useState<LearningDashboard | null>(null);
   const [error, setError] = useState("");
 
@@ -107,6 +125,9 @@ export function LearningWorkspace({ onStartMission }: { onStartMission: (mission
   const levelProgress = dashboard.profile.total_xp % 100;
   const completedCount = dashboard.completions.length;
   return <section className="learning-workspace">
+    <section className="learning-readiness" aria-label="Three-phase learning pathway">
+      <CooperativeReadinessDashboard {...readiness} />
+    </section>
     <header className="learning-heading"><div><span>CodeWithKris learning path</span><h1>Build the habit. Level up the skill.</h1><p>Small technical challenges create visible progress without turning learning into a race.</p></div><div className="level-mark"><small>Level</small><strong>{level}</strong></div></header>
     {error && <div className="learning-error-line" role="alert">{error}</div>}
     <div className="learning-summary">

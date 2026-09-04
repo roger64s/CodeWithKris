@@ -50,11 +50,11 @@ type Screen =
   | "access-denied"
   | "volunteer";
 const NAV_ITEMS: Array<{ screen: Screen; label: string; icon: string }> = [
+  { screen: "learning", label: "Learning", icon: "◆" },
   { screen: "templates", label: "Templates", icon: "▦" },
   { screen: "record", label: "Record", icon: "●" },
   { screen: "practice", label: "Practice", icon: "◌" },
   { screen: "progress", label: "Progress", icon: "▥" },
-  { screen: "learning", label: "Learning", icon: "◆" },
   { screen: "gtm-pilot", label: "GTM Pilot", icon: "◇" },
   { screen: "requirements", label: "Requirements", icon: "≡" },
   { screen: "sprints", label: "Sprints", icon: "▥" },
@@ -380,7 +380,7 @@ function App() {
       setFullName("Developer");
       setUserRole("Student");
       setSelectedPhase(null);
-      setScreen("templates");
+      setScreen("learning");
     } else if (preview === "peer-review") {
       setFullName("Developer");
       setUserRole("Student");
@@ -445,7 +445,7 @@ function App() {
           data.session.user.id,
           appMeta?.stakeholder_category as StakeholderCategory | undefined,
         );
-        setScreen("templates");
+        setScreen("learning");
       }
     });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
@@ -462,7 +462,7 @@ function App() {
           appMeta?.stakeholder_category as StakeholderCategory | undefined,
         );
         setScreen((current) =>
-          current === "signin" || current === "register" ? "templates" : current,
+          current === "signin" || current === "register" ? "learning" : current,
         );
       } else if (event === "SIGNED_OUT") {
         setAuthenticatedUserId(null);
@@ -1630,7 +1630,19 @@ function App() {
         {screen === "quality" && <Suspense fallback={<div className="empty-state">Loading Testing & Issues...</div>}><QualityWorkspace /></Suspense>}
         {screen === "baselines" && <Suspense fallback={<div className="empty-state">Loading Baselines & Activity...</div>}><BaselineActivityDashboard /></Suspense>}
         {screen === "support" && <Suspense fallback={<div className="empty-state">Loading Support...</div>}><SupportWorkspace /></Suspense>}
-        {screen === "learning" && <Suspense fallback={<div className="empty-state">Loading Learning Milestones...</div>}><LearningWorkspace onStartMission={(missionTitle) => {
+        {screen === "learning" && <Suspense fallback={<div className="empty-state">Loading Learning Hub...</div>}><LearningWorkspace readiness={{
+          headline: getRoleGreeting(userRole || "Student", fullName).headline,
+          message: getRoleGreeting(userRole || "Student", fullName).message,
+          phases,
+          completedMissions: completedMissionsByPhase,
+          totalMissions: totalMissionsByPhase,
+          peerReviewContributions,
+          formativeEvidenceCount,
+          actionTrialCompleted,
+          onSelectPhase: (phase) => { setSelectedPhase(phase); navigate("templates"); },
+          onStartActionTrial: rbacPolicy["action-trial"].canView ? () => navigate("action-trial") : undefined,
+          onOpenPeerReviews: rbacPolicy["peer-review"].canView ? () => navigate("peer-review") : undefined,
+        }} onStartMission={(missionTitle) => {
           const mission = templates.find((template) => template.title === missionTitle);
           if (mission) {
             setSelectedTemplate(mission);

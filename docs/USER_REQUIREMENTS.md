@@ -195,4 +195,5 @@
 - Add dynamic Python, JavaScript, and SQL vocabulary practice with definitions, syntax examples, translations, mastery, and XP rewards.
 - Add concept-reframing cue cards showing old patterns, clearer alternatives, visual cues, and new syntax with supportive mastery feedback.
 - Remove named third-party learning-product references from project documentation while preserving generic habit-based learning guidance.
+- Make Learning the primary authenticated dashboard, with the three-phase readiness tracker above XP, vocabulary, and reframing tools; retain Templates as the mission library.
 
