@@ -49,9 +49,12 @@ async function supportApi<T>(path: string, options: RequestInit = {}): Promise<T
     ...options,
     headers: { Authorization: `Bearer ${token}`, ...options.headers },
   });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error || "Support request failed.");
-  return payload;
+  const responseText = await response.text();
+  let payload: T | { error?: string };
+  try { payload = JSON.parse(responseText) as T | { error?: string }; }
+  catch { throw new Error(`Support service returned HTTP ${response.status}. ${responseText.slice(0, 160)}`); }
+  if (!response.ok) throw new Error((payload as { error?: string }).error || `Support service returned HTTP ${response.status}.`);
+  return payload as T;
 }
 
 function RichTextEditor({ editor, label }: { editor: ReturnType<typeof useEditor>; label: string }) {
