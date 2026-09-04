@@ -12,10 +12,10 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 41 |
-| Text lines added | 21,855 |
-| Text lines deleted | 2,018 |
-| Net text-line change | 19,837 |
+| Commits | 47 |
+| Text lines added | 22,147 |
+| Text lines deleted | 2,076 |
+| Net text-line change | 20,071 |
 | Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -112,7 +112,7 @@ xychart-beta
 | Research and product design | 17% |
 | Documentation and release preparation | 8% |
 
-Estimated active work window: approximately 36 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, RBAC security hardening, support ticketing, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 41 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, RBAC security hardening, support ticketing, learning extensions, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
@@ -145,6 +145,10 @@ Estimated active work window: approximately 36 hours across implementation, auth
 - Added reframing cue cards for Foundation, Commercial, and Applied AI tracks with old-pattern/new-syntax comparisons and mastery feedback.
 - Removed named third-party learning-product references from audit, licensing, and requirements documentation.
 - Apply `supabase/learning_gamification.sql`, `supabase/learning_vocabulary.sql`, and `supabase/learning_reframing.sql` after the RBAC migration before enabling the learning extensions in production.
+- Made Learning the primary authenticated dashboard, placing the three-phase readiness tracker above XP, vocabulary, and reframing tools while retaining Templates as the mission library.
+- Added explicit Vercel handlers for nested learning, dictionary, reframing, and support routes, plus readable non-JSON API error handling.
+- Granted Student and Instructor roles access to the Support portal and made the RBAC migration repair existing support permission rows.
+- Apply the three learning migrations in production Supabase before user acceptance testing; the production UI has reported missing vocabulary and reframing tables when those migrations are absent.
 
 ## Separation Rule
 
