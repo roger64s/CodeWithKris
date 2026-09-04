@@ -12,10 +12,10 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 40 |
-| Text lines added | 20,754 |
-| Text lines deleted | 2,000 |
-| Net text-line change | 18,754 |
+| Commits | 41 |
+| Text lines added | 21,855 |
+| Text lines deleted | 2,018 |
+| Net text-line change | 19,837 |
 | Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -33,7 +33,7 @@ xychart-beta
     title "Lines Added by Date"
     x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3", "Sep 4"]
     y-axis "Lines Added" 0 --> 7500
-    bar [5208, 609, 2538, 3193, 617, 7969, 620]
+    bar [5208, 609, 2538, 3193, 617, 7969, 1721]
 ```
 
 ## Delivered Today
@@ -139,6 +139,12 @@ Estimated active work window: approximately 36 hours across implementation, auth
 - Final RBAC production build and API syntax checks passed; lint reports only six pre-existing React warnings.
 - The support workspace is emitted as a separate lazy-loaded production bundle; TypeScript/Vite build, Node syntax checks, lint, and workspace diagnostics passed.
 - Apply `supabase/rbac_access_control.sql` followed by `supabase/support_ticketing.sql` before enabling production support persistence; local SQL execution was unavailable because the Supabase CLI is not installed.
+- Added isolated streak, XP, and skill-tree progress with retry-safe rewards and historical pathway-session backfill.
+- Integrated gamification with all 11 existing missions across Universal Foundation, Commercial Task Tracks, and Applied AI & Workflow Execution.
+- Added dynamic Python, JavaScript, and SQL vocabulary practice with syntax examples, translations, mastery tracking, and XP rewards.
+- Added reframing cue cards for Foundation, Commercial, and Applied AI tracks with old-pattern/new-syntax comparisons and mastery feedback.
+- Removed named third-party learning-product references from audit, licensing, and requirements documentation.
+- Apply `supabase/learning_gamification.sql`, `supabase/learning_vocabulary.sql`, and `supabase/learning_reframing.sql` after the RBAC migration before enabling the learning extensions in production.
 
 ## Separation Rule
 

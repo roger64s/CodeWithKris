@@ -24,6 +24,7 @@ const SprintTaskBoard = lazy(() => import("./components/SprintTaskBoard").then((
 const QualityWorkspace = lazy(() => import("./components/QualityWorkspace").then((module) => ({ default: module.QualityWorkspace })));
 const BaselineActivityDashboard = lazy(() => import("./components/BaselineActivityDashboard").then((module) => ({ default: module.BaselineActivityDashboard })));
 const SupportWorkspace = lazy(() => import("./components/SupportWorkspace").then((module) => ({ default: module.SupportWorkspace })));
+const LearningWorkspace = lazy(() => import("./components/LearningWorkspace").then((module) => ({ default: module.LearningWorkspace })));
 
 type Screen =
   | "register"
@@ -43,6 +44,7 @@ type Screen =
   | "quality"
   | "baselines"
   | "support"
+  | "learning"
   | "profile-onboarding"
   | "profile"
   | "access-denied"
@@ -52,6 +54,7 @@ const NAV_ITEMS: Array<{ screen: Screen; label: string; icon: string }> = [
   { screen: "record", label: "Record", icon: "●" },
   { screen: "practice", label: "Practice", icon: "◌" },
   { screen: "progress", label: "Progress", icon: "▥" },
+  { screen: "learning", label: "Learning", icon: "◆" },
   { screen: "gtm-pilot", label: "GTM Pilot", icon: "◇" },
   { screen: "requirements", label: "Requirements", icon: "≡" },
   { screen: "sprints", label: "Sprints", icon: "▥" },
@@ -238,6 +241,19 @@ const appointmentSubtasks = [
   { key: "ConfirmAppointment", title: "Confirm appointment", phrase: "Confirmed. I am sending you a meeting invitation. Thank you, David.", receiver: "Thank you, Josy. I received it and will talk to Roger on Wednesday. Bye.", responseBlock: "ConfirmAppointmentResponse" },
 ] as const;
 const phraseFor = (template: Template) => missionPhrases[template.title] || `I am practicing ${template.title.toLowerCase()}.`;
+const LEARNING_NODE_BY_TEMPLATE: Record<string, string> = {
+  "Active listening & de-escalation": "active-listening-deescalation",
+  "Professional text & email": "professional-text-email",
+  "Voice clarity": "voice-clarity",
+  "Lead Generation": "lead-generation",
+  "Appointment Fixing": "appointment-fixing",
+  "Follow-Up Management": "follow-up-management",
+  "Customer Service": "customer-service",
+  "AI-assisted response drafting": "ai-response-drafting",
+  "Text task automation": "text-task-automation",
+  "CRM entry organization": "crm-entry-organization",
+  "Technical & operational execution": "technical-operational-execution",
+};
 const api = async <T,>(path: string, options?: RequestInit): Promise<T> => {
   const { data } = await supabase?.auth.getSession() || { data: { session: null } };
   const accessToken = data.session?.access_token;
@@ -812,6 +828,16 @@ function App() {
         }),
       });
       setSessions((current) => [saved, ...current]);
+      const learningNodeKey = LEARNING_NODE_BY_TEMPLATE[selectedTemplate.title];
+      if (learningNodeKey) {
+        void api<{ xp_awarded: number }>("/api/v1/learning/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nodeKey: learningNodeKey, sourceType: "practice_session", eventKey: `practice:${saved.id}` }),
+        }).then((reward) => {
+          if (reward.xp_awarded > 0) setAccessNotice(`+${reward.xp_awarded} XP · ${selectedTemplate.title} milestone complete`);
+        }).catch(() => undefined);
+      }
       setIsListening(false);
       recognition.current?.stop();
       navigate("progress");
@@ -1190,6 +1216,7 @@ function App() {
                     onSelectPhase={setSelectedPhase}
                     onStartActionTrial={rbacPolicy["action-trial"].canView ? () => navigate("action-trial") : undefined}
                     onOpenPeerReviews={rbacPolicy["peer-review"].canView ? () => navigate("peer-review") : undefined}
+                    onOpenLearning={rbacPolicy.learning.canView ? () => navigate("learning") : undefined}
                   />
                 </section>
               ) : (
@@ -1603,6 +1630,13 @@ function App() {
         {screen === "quality" && <Suspense fallback={<div className="empty-state">Loading Testing & Issues...</div>}><QualityWorkspace /></Suspense>}
         {screen === "baselines" && <Suspense fallback={<div className="empty-state">Loading Baselines & Activity...</div>}><BaselineActivityDashboard /></Suspense>}
         {screen === "support" && <Suspense fallback={<div className="empty-state">Loading Support...</div>}><SupportWorkspace /></Suspense>}
+        {screen === "learning" && <Suspense fallback={<div className="empty-state">Loading Learning Milestones...</div>}><LearningWorkspace onStartMission={(missionTitle) => {
+          const mission = templates.find((template) => template.title === missionTitle);
+          if (mission) {
+            setSelectedTemplate(mission);
+            navigate("practice");
+          }
+        }} /></Suspense>}
       </div>
       <nav className="bottom-nav" aria-label="Main navigation">
         {NAV_ITEMS.filter(({ screen: itemScreen }) => !isRbacResource(itemScreen) || rbacPolicy[itemScreen].canView).map(({ screen: value, label, icon }) => (

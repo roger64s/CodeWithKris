@@ -5,6 +5,7 @@ export const RBAC_RESOURCES = [
   { key: "progress", label: "Progress evidence", category: "Learning modules" },
   { key: "dictionary", label: "Word dictionary", category: "Learning modules" },
   { key: "action-trial", label: "Commercial task trial", category: "Learning modules" },
+  { key: "learning", label: "Learning milestones", category: "Learning modules" },
   { key: "peer-review", label: "Peer review queue", category: "Operations" },
   { key: "gtm-pilot", label: "GTM Pilot", category: "Operations" },
   { key: "requirements", label: "Requirements", category: "Operations" },
@@ -23,7 +24,7 @@ export type RbacPolicy = Record<RbacResourceKey, RbacPermission>;
 
 const LEARNER_RESOURCES = new Set<RbacResourceKey>([
   "templates", "record", "practice", "progress", "dictionary", "action-trial",
-  "peer-review", "support", "profile",
+  "learning", "peer-review", "support", "profile",
 ]);
 const INSTRUCTOR_RESOURCES = new Set<RbacResourceKey>([
   ...LEARNER_RESOURCES, "gtm-pilot", "requirements", "sprints", "quality",

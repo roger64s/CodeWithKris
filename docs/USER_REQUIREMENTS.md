@@ -26,7 +26,7 @@
 - Audit and improve the speech model, personalized Voice Dictionary, communication-channel integrations, and Go-To-Market Gigs learning workflow.
 - Differentiate CodeWithKris for business use with practice scenarios for client briefs, project status updates, and QA handoffs.
 - Make the audio sample upload control functional instead of displaying a placeholder row.
-- Research Duolingo-inspired bite-sized learning, progress, habit support, and accessibility patterns for CodeWithKris.
+- Research bite-sized learning, progress, habit support, and accessibility patterns for CodeWithKris.
 - Enable a future large-scale CodeWithKris learning and application pathway that connects practice, work artifacts, and supervised opportunities with privacy safeguards.
 - Research Quorum's accessible, block-like programming approach to help learners progress toward knowledge-economy contributions at their own pace.
 - Include all three CodeWithKris phases: Universal Foundation, Commercial Task Tracks, and Applied AI & Workflow Execution.
@@ -179,4 +179,20 @@
 - Preserve chronological ticket conversations with timestamps and visible User or Support Agent sender roles.
 - Give administrators support metrics for open volume, request categories, first-response time, and 30-day resolutions.
 - Protect support data through the existing role-based access controls and dedicated namespaced API routes.
+- Add an isolated gamification learning module with daily streaks, XP rewards, and structured skill-tree milestones.
+- Award immediate, retry-safe XP and update streak progress when users complete mini-challenges, code lessons, or guided practice.
+- Keep gamification data, endpoints, and UI components modular without changing existing authentication, routes, or core schemas.
+- Align gamification progress and XP awards with all 11 missions in the existing Universal Foundation, Commercial Task Tracks, and Applied AI & Workflow Execution pathways.
+- Add an isolated multi-language programming vocabulary system for terms, definitions, syntax examples, and translations.
+- Let learners switch dynamically between Python, JavaScript, and SQL vocabulary, practise term matching, browse a syntax dictionary, and track mastery.
+- Award retry-safe XP and streak progress for correct vocabulary practice through the existing isolated learning engine.
+- Add concept-reframing cue cards that contrast an old coding pattern with a clearer alternative, visual cue, and language-specific replacement syntax.
+- Let learners practise and master alternative patterns through dedicated track endpoints while receiving supportive feedback rather than deficit labels.
+
+## 2026-09-04 (Closeout Update)
+- Add isolated streak, XP, and skill-tree learning progress without changing existing authentication, routes, or core schemas.
+- Integrate XP milestones with all 11 missions across the three existing CodeWithKris pathways.
+- Add dynamic Python, JavaScript, and SQL vocabulary practice with definitions, syntax examples, translations, mastery, and XP rewards.
+- Add concept-reframing cue cards showing old patterns, clearer alternatives, visual cues, and new syntax with supportive mastery feedback.
+- Remove named third-party learning-product references from project documentation while preserving generic habit-based learning guidance.
 

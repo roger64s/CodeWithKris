@@ -14,7 +14,7 @@ create table if not exists public.rbac_permissions (
   role_id uuid not null references public.rbac_roles(id) on delete cascade,
   resource_key text not null check (resource_key in (
     'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
-    'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines',
+    'learning', 'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines',
     'support', 'financials', 'admin', 'profile'
   )),
   can_view boolean not null default false,
@@ -23,6 +23,13 @@ create table if not exists public.rbac_permissions (
   primary key (role_id, resource_key),
   check (not can_access or can_view)
 );
+
+alter table public.rbac_permissions drop constraint if exists rbac_permissions_resource_key_check;
+alter table public.rbac_permissions add constraint rbac_permissions_resource_key_check check (resource_key in (
+  'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
+  'learning', 'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality',
+  'baselines', 'support', 'financials', 'admin', 'profile'
+));
 
 create table if not exists public.user_rbac_assignments (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -117,7 +124,7 @@ create trigger protect_builtin_rbac_role_before_change
 
 with resources(resource_key) as (
   values ('templates'), ('record'), ('practice'), ('progress'), ('dictionary'),
-    ('action-trial'), ('peer-review'), ('gtm-pilot'), ('requirements'), ('sprints'),
+    ('action-trial'), ('learning'), ('peer-review'), ('gtm-pilot'), ('requirements'), ('sprints'),
     ('quality'), ('baselines'), ('support'), ('financials'), ('admin'), ('profile')
 )
 insert into public.rbac_permissions (role_id, resource_key, can_view, can_access)
@@ -127,10 +134,11 @@ select role.id, resources.resource_key,
     when role.slug = 'support-agent' and resources.resource_key in ('support', 'profile') then true
     when role.slug = 'instructor' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
-      'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
+      'learning', 'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
     ) then true
     when role.slug = 'student' and resources.resource_key in (
-      'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial', 'peer-review', 'profile'
+      'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
+      'learning', 'peer-review', 'profile'
     ) then true
     else false
   end,
@@ -139,10 +147,11 @@ select role.id, resources.resource_key,
     when role.slug = 'support-agent' and resources.resource_key in ('support', 'profile') then true
     when role.slug = 'instructor' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
-      'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
+      'learning', 'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
     ) then true
     when role.slug = 'student' and resources.resource_key in (
-      'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial', 'peer-review', 'profile'
+      'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
+      'learning', 'peer-review', 'profile'
     ) then true
     else false
   end
@@ -269,6 +278,9 @@ begin
       ('support_tickets', array['support']),
       ('support_ticket_messages', array['support']),
       ('support_ticket_attachments', array['support']),
+      ('gamification_profiles', array['learning']),
+      ('learning_xp_events', array['learning']),
+      ('user_learning_nodes', array['learning']),
       ('release_baselines', array['baselines']),
       ('workspace_activity_events', array['baselines']),
       ('project_operating_plans', array['requirements']),

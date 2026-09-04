@@ -32,9 +32,9 @@ CodeWithKris should learn from that direction without becoming a smaller copy of
 
 The positioning should be: **CodeWithKris helps people communicate, practice real work situations, and build evidence for inclusive paid work.** It should not claim to replace speech therapy, diagnose a condition, or match Google's research scale.
 
-## Inspiration from Duolingo
+## Habit-Based Learning Research
 
-Duolingo's public login experience combines a low-friction start with a clear promise: short lessons, points, levels, real-world skills, personalized pacing, and friendly habit support. The product makes progress visible without making the learner wait for a large course or a perfect result.
+Habit-based learning products combine a low-friction start with a clear promise: short lessons, points, levels, real-world skills, personalized pacing, and friendly habit support. This approach makes progress visible without making the learner wait for a large course or a perfect result.
 
 CodeWithKris can borrow the learning mechanics while keeping its own purpose and tone:
 
@@ -68,7 +68,7 @@ To let millions of people learn, interact, and apply for CodeWithKris opportunit
 
 For scale, keep the web client on a CDN, make the API stateless, move audio inference to queued workers, store audio in private object storage, use signed short-lived playback URLs, and add per-user rate limits. Use observability for latency and failures, not surveillance of disability or speech patterns. Partition analytics from personally identifiable data, encrypt secrets, and apply Supabase row-level security before opening the community or employer surfaces.
 
-The differentiator is therefore: **Euphonia-inspired personalization + Duolingo-inspired habit design + Grad-a-Gig work pathways.** CodeWithKris should help a person move from a first safe practice to a reviewed, useful contribution without pretending that gamification or transcription alone equals employability.
+The differentiator is therefore: **Euphonia-inspired personalization + habit-based learning design + Grad-a-Gig work pathways.** CodeWithKris should help a person move from a first safe practice to a reviewed, useful contribution without pretending that gamification or transcription alone equals employability.
 
 ## Inspiration from Quorum
 
@@ -286,7 +286,7 @@ For monetization, prefer a cooperative model with transparent task rates and no 
 
 - Implemented the functional audio-file upload flow against the existing recordings API.
 - Added business-focused practice templates for client briefs, project status updates, and QA handoffs.
-- Added research-informed guidance from Project Euphonia, Duolingo, and Quorum.
+- Added research-informed guidance from Project Euphonia, habit-based learning research, and Quorum.
 - Added the copyright and licensing register; commercial release remains gated on owner permissions and asset provenance for supplied media.
 - Production MFCC/MLP/Softmax inference, Supabase Auth/RLS, channel delivery adapters, community features, and employer workflows remain future implementation phases.
 

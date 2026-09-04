@@ -9,6 +9,7 @@ import {
   Radio,
   Sparkles,
   Users,
+  Zap,
 } from "lucide-react";
 import { ClientProjectImpactWidget } from "./ClientProjectImpactWidget";
 
@@ -30,6 +31,7 @@ type CooperativeReadinessDashboardProps = {
   onSelectPhase: (phase: 1 | 2 | 3) => void;
   onStartActionTrial?: () => void;
   onOpenPeerReviews?: () => void;
+  onOpenLearning?: () => void;
 };
 
 const phaseIcons = [MessageSquareMore, Users, Bot];
@@ -46,6 +48,7 @@ export function CooperativeReadinessDashboard({
   onSelectPhase,
   onStartActionTrial,
   onOpenPeerReviews,
+  onOpenLearning,
 }: CooperativeReadinessDashboardProps) {
   const totalComplete = completedMissions.reduce((sum, count) => sum + count, 0);
   const totalRequired = totalMissions.reduce((sum, count) => sum + count, 0);
@@ -63,9 +66,14 @@ export function CooperativeReadinessDashboard({
           <h1 id="dashboard-title" className="text-3xl font-bold leading-tight text-slate-950">{headline}</h1>
           <div className="mt-2 max-w-xl text-sm leading-6 text-slate-600">{message}</div>
         </div>
-        {onStartActionTrial && <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-emerald-800" onClick={onStartActionTrial}>
-          Commercial task trial <ArrowRight size={17} aria-hidden="true" />
-        </button>}
+        <div className="flex flex-wrap gap-2">
+          {onOpenLearning && <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-amber-500 bg-amber-50 px-4 text-sm font-bold text-amber-900 hover:bg-amber-100" onClick={onOpenLearning}>
+            XP & streaks <Zap size={17} fill="currentColor" aria-hidden="true" />
+          </button>}
+          {onStartActionTrial && <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-emerald-800" onClick={onStartActionTrial}>
+            Commercial task trial <ArrowRight size={17} aria-hidden="true" />
+          </button>}
+        </div>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3" aria-label="Readiness metrics">

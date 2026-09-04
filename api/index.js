@@ -5,6 +5,7 @@ import express from 'express'
 import multer from 'multer'
 import { createClient } from '@supabase/supabase-js'
 import { createSupportRouter } from './support.js'
+import { createLearningRouter } from './learning.js'
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -38,6 +39,7 @@ const isAdministrator = (user) => user.email?.toLowerCase() === 'roger.s@gradagi
 const recordingFields = 'id, template, task_id, task_config_version, duration, size, mime_type, storage_path, source_type, original_filename, reference_phrase, expected_subtask, model_training_consent, transcript, transcription_status, transcription_model_reference, transcript_match, analysis_status, predicted_subtask, prediction_confidence, inference_latency_ms, inference_model_version, workflow_version, predicted_response_block, workflow_state_match, diarization, created_at'
 
 const rbacResourceForPath = (path) => {
+  if (path.startsWith('/v1/learning')) return 'learning'
   if (path.startsWith('/v1/tickets')) return 'support'
   if (path.startsWith('/dictionary')) return 'dictionary'
   if (path.startsWith('/recordings')) return 'record'
@@ -59,6 +61,7 @@ app.use('/api', async (request, response, next) => {
 })
 
 app.use('/api/v1/tickets', createSupportRouter(upload))
+app.use('/api/v1/learning', createLearningRouter())
 
 const transcriptMatch = (reference, transcript) => {
   const words = (value) => String(value).toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean)

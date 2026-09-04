@@ -10,7 +10,7 @@ This register records the provenance checks for the CodeWithKris and connected G
 | Tailwind CSS CDN | Grad-a-Gig styling | Tailwind CSS is open source; the site loads the public CDN rather than copying its source | Pin a version for production and retain the upstream license notice if bundling later |
 | Chart.js and chartjs-plugin-datalabels CDN | Grad-a-Gig charts | Public packages are distributed under their respective open-source licenses | Pin versions and retain notices if copied into the repository |
 | Google Fonts Inter | Web typography | Served from Google Fonts under its published font licensing terms | Keep the font provider link; self-host only after recording the font license |
-| Research references to Google Project Euphonia, Duolingo, and Quorum | Product research documentation | Nominative references for comparison and inspiration; no copied logos, code, or screenshots | Do not imply endorsement, partnership, or affiliation |
+| Research references to Google Project Euphonia, habit-based learning, and Quorum | Product research documentation | Nominative references for comparison and inspiration; no copied logos, code, or screenshots | Do not imply endorsement, partnership, or affiliation |
 
 ## Owner confirmation required
 
@@ -37,7 +37,7 @@ Before commercial publication, add one of the following for every item above: an
 - Team photos require consent from each identifiable person for website publication and the intended audience.
 - The Loom video and thumbnail must be owned by the publisher or used with permission. Keep the provider attribution and terms link where required.
 - The CodeWithKris and Grad-a-Gig marks should be used only with the brand owner's authorization. Do not reuse third-party logos from research or competitor sites.
-- Product language inspired by other products should be rewritten in original wording. Do not copy Duolingo, Euphonia, Quorum, or other sites' copy, illustrations, UI screenshots, mascots, or source code.
+- Product language inspired by other products should be rewritten in original wording. Do not copy third-party sites' copy, illustrations, UI screenshots, mascots, or source code.
 
 ## Repository hygiene
 
