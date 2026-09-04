@@ -31,9 +31,12 @@ async function learningApi<T>(path: string, options: RequestInit = {}): Promise<
     ...options,
     headers: { Authorization: `Bearer ${token}`, ...options.headers },
   });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error || "Learning progress could not be loaded.");
-  return payload;
+  const responseText = await response.text();
+  let payload: T | { error?: string };
+  try { payload = JSON.parse(responseText) as T | { error?: string }; }
+  catch { throw new Error(`Learning service returned HTTP ${response.status}. ${responseText.slice(0, 160)}`); }
+  if (!response.ok) throw new Error((payload as { error?: string }).error || `Learning service returned HTTP ${response.status}.`);
+  return payload as T;
 }
 
 const activeStreak = (profile: LearningProfile) => {

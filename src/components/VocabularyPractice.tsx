@@ -25,9 +25,12 @@ async function vocabularyApi<T>(path: string, options: RequestInit = {}): Promis
     ...options,
     headers: { Authorization: `Bearer ${token}`, ...options.headers },
   });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error || "Vocabulary practice is unavailable.");
-  return payload;
+  const responseText = await response.text();
+  let payload: T | { error?: string };
+  try { payload = JSON.parse(responseText) as T | { error?: string }; }
+  catch { throw new Error(`Vocabulary service returned HTTP ${response.status}. ${responseText.slice(0, 160)}`); }
+  if (!response.ok) throw new Error((payload as { error?: string }).error || `Vocabulary service returned HTTP ${response.status}.`);
+  return payload as T;
 }
 
 const languageLabel = (key: string) => ({ python: "Python", javascript: "JavaScript", sql: "SQL" })[key] || key;
