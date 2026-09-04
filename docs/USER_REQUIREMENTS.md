@@ -172,3 +172,11 @@
 - Keep authenticated content in natural document flow with compact spacing and a responsive sticky header menu that never overlaps lower cards, the word dictionary, audio history, or workflow blocks.
 - Let administrators define access roles, assign them to users, and independently control whether each dashboard action, module, and navigation item is visible or accessible to the logged-in user.
 
+## 2026-09-04
+- Add a modular issue-tracking and support system without changing existing routes, authentication, or core data models.
+- Let authenticated users submit categorized support tickets with a title, rich-text description, and private attachments or screenshots.
+- Give support agents a filterable ticket queue with status management and direct threaded replies.
+- Preserve chronological ticket conversations with timestamps and visible User or Support Agent sender roles.
+- Give administrators support metrics for open volume, request categories, first-response time, and 30-day resolutions.
+- Protect support data through the existing role-based access controls and dedicated namespaced API routes.
+

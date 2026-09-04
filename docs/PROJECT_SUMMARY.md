@@ -4,7 +4,7 @@
 
 - **Name:** CodeWithKris Mobile/Web Application Prototype
 - **Repository:** `roger64s/CodeWithKris`
-- **Date measured:** 2026-09-03, through this closeout release
+- **Date measured:** 2026-09-04, through this closeout release
 - **Scope:** CodeWithKris repository only. Grad-a-Gig Website files and metrics are excluded.
 - **Production URL:** https://codewithkris.vercel.app
 
@@ -12,10 +12,10 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 39 |
-| Text lines added | 20,134 |
-| Text lines deleted | 1,995 |
-| Net text-line change | 18,139 |
+| Commits | 40 |
+| Text lines added | 20,754 |
+| Text lines deleted | 2,000 |
+| Net text-line change | 18,754 |
 | Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -31,9 +31,9 @@ pie title Estimated Effort Distribution by Category
 ```mermaid
 xychart-beta
     title "Lines Added by Date"
-    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3"]
+    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3", "Sep 4"]
     y-axis "Lines Added" 0 --> 7500
-    bar [5208, 609, 2538, 3193, 617, 7969]
+    bar [5208, 609, 2538, 3193, 617, 7969, 620]
 ```
 
 ## Delivered Today
@@ -98,6 +98,10 @@ xychart-beta
 - Added built-in Student, Instructor, Security Admin, and Administrator policies with conservative defaults and protected built-in identities.
 - Centralized frontend permission checks, fail-closed loading, revoked-screen eviction, disabled visible-only actions, and realtime policy refresh while removing the insecure Admin demo elevation switch.
 - Enforced RBAC in the authenticated API, direct Supabase table access, private profile records, quality evidence, and voice-recording storage while preserving existing ownership and workspace policies.
+- Added an isolated support-ticketing module with categorized rich-text requests, private attachments, personal ticket history, and chronological user-agent conversations.
+- Added a Support Agent queue with type and status filters, direct replies, assignment, and Open, In Progress, Resolved, and Closed workflow states.
+- Added administrator support analytics for open volume, category distribution, average first-response time, and 30-day resolution volume.
+- Added dedicated `/api/v1/tickets` endpoints, three isolated support tables, a private attachment bucket, and RBAC/RLS enforcement without changing existing authentication or core schemas.
 
 ## Effort Estimate
 
@@ -108,11 +112,11 @@ xychart-beta
 | Research and product design | 17% |
 | Documentation and release preparation | 8% |
 
-Estimated active work window: approximately 35 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, RBAC security hardening, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 36 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, RBAC security hardening, support ticketing, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 
-- This release includes authenticated effort and expense tracking, stakeholder-category OVU calculation, commercial task trials, formative pod progress, peer review, GTM pilots, CRM, a complete Requirements-to-release lifecycle, Grad-a-Gig project operations, and department-level local-partner/foreign-client responsibility mapping.
+- This release includes authenticated effort and expense tracking, stakeholder-category OVU calculation, commercial task trials, formative pod progress, peer review, GTM pilots, CRM, a complete Requirements-to-release lifecycle, Grad-a-Gig project operations, department-level local-partner/foreign-client responsibility mapping, and support ticketing.
 - The current learning model uses Universal Foundation, Commercial Task Tracks, and Applied AI & Workflow Execution, with human-reviewed action evidence rather than learner ranking.
 - Production deployment: Vercel production site is live at https://codewithkris.vercel.app
 - Closeout validation: `npm run build` passed cleanly with Vite and TypeScript.
@@ -133,6 +137,8 @@ Estimated active work window: approximately 35 hours across implementation, auth
 - RBAC browser validation passed on desktop and mobile with four built-in roles, 15 permission rows, 30 visibility/access toggles, role-filtered navigation, no demo privilege switch, and no horizontal page overflow.
 - Apply `supabase/rbac_access_control.sql` to production Supabase before enabling RBAC persistence and enforcement; local execution was unavailable because this workspace has no Supabase CLI or configured local API credentials.
 - Final RBAC production build and API syntax checks passed; lint reports only six pre-existing React warnings.
+- The support workspace is emitted as a separate lazy-loaded production bundle; TypeScript/Vite build, Node syntax checks, lint, and workspace diagnostics passed.
+- Apply `supabase/rbac_access_control.sql` followed by `supabase/support_ticketing.sql` before enabling production support persistence; local SQL execution was unavailable because the Supabase CLI is not installed.
 
 ## Separation Rule
 

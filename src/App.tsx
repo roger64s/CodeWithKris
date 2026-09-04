@@ -23,6 +23,7 @@ const RequirementsWorkspace = lazy(() => import("./components/RequirementsWorksp
 const SprintTaskBoard = lazy(() => import("./components/SprintTaskBoard").then((module) => ({ default: module.SprintTaskBoard })));
 const QualityWorkspace = lazy(() => import("./components/QualityWorkspace").then((module) => ({ default: module.QualityWorkspace })));
 const BaselineActivityDashboard = lazy(() => import("./components/BaselineActivityDashboard").then((module) => ({ default: module.BaselineActivityDashboard })));
+const SupportWorkspace = lazy(() => import("./components/SupportWorkspace").then((module) => ({ default: module.SupportWorkspace })));
 
 type Screen =
   | "register"
@@ -41,6 +42,7 @@ type Screen =
   | "sprints"
   | "quality"
   | "baselines"
+  | "support"
   | "profile-onboarding"
   | "profile"
   | "access-denied"
@@ -55,6 +57,7 @@ const NAV_ITEMS: Array<{ screen: Screen; label: string; icon: string }> = [
   { screen: "sprints", label: "Sprints", icon: "▥" },
   { screen: "quality", label: "Testing", icon: "✓" },
   { screen: "baselines", label: "Activity", icon: "◫" },
+  { screen: "support", label: "Support", icon: "?" },
   { screen: "financials", label: "Coop Equity", icon: "⚖" },
   { screen: "admin", label: "Admin", icon: "▤" },
   { screen: "profile", label: "Profile", icon: "○" },
@@ -1599,6 +1602,7 @@ function App() {
         {screen === "sprints" && <Suspense fallback={<div className="empty-state">Loading Sprint Board...</div>}><SprintTaskBoard /></Suspense>}
         {screen === "quality" && <Suspense fallback={<div className="empty-state">Loading Testing & Issues...</div>}><QualityWorkspace /></Suspense>}
         {screen === "baselines" && <Suspense fallback={<div className="empty-state">Loading Baselines & Activity...</div>}><BaselineActivityDashboard /></Suspense>}
+        {screen === "support" && <Suspense fallback={<div className="empty-state">Loading Support...</div>}><SupportWorkspace /></Suspense>}
       </div>
       <nav className="bottom-nav" aria-label="Main navigation">
         {NAV_ITEMS.filter(({ screen: itemScreen }) => !isRbacResource(itemScreen) || rbacPolicy[itemScreen].canView).map(({ screen: value, label, icon }) => (

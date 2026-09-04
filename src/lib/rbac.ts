@@ -11,6 +11,7 @@ export const RBAC_RESOURCES = [
   { key: "sprints", label: "Sprint board", category: "Operations" },
   { key: "quality", label: "Testing and issues", category: "Operations" },
   { key: "baselines", label: "Activity and baselines", category: "Operations" },
+  { key: "support", label: "Support tickets", category: "Operations" },
   { key: "financials", label: "Coop Equity", category: "Restricted" },
   { key: "admin", label: "Administration", category: "Restricted" },
   { key: "profile", label: "User profile", category: "Account" },
@@ -22,7 +23,7 @@ export type RbacPolicy = Record<RbacResourceKey, RbacPermission>;
 
 const LEARNER_RESOURCES = new Set<RbacResourceKey>([
   "templates", "record", "practice", "progress", "dictionary", "action-trial",
-  "peer-review", "profile",
+  "peer-review", "support", "profile",
 ]);
 const INSTRUCTOR_RESOURCES = new Set<RbacResourceKey>([
   ...LEARNER_RESOURCES, "gtm-pilot", "requirements", "sprints", "quality",
@@ -32,9 +33,11 @@ const INSTRUCTOR_RESOURCES = new Set<RbacResourceKey>([
 export function defaultPolicy(roleSlug: string): RbacPolicy {
   const administrator = roleSlug === "administrator" || roleSlug === "security-admin";
   const instructor = roleSlug === "instructor";
+  const supportAgent = roleSlug === "support-agent";
   return Object.fromEntries(RBAC_RESOURCES.map(({ key }) => {
     const allowed = administrator
       || (instructor && INSTRUCTOR_RESOURCES.has(key))
+      || (supportAgent && (key === "support" || key === "profile"))
       || (roleSlug === "student" && LEARNER_RESOURCES.has(key))
       || key === "profile";
     return [key, { canView: allowed, canAccess: allowed }];

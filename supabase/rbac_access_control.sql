@@ -15,7 +15,7 @@ create table if not exists public.rbac_permissions (
   resource_key text not null check (resource_key in (
     'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
     'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines',
-    'financials', 'admin', 'profile'
+    'support', 'financials', 'admin', 'profile'
   )),
   can_view boolean not null default false,
   can_access boolean not null default false,
@@ -86,6 +86,7 @@ grant select, insert, update on public.user_rbac_assignments to authenticated;
 insert into public.rbac_roles (slug, display_name, description, built_in) values
   ('student', 'Student', 'Learning, practice, and personal progress', true),
   ('instructor', 'Instructor', 'Learning support and delivery oversight', true),
+  ('support-agent', 'Support Agent', 'Support ticket triage and customer responses', true),
   ('security-admin', 'Security Admin', 'Role, permission, and security administration', true),
   ('administrator', 'Administrator', 'Full platform administration', true)
 on conflict (slug) do update set
@@ -117,12 +118,13 @@ create trigger protect_builtin_rbac_role_before_change
 with resources(resource_key) as (
   values ('templates'), ('record'), ('practice'), ('progress'), ('dictionary'),
     ('action-trial'), ('peer-review'), ('gtm-pilot'), ('requirements'), ('sprints'),
-    ('quality'), ('baselines'), ('financials'), ('admin'), ('profile')
+    ('quality'), ('baselines'), ('support'), ('financials'), ('admin'), ('profile')
 )
 insert into public.rbac_permissions (role_id, resource_key, can_view, can_access)
 select role.id, resources.resource_key,
   case
     when role.slug in ('administrator', 'security-admin') then true
+    when role.slug = 'support-agent' and resources.resource_key in ('support', 'profile') then true
     when role.slug = 'instructor' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
       'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
@@ -134,6 +136,7 @@ select role.id, resources.resource_key,
   end,
   case
     when role.slug in ('administrator', 'security-admin') then true
+    when role.slug = 'support-agent' and resources.resource_key in ('support', 'profile') then true
     when role.slug = 'instructor' and resources.resource_key in (
       'templates', 'record', 'practice', 'progress', 'dictionary', 'action-trial',
       'peer-review', 'gtm-pilot', 'requirements', 'sprints', 'quality', 'baselines', 'profile'
@@ -144,7 +147,7 @@ select role.id, resources.resource_key,
     else false
   end
 from public.rbac_roles role cross join resources
-where role.slug in ('student', 'instructor', 'security-admin', 'administrator')
+where role.slug in ('student', 'instructor', 'support-agent', 'security-admin', 'administrator')
 on conflict (role_id, resource_key) do nothing;
 
 create or replace function public.assign_initial_rbac_role()
@@ -263,6 +266,9 @@ begin
       ('quality_test_runs', array['quality', 'baselines']),
       ('quality_test_run_steps', array['quality', 'baselines']),
       ('quality_issues', array['quality', 'baselines']),
+      ('support_tickets', array['support']),
+      ('support_ticket_messages', array['support']),
+      ('support_ticket_attachments', array['support']),
       ('release_baselines', array['baselines']),
       ('workspace_activity_events', array['baselines']),
       ('project_operating_plans', array['requirements']),
