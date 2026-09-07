@@ -4,7 +4,7 @@
 
 - **Name:** CodeWithKris Mobile/Web Application Prototype
 - **Repository:** `roger64s/CodeWithKris`
-- **Date measured:** 2026-09-04, through this closeout release
+- **Date measured:** 2026-09-07, through the final closeout release
 - **Scope:** CodeWithKris repository only. Grad-a-Gig Website files and metrics are excluded.
 - **Production URL:** https://codewithkris.vercel.app
 
@@ -12,7 +12,7 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 47 |
+| Commits | 51 |
 | Text lines added | 22,147 |
 | Text lines deleted | 2,076 |
 | Net text-line change | 20,071 |
@@ -102,6 +102,7 @@ xychart-beta
 - Added a Support Agent queue with type and status filters, direct replies, assignment, and Open, In Progress, Resolved, and Closed workflow states.
 - Added administrator support analytics for open volume, category distribution, average first-response time, and 30-day resolution volume.
 - Added dedicated `/api/v1/tickets` endpoints, three isolated support tables, a private attachment bucket, and RBAC/RLS enforcement without changing existing authentication or core schemas.
+- Consolidated all Vercel API routes behind `api/index.js`, moved reusable route modules outside `api/`, removed redundant nested function re-exports, and verified JSON health and 404 responses.
 
 ## Effort Estimate
 
@@ -128,6 +129,7 @@ Estimated active work window: approximately 41 hours across implementation, auth
 - The preview URL `codewithkris-roger-e1a3.vercel.app` is protected by Vercel Authentication; anonymous production checks use the public alias.
 - August 31 maintenance restores the cooperative contribution ledger schema structure while retaining the SQL syntax correction for the anonymous audit proof table.
 - The authenticated Vercel API and required Supabase environment variables are configured for production deployment.
+- The final Vercel backend release uses one serverless function under the Hobby plan limit; `npm run build` and direct Express route checks passed on 2026-09-07.
 - All required Supabase SQL migrations were reported successfully applied on 2026-09-03, including action-based evaluation and commercial track constraints.
 - The current release removes the obsolete user-facing “+ Contribute” route while keeping Coop Equity permanently visible in authenticated navigation and integrated into Client Project operations.
 - Company and contact records can be assigned to GTM targets; the GTM workflow migration enforces matching target links and must be applied after the CRM migration.

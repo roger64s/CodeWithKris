@@ -199,3 +199,6 @@
 - Keep the held-out model evaluation display reliable by fixing the model-metrics service outage without changing existing routes, authentication, or core schemas; the build was published successfully to Vercel.
 - Consolidate all Vercel backend behavior behind a single Express serverless entry point at api/index.js so the Hobby plan stays within its 12-function limit, while preserving existing API routes and JSON 404 handling.
 
+## 2026-09-07
+- Close the project with the Vercel backend consolidated to one serverless function, production build verification completed, and the final changes published to the main branch.
+
