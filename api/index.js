@@ -4,8 +4,8 @@ import cors from 'cors'
 import express from 'express'
 import multer from 'multer'
 import { createClient } from '@supabase/supabase-js'
-import { createSupportRouter } from './support.js'
-import { createLearningRouter } from './learning.js'
+import { createSupportRouter } from '../src/server/routes/support.js'
+import { createLearningRouter } from '../src/server/routes/learning.js'
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -17,6 +17,13 @@ app.use(cors())
 app.use(express.json({ limit: '1mb' }))
 
 app.get('/api/health', (_request, response) => response.json({ ok: true }))
+
+const apiRoutePrefixes = ['/v1/', '/model-metrics', '/action-trial-guidance', '/session-context', '/projects/', '/dictionary', '/recordings', '/sessions']
+
+app.use('/api', (request, response, next) => {
+  if (apiRoutePrefixes.some((prefix) => request.path.startsWith(prefix))) return next()
+  return response.status(404).json({ error: 'Route not found. API routes begin with /api.' })
+})
 
 app.use('/api', async (request, response, next) => {
   const authorization = request.headers.authorization || ''

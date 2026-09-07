@@ -197,4 +197,5 @@
 - Remove named third-party learning-product references from project documentation while preserving generic habit-based learning guidance.
 - Make Learning the primary authenticated dashboard, with the three-phase readiness tracker above XP, vocabulary, and reframing tools; retain Templates as the mission library.
 - Keep the held-out model evaluation display reliable by fixing the model-metrics service outage without changing existing routes, authentication, or core schemas; the build was published successfully to Vercel.
+- Consolidate all Vercel backend behavior behind a single Express serverless entry point at api/index.js so the Hobby plan stays within its 12-function limit, while preserving existing API routes and JSON 404 handling.
 
