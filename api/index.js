@@ -140,19 +140,54 @@ const analyzeRecording = async (file, taskId, expectedSubtask) => {
 }
 
 app.get('/api/model-metrics', async (request, response) => {
+  // Isolated metrics module: verify its dedicated configuration before any upstream work.
   const inferenceUrl = process.env.ML_INFERENCE_API_URL
   const inferenceKey = process.env.ML_SERVICE_API_KEY
-  if (!inferenceUrl || !inferenceKey) return response.status(503).json({ error: 'The measured model is not configured.' })
+  if (!inferenceUrl || !inferenceKey) {
+    console.warn('[model-metrics] Skipped: ML_INFERENCE_API_URL or ML_SERVICE_API_KEY is not configured.')
+    return response.status(503).json({ error: 'The measured model is not configured.', reason: 'missing_configuration', retryable: false })
+  }
+  let metricsUrl
   try {
-    const taskId = taskIdFor(String(request.query.taskId || 'appointment-fixing')) || 'appointment-fixing'
-    const metricsResponse = await fetch(`${inferenceUrl.replace(/\/$/, '')}/metrics?task_id=${encodeURIComponent(taskId)}`, {
-      signal: AbortSignal.timeout(10_000),
-      headers: { 'X-API-Key': inferenceKey },
-    })
-    if (!metricsResponse.ok) return response.status(metricsResponse.status).json({ error: 'No measured model evaluation is available.' })
-    response.json(await metricsResponse.json())
+    metricsUrl = new URL('metrics', `${inferenceUrl.replace(/\/+$/, '')}/`)
   } catch {
-    response.status(503).json({ error: 'The measured model service is unavailable.' })
+    console.warn('[model-metrics] Skipped: ML_INFERENCE_API_URL is not a valid URL.')
+    return response.status(503).json({ error: 'The measured model endpoint is misconfigured.', reason: 'invalid_configuration', retryable: false })
+  }
+  const taskId = taskIdFor(String(request.query.taskId || 'appointment-fixing')) || 'appointment-fixing'
+  metricsUrl.searchParams.set('task_id', taskId)
+  try {
+    const metricsResponse = await fetch(metricsUrl, {
+      signal: AbortSignal.timeout(10_000),
+      headers: { 'X-API-Key': inferenceKey, Accept: 'application/json' },
+    })
+    if (!metricsResponse.ok) {
+      // Upstream 503 here means the metrics.json artifact for this task does not exist yet.
+      console.warn(`[model-metrics] Upstream service responded ${metricsResponse.status} for task '${taskId}'.`)
+      return response.status(503).json({ error: 'No measured model evaluation is available.', reason: 'upstream_not_ready', retryable: true })
+    }
+    let metrics
+    try {
+      metrics = await metricsResponse.json()
+    } catch {
+      console.warn(`[model-metrics] Upstream service returned a non-JSON payload for task '${taskId}'.`)
+      return response.status(503).json({ error: 'The measured model evaluation could not be read.', reason: 'invalid_upstream_payload', retryable: true })
+    }
+    const isValidMetrics = metrics && typeof metrics === 'object' && !Array.isArray(metrics)
+      && typeof metrics.modelVersion === 'string'
+      && Number.isFinite(metrics.accuracy)
+      && metrics.workflowEvaluation && typeof metrics.workflowEvaluation === 'object'
+      && metrics.classifierLatencyMs && typeof metrics.classifierLatencyMs === 'object'
+    if (!isValidMetrics) {
+      console.warn(`[model-metrics] Upstream service returned an incomplete metrics payload for task '${taskId}'.`)
+      return response.status(503).json({ error: 'The measured model evaluation is incomplete.', reason: 'invalid_upstream_payload', retryable: true })
+    }
+    return response.json(metrics)
+  } catch (error) {
+    if (response.headersSent) return
+    const timedOut = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')
+    console.warn(`[model-metrics] Upstream request failed${timedOut ? ' (timeout)' : ''}: ${error instanceof Error ? error.message : String(error)}`)
+    return response.status(503).json({ error: 'The measured model service is unavailable.', reason: timedOut ? 'upstream_timeout' : 'upstream_unreachable', retryable: true })
   }
 })
 

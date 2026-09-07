@@ -36,6 +36,8 @@ Run `npm run dev` to start the React app and API together. The API runs on `http
 
 Create `.env` from `.env.example` and add the project URL and keys. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` enable browser sign-in and may contain only Supabase public client credentials. Never expose or commit service-role, database, or signing secrets.
 
+For Vercel Production, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The API accepts those same names, or the server-only aliases `SUPABASE_URL` and `SUPABASE_ANON_KEY`; at least one complete pair must be present or the API function will not start. Apply the variables to every Vercel environment that should deploy the app.
+
 Optional practical-trial coaching uses an OpenAI-compatible endpoint configured server-side with `AI_ASSISTANT_API_URL`, `AI_ASSISTANT_API_KEY`, and `AI_ASSISTANT_MODEL`. The assistant is constrained to coaching observations, a next experiment, and a clarifying question; it does not rank learners or make assignment decisions.
 
 The optional speech-task service is documented in `ml/README.md`. Configure `ML_INFERENCE_API_URL`, `ML_MODEL_ROOT`, and the same server-only `ML_SERVICE_API_KEY` in the Node API and Python service. No task output or benchmark is shown until consented labeled data has produced a self-describing `ml/artifacts/<task-id>/model.joblib` and `metrics.json`.
