@@ -155,6 +155,8 @@ Estimated active work window: approximately 41 hours across implementation, auth
 - Added authenticated `/api/v1/pilot-evidence` routes, Participant Evidence navigation, learner/reviewer access boundaries, and follow-up RBAC and Supabase migrations.
 - Added the first-login Participant Evidence onboarding wizard with a non-comparative welcome, optional baseline communication survey, pain-point capture, durable completion flag, and direct transition into script practice.
 - Final onboarding validation passed `npm run build`, API syntax checks, 18 Python ML tests, and workspace diagnostics on 2026-09-11.
+- Added the workbook-derived English, Cantonese, and Tamil Appointment Fixing catalog with dynamic language/state selection, four-state sequence metadata, partial/unintelligible voice-quality categories, receiver response blocks, and sender/receiver baseline lag and accuracy fields.
+- Added multilingual attempt persistence and catalog validation through the authenticated participant-evidence API. The supplied XLSX remains source material and is not committed into the application bundle.
 
 ## Separation Rule
 

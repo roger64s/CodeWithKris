@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, ClipboardCheck, Plus, ShieldCheck } from "lucide-react";
 import { supabase } from "../supabase";
+import { APPOINTMENT_FIXING_BASELINES, APPOINTMENT_FIXING_CATALOG, APPOINTMENT_FIXING_STATES } from "../data/appointmentFixingCatalog";
 
 type Script = { id: string; pathway: string; title: string; prompt: string; expected_outcome: string };
 type Review = { clarity_score: number; adaptability_score: number; engagement_score: number; task_outcome: string; evidence_notes: string };
-type Attempt = { id: string; response_text: string; adaptation_context: string; status: string; created_at: string; participant_scripts: { title: string; pathway: string }; participant_metric_reviews: Review[] };
+type Attempt = { id: string; response_text: string; adaptation_context: string; language: string; sub_task: string; expected_result: string; voice_quality: string; sender_lag_baseline_ms: number | null; status: string; created_at: string; participant_scripts: { title: string; pathway: string }; participant_metric_reviews: Review[] };
 
-type Props = { isReviewer: boolean; onBack: () => void };
+type Props = { isReviewer: boolean; onBack: () => void; preview?: boolean };
 type Onboarding = { has_completed_onboarding: boolean; onboarding_skill_level?: string; onboarding_comprehension?: string; onboarding_clarity?: string; onboarding_pain_points?: string[]; onboarding_notes?: string };
 const painPointOptions = ["Repeating myself", "Constant lip-reading", "Communication fatigue", "Finding the right words", "Keeping up in groups", "Being understood on the phone"];
 
@@ -23,7 +24,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return payload as T;
 }
 
-export function ParticipantEvidenceWorkspace({ isReviewer, onBack }: Props) {
+export function ParticipantEvidenceWorkspace({ isReviewer, onBack, preview = false }: Props) {
   const [scripts, setScripts] = useState<Script[]>([]);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [pathway, setPathway] = useState("Appointment Fixing");
@@ -34,11 +35,15 @@ export function ParticipantEvidenceWorkspace({ isReviewer, onBack }: Props) {
   const [reviewAttemptId, setReviewAttemptId] = useState<string | null>(null);
   const [review, setReview] = useState({ clarity: 3, adaptability: 3, engagement: 3, outcome: "progressing", notes: "" });
   const [notice, setNotice] = useState("Loading participant evidence...");
-  const [onboarding, setOnboarding] = useState<Onboarding | null>(null);
+  const [onboarding, setOnboarding] = useState<Onboarding | null>(preview ? { has_completed_onboarding: false } : null);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [survey, setSurvey] = useState({ skillLevel: "", comprehension: "", clarity: "", painPoints: [] as string[], notes: "" });
+  const [language, setLanguage] = useState("English");
+  const [subTask, setSubTask] = useState("Greeting");
+  const activeCatalogScript = APPOINTMENT_FIXING_CATALOG.find((item) => item.language === language && item.subTask === subTask) || APPOINTMENT_FIXING_CATALOG[0];
 
   const load = async () => {
+    if (preview) return;
     try {
       const savedOnboarding = await request<Onboarding>("/onboarding");
       setOnboarding(savedOnboarding);
@@ -47,7 +52,7 @@ export function ParticipantEvidenceWorkspace({ isReviewer, onBack }: Props) {
       setScripts(loadedScripts); setAttempts(loadedAttempts); setNotice("Participant evidence is private until a reviewer records a rubric assessment.");
     } catch (error) { setNotice(error instanceof Error ? error.message : "Participant evidence could not be loaded."); }
   };
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void load(); }, [preview]);
 
   const createScript = async (event: FormEvent) => {
     event.preventDefault();
@@ -59,9 +64,25 @@ export function ParticipantEvidenceWorkspace({ isReviewer, onBack }: Props) {
 
   const submitAttempt = async (event: FormEvent) => {
     event.preventDefault();
-    if (!scripts[0]) return setNotice("Create or select a script before submitting evidence.");
+    let script = scripts.find((item) => item.title === `${activeCatalogScript.language} ${activeCatalogScript.subTask}`);
+    if (!script && preview) {
+      script = { id: `preview-${activeCatalogScript.sequence}`, pathway: "Appointment Fixing", title: `${activeCatalogScript.language} ${activeCatalogScript.subTask}`, prompt: activeCatalogScript.expectedResult, expected_outcome: activeCatalogScript.receiver };
+    }
+    if (!script && !preview) {
+      try {
+        script = await request<Script>("/scripts", { method: "POST", body: JSON.stringify({ pathway: "Appointment Fixing", title: `${activeCatalogScript.language} ${activeCatalogScript.subTask}`, prompt: activeCatalogScript.expectedResult, expectedOutcome: activeCatalogScript.receiver }) });
+        setScripts((current) => [script as Script, ...current]);
+      } catch (error) { return setNotice(error instanceof Error ? error.message : "The appointment script could not be prepared."); }
+    }
+    if (!script) return setNotice("Select an appointment state before submitting evidence.");
     try {
-      const attempt = await request<Attempt>("/attempts", { method: "POST", body: JSON.stringify({ scriptId: scripts[0].id, responseText, adaptationContext }) });
+      const metrics = language === "Tamil" ? APPOINTMENT_FIXING_BASELINES.Sri : APPOINTMENT_FIXING_BASELINES.Josy;
+      const attemptPayload = { scriptId: script.id, responseText, adaptationContext, language, subTask, expectedResult: activeCatalogScript.expectedResult, voiceQuality: activeCatalogScript.voiceQuality, senderAccuracyBaseline: metrics.senderAccuracy, senderLagBaselineMs: metrics.senderLagMs, receiverAccuracyBaseline: metrics.receiverAccuracy, receiverLagBaselineMs: metrics.receiverLagMs };
+      if (preview) {
+        const attempt: Attempt = { id: crypto.randomUUID(), response_text: responseText, adaptation_context: adaptationContext, language, sub_task: subTask, expected_result: activeCatalogScript.expectedResult, voice_quality: activeCatalogScript.voiceQuality, sender_lag_baseline_ms: metrics.senderLagMs, status: "submitted", created_at: new Date().toISOString(), participant_scripts: { title: script.title, pathway: script.pathway }, participant_metric_reviews: [] };
+        setAttempts((current) => [attempt, ...current]); setResponseText(""); setAdaptationContext(""); setNotice(`Saved ${language} ${subTask} preview attempt. Baseline sender lag: ${metrics.senderLagMs} ms.`); return;
+      }
+      const attempt = await request<Attempt>("/attempts", { method: "POST", body: JSON.stringify(attemptPayload) });
       setAttempts((current) => [attempt, ...current]); setResponseText(""); setAdaptationContext(""); setNotice("Attempt submitted for human review.");
     } catch (error) { setNotice(error instanceof Error ? error.message : "Attempt could not be submitted."); }
   };
@@ -77,6 +98,12 @@ export function ParticipantEvidenceWorkspace({ isReviewer, onBack }: Props) {
 
   const submitOnboarding = async (event: FormEvent) => {
     event.preventDefault();
+    if (preview) {
+      setScripts([{ id: "preview-script", pathway: "Appointment Fixing", title: "English AskAvailability", prompt: APPOINTMENT_FIXING_CATALOG[1].expectedResult, expected_outcome: APPOINTMENT_FIXING_CATALOG[1].receiver }]);
+      setOnboarding({ has_completed_onboarding: true, ...survey });
+      setNotice("Preview ready. Your first appointment-fixing script is below.");
+      return;
+    }
     try {
       const saved = await request<Onboarding>("/onboarding", { method: "POST", body: JSON.stringify(survey) });
       setOnboarding({ ...onboarding, ...saved, has_completed_onboarding: true });
@@ -95,9 +122,9 @@ export function ParticipantEvidenceWorkspace({ isReviewer, onBack }: Props) {
     <div className="access-notice" role="status">{notice}</div>
     <div className="workspace-grid">
       <form className="dashboard-panel" onSubmit={createScript}><h2><Plus size={18} /> Create script</h2><label>Pathway<select value={pathway} onChange={(event) => setPathway(event.target.value)}>{["Lead Generation", "Appointment Fixing", "Follow-Up Management", "Customer Service"].map((item) => <option key={item}>{item}</option>)}</select></label><label>Title<input value={title} onChange={(event) => setTitle(event.target.value)} required /></label><label>Prompt<textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} required /></label><button className="primary-button"><Plus size={16} />Save script</button></form>
-      <form className="dashboard-panel" onSubmit={submitAttempt}><h2><ClipboardCheck size={18} /> Submit attempt</h2><p className="muted-copy">{scripts[0]?.title || "Create a script first"}</p><label>Response<textarea value={responseText} onChange={(event) => setResponseText(event.target.value)} required /></label><label>Adaptation context<textarea value={adaptationContext} onChange={(event) => setAdaptationContext(event.target.value)} placeholder="Optional: language, AAC, pacing, or access support used" /></label><button className="primary-button" disabled={!scripts.length}>Submit for review</button></form>
+      <form className="dashboard-panel" onSubmit={submitAttempt}><h2><ClipboardCheck size={18} /> Submit attempt</h2><div className="script-switchers"><label>Language<select value={language} onChange={(event) => setLanguage(event.target.value)}>{["English", "Cantonese", "Tamil"].map((item) => <option key={item}>{item}</option>)}</select></label><label>Sub-task<select value={subTask} onChange={(event) => setSubTask(event.target.value)}>{APPOINTMENT_FIXING_STATES.map((item, index) => <option key={item} value={item}>{index + 1}. {item}</option>)}</select></label></div><div className="catalog-prompt"><strong>{activeCatalogScript.language} · {activeCatalogScript.subTask}</strong><p>{activeCatalogScript.expectedResult}</p><small>Receiver block: {activeCatalogScript.responseBlock} · Voice quality: {activeCatalogScript.voiceQuality}</small></div><label>Response<textarea value={responseText} onChange={(event) => setResponseText(event.target.value)} placeholder="Type or describe the participant response" required /></label><label>Adaptation context<textarea value={adaptationContext} onChange={(event) => setAdaptationContext(event.target.value)} placeholder="Optional: language, AAC, pacing, or access support used" /></label><button className="primary-button">Submit for review</button></form>
     </div>
-    <section className="dashboard-panel"><h2><ShieldCheck size={18} /> Evidence history</h2>{attempts.length === 0 ? <p className="muted-copy">No participant attempts have been submitted yet.</p> : attempts.map((attempt) => <article className="session-row" key={attempt.id}><div><strong>{attempt.participant_scripts?.title || "Participant attempt"}</strong><small>{attempt.participant_scripts?.pathway} · {new Date(attempt.created_at).toLocaleString()} · {attempt.status}</small><p>{attempt.response_text}</p>{attempt.participant_metric_reviews?.map((item, index) => <small key={index}>Clarity {item.clarity_score}/5 · Adaptability {item.adaptability_score}/5 · Engagement {item.engagement_score}/5 · {item.task_outcome}</small>)}</div>{isReviewer && !attempt.participant_metric_reviews?.length && <button className="secondary-button" onClick={() => setReviewAttemptId(attempt.id)}>Review</button>}</article>)}</section>
+    <section className="dashboard-panel"><h2><ShieldCheck size={18} /> Evidence history</h2>{attempts.length === 0 ? <p className="muted-copy">No participant attempts have been submitted yet.</p> : attempts.map((attempt) => <article className="session-row" key={attempt.id}><div><strong>{attempt.participant_scripts?.title || "Participant attempt"}</strong><small>{attempt.language} · {attempt.sub_task} · {attempt.voice_quality} · {new Date(attempt.created_at).toLocaleString()} · {attempt.status}</small><p>{attempt.response_text}</p>{attempt.sender_lag_baseline_ms !== null && <small>Baseline sender lag: {attempt.sender_lag_baseline_ms} ms</small>}{attempt.participant_metric_reviews?.map((item, index) => <small key={index}>Clarity {item.clarity_score}/5 · Adaptability {item.adaptability_score}/5 · Engagement {item.engagement_score}/5 · {item.task_outcome}</small>)}</div>{isReviewer && !attempt.participant_metric_reviews?.length && <button className="secondary-button" onClick={() => setReviewAttemptId(attempt.id)}>Review</button>}</article>)}</section>
     {reviewAttemptId && <form className="dashboard-panel" onSubmit={submitReview}><h2>Human review rubric</h2><div className="review-fields">{(["clarity", "adaptability", "engagement"] as const).map((key) => <label key={key}>{key}<input type="number" min="1" max="5" value={review[key]} onChange={(event) => setReview((current) => ({ ...current, [key]: Number(event.target.value) }))} /></label>)}</div><label>Outcome<select value={review.outcome} onChange={(event) => setReview((current) => ({ ...current, outcome: event.target.value }))}><option value="incomplete">Incomplete</option><option value="progressing">Progressing</option><option value="complete">Complete</option></select></label><label>Evidence notes<textarea value={review.notes} onChange={(event) => setReview((current) => ({ ...current, notes: event.target.value }))} required /></label><button className="primary-button">Save review</button></form>}
   </section>;
 }

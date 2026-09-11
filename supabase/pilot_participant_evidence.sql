@@ -31,9 +31,27 @@ create table if not exists public.participant_attempts (
   practice_session_id uuid references public.practice_sessions(id) on delete set null,
   response_text text not null default '',
   adaptation_context text not null default '',
+  language text not null default 'English',
+  sub_task text not null default 'Greeting',
+  expected_result text not null default '',
+  voice_quality text not null default 'Unknown',
+  sender_accuracy_baseline numeric,
+  sender_lag_baseline_ms numeric,
+  receiver_accuracy_baseline numeric,
+  receiver_lag_baseline_ms numeric,
   status text not null default 'submitted' check (status in ('submitted', 'under_review', 'reviewed')),
   created_at timestamptz not null default now()
 );
+
+alter table public.participant_attempts
+  add column if not exists language text not null default 'English',
+  add column if not exists sub_task text not null default 'Greeting',
+  add column if not exists expected_result text not null default '',
+  add column if not exists voice_quality text not null default 'Unknown',
+  add column if not exists sender_accuracy_baseline numeric,
+  add column if not exists sender_lag_baseline_ms numeric,
+  add column if not exists receiver_accuracy_baseline numeric,
+  add column if not exists receiver_lag_baseline_ms numeric;
 
 create table if not exists public.participant_metric_reviews (
   id uuid primary key default gen_random_uuid(),

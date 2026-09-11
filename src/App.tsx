@@ -1628,6 +1628,7 @@ function App() {
           <ParticipantEvidenceWorkspace
             isReviewer={hasFinancialAccess || userRole === "CodeWithKris Administrator"}
             onBack={() => navigate("templates")}
+            preview={import.meta.env.DEV}
           />
         )}
         {screen === "gtm-pilot" && (

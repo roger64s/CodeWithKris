@@ -1,11 +1,14 @@
 import crypto from 'node:crypto'
 import { Router } from 'express'
+import { APPOINTMENT_FIXING_BASELINES, APPOINTMENT_FIXING_CATALOG, APPOINTMENT_FIXING_STATES } from '../../data/appointmentFixingCatalog.js'
 
 const pathways = new Set(['Lead Generation', 'Appointment Fixing', 'Follow-Up Management', 'Customer Service'])
 const score = (value) => Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 5 ? Number(value) : null
 
 export function createPilotEvidenceRouter() {
   const router = Router()
+
+  router.get('/catalog/appointment-fixing', (_request, response) => response.json({ states: APPOINTMENT_FIXING_STATES, scripts: APPOINTMENT_FIXING_CATALOG, baselines: APPOINTMENT_FIXING_BASELINES }))
 
   router.get('/onboarding', async (request, response) => {
     const { data, error } = await request.supabase.from('user_profiles')
@@ -61,7 +64,18 @@ export function createPilotEvidenceRouter() {
     const scriptId = String(request.body.scriptId || '')
     const responseText = String(request.body.responseText || '').trim()
     if (!scriptId || responseText.length > 4000) return response.status(400).json({ error: 'A script and response of up to 4,000 characters are required.' })
-    const attempt = { id: crypto.randomUUID(), participant_id: request.user.id, script_id: scriptId, recording_id: request.body.recordingId || null, practice_session_id: request.body.practiceSessionId || null, response_text: responseText, adaptation_context: String(request.body.adaptationContext || '').trim() }
+    const language = String(request.body.language || 'English')
+    const subTask = String(request.body.subTask || 'Greeting')
+    if (!APPOINTMENT_FIXING_CATALOG.some((item) => item.language === language && item.subTask === subTask)) return response.status(400).json({ error: 'Language and sub-task are not in the appointment catalog.' })
+    const attempt = {
+      id: crypto.randomUUID(), participant_id: request.user.id, script_id: scriptId,
+      recording_id: request.body.recordingId || null, practice_session_id: request.body.practiceSessionId || null,
+      response_text: responseText, adaptation_context: String(request.body.adaptationContext || '').trim(),
+      language, sub_task: subTask,
+      expected_result: String(request.body.expectedResult || '').trim(), voice_quality: String(request.body.voiceQuality || 'Unknown'),
+      sender_accuracy_baseline: request.body.senderAccuracyBaseline ?? null, sender_lag_baseline_ms: request.body.senderLagBaselineMs ?? null,
+      receiver_accuracy_baseline: request.body.receiverAccuracyBaseline ?? null, receiver_lag_baseline_ms: request.body.receiverLagBaselineMs ?? null,
+    }
     const { data, error } = await request.supabase.from('participant_attempts').insert(attempt).select('*, participant_scripts(title, pathway)').single()
     if (error) return response.status(400).json({ error: error.message })
     response.status(201).json(data)

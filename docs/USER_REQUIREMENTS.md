@@ -206,10 +206,12 @@
 - Review the repository against the CodeWithKris testing action plan for the Voice Dictionary and ML audio pipeline, plus participant scripts, communication metrics, engagement evidence, and Outcome Valuation Unit tracking; identify pilot-readiness gaps and the file-level scaffolding needed to address them.
 - Implement and close the participant pilot-evidence slice with private scripts and attempts, human-reviewed clarity/adaptability/engagement metrics, OVU provenance links, authenticated API routes, RBAC access, validation, and closeout documentation.
 - Add a first-login Participant Evidence onboarding wizard with a warm non-comparative welcome, optional baseline communication survey, pain-point capture, durable completion state, and direct transition into script practice.
+- Connect the AppointmentFixingScript workbook's English, Cantonese, and Tamil rows to the participant preview with dynamic language/state selection, four-step sequence control, partial or unintelligible input metadata, and Result Summary baseline metrics.
 
 ## Closeout - 2026-09-11
 - Added participant evidence persistence and authenticated workflows for scripts, attempts, human rubric reviews, and pending or verified OVU links.
 - Added the Participant Evidence application workspace and RBAC migrations.
 - Added a first-login, low-pressure onboarding wizard with an optional communication baseline survey and durable completion state.
+- Added the workbook-derived English, Cantonese, and Tamil appointment catalog with four-state selection, voice-quality handling, and Result Summary baseline metadata.
 - Validated the production build, API syntax, and existing Python ML tests.
 
