@@ -12,7 +12,7 @@
 
 | Metric | Through implementation release |
 | --- | ---: |
-| Commits | 51 |
+| Commits | 54 |
 | Text lines added | 22,147 |
 | Text lines deleted | 2,076 |
 | Net text-line change | 20,071 |
@@ -153,6 +153,8 @@ Estimated active work window: approximately 41 hours across implementation, auth
 - Apply the three learning migrations in production Supabase before user acceptance testing; the production UI has reported missing vocabulary and reframing tables when those migrations are absent.
 - Added the participant-evidence pilot slice with private scripts, participant attempts, recording and practice-session references, human-reviewed clarity/adaptability/engagement rubrics, task outcomes, and pending or verified OVU provenance links.
 - Added authenticated `/api/v1/pilot-evidence` routes, Participant Evidence navigation, learner/reviewer access boundaries, and follow-up RBAC and Supabase migrations.
+- Added the first-login Participant Evidence onboarding wizard with a non-comparative welcome, optional baseline communication survey, pain-point capture, durable completion flag, and direct transition into script practice.
+- Final onboarding validation passed `npm run build`, API syntax checks, 18 Python ML tests, and workspace diagnostics on 2026-09-11.
 
 ## Separation Rule
 

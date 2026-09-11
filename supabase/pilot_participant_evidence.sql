@@ -2,6 +2,15 @@
 -- and gtm_pilot_workflow.sql.
 -- Participant-owned attempts, human-reviewed communication evidence, and OVU provenance.
 
+alter table public.user_profiles
+  add column if not exists has_completed_onboarding boolean not null default false,
+  add column if not exists onboarding_skill_level text,
+  add column if not exists onboarding_comprehension text,
+  add column if not exists onboarding_clarity text,
+  add column if not exists onboarding_pain_points text[] not null default '{}',
+  add column if not exists onboarding_notes text not null default '',
+  add column if not exists onboarding_completed_at timestamptz;
+
 create table if not exists public.participant_scripts (
   id uuid primary key default gen_random_uuid(),
   participant_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
