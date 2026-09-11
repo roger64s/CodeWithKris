@@ -13,9 +13,9 @@
 | Metric | Through implementation release |
 | --- | ---: |
 | Commits | 57 |
-| Text lines added | 22,147 |
-| Text lines deleted | 2,076 |
-| Net text-line change | 20,071 |
+| Text lines added | 22,775 |
+| Text lines deleted | 2,135 |
+| Net text-line change | 20,640 |
 | Build status | Passed |
 
 [Open the interactive CodeWithKris project metrics](charts.html)
@@ -31,9 +31,9 @@ pie title Estimated Effort Distribution by Category
 ```mermaid
 xychart-beta
     title "Lines Added by Date"
-    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3", "Sep 4"]
+    x-axis ["Aug 22", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 3", "Sep 4", "Sep 7", "Sep 11"]
     y-axis "Lines Added" 0 --> 7500
-    bar [5208, 609, 2538, 3193, 617, 7969, 1721]
+    bar [5208, 609, 2538, 3193, 617, 7969, 1721, 12, 518]
 ```
 
 ## Delivered Today
@@ -108,12 +108,12 @@ xychart-beta
 
 | Category | Estimated share |
 | --- | ---: |
-| Coding and UI implementation | 54% |
+| Coding and UI implementation | 55% |
 | Testing and browser validation | 21% |
-| Research and product design | 17% |
+| Research and product design | 16% |
 | Documentation and release preparation | 8% |
 
-Estimated active work window: approximately 41 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, RBAC security hardening, support ticketing, learning extensions, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
+Estimated active work window: approximately 42.5 hours across implementation, authentication, layout, role management, contribution tracking, cooperative finance, stakeholder assignment, action trials, readiness, peer review, GTM, CRM, lifecycle governance, hybrid partner/client operations, audio/ML engineering, RBAC security hardening, support ticketing, learning extensions, multilingual appointment integration, deployment, and browser-audit sessions. This is an estimate from Git and Copilot session timestamps, not a timesheet.
 
 ## Current State
 

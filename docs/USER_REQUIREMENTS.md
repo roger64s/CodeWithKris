@@ -214,4 +214,5 @@
 - Added a first-login, low-pressure onboarding wizard with an optional communication baseline survey and durable completion state.
 - Added the workbook-derived English, Cantonese, and Tamil appointment catalog with four-state selection, voice-quality handling, and Result Summary baseline metadata.
 - Validated the production build, API syntax, and existing Python ML tests.
+- Reconciled closeout metrics from Git history: 57 commits, 22,775 lines added, 2,135 lines deleted, 20,640 net lines, and approximately 42.5 estimated active hours; effort remains an estimate, not a timesheet.
 
