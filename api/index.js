@@ -6,6 +6,7 @@ import multer from 'multer'
 import { createClient } from '@supabase/supabase-js'
 import { createSupportRouter } from '../src/server/routes/support.js'
 import { createLearningRouter } from '../src/server/routes/learning.js'
+import { createPilotEvidenceRouter } from '../src/server/routes/pilotEvidence.js'
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -54,6 +55,7 @@ const rbacResourceForPath = (path) => {
   if (path.startsWith('/model-metrics')) return 'progress'
   if (path.startsWith('/action-trial')) return 'action-trial'
   if (path.startsWith('/projects/')) return 'gtm-pilot'
+  if (path.startsWith('/v1/pilot-evidence')) return 'participant-evidence'
   if (path.startsWith('/session-context')) return 'gtm-pilot'
   return null
 }
@@ -69,6 +71,7 @@ app.use('/api', async (request, response, next) => {
 
 app.use('/api/v1/tickets', createSupportRouter(upload))
 app.use('/api/v1/learning', createLearningRouter())
+app.use('/api/v1/pilot-evidence', createPilotEvidenceRouter())
 
 const transcriptMatch = (reference, transcript) => {
   const words = (value) => String(value).toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean)

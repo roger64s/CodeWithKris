@@ -4,7 +4,7 @@
 
 - **Name:** CodeWithKris Mobile/Web Application Prototype
 - **Repository:** `roger64s/CodeWithKris`
-- **Date measured:** 2026-09-07, through the final closeout release
+- **Date measured:** 2026-09-11, through the participant-evidence closeout release
 - **Scope:** CodeWithKris repository only. Grad-a-Gig Website files and metrics are excluded.
 - **Production URL:** https://codewithkris.vercel.app
 
@@ -151,6 +151,8 @@ Estimated active work window: approximately 41 hours across implementation, auth
 - Added explicit Vercel handlers for nested learning, dictionary, reframing, and support routes, plus readable non-JSON API error handling.
 - Granted Student and Instructor roles access to the Support portal and made the RBAC migration repair existing support permission rows.
 - Apply the three learning migrations in production Supabase before user acceptance testing; the production UI has reported missing vocabulary and reframing tables when those migrations are absent.
+- Added the participant-evidence pilot slice with private scripts, participant attempts, recording and practice-session references, human-reviewed clarity/adaptability/engagement rubrics, task outcomes, and pending or verified OVU provenance links.
+- Added authenticated `/api/v1/pilot-evidence` routes, Participant Evidence navigation, learner/reviewer access boundaries, and follow-up RBAC and Supabase migrations.
 
 ## Separation Rule
 

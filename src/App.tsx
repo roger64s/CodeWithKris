@@ -14,6 +14,7 @@ import { ActionTrialOnboarding } from "./components/ActionTrialOnboarding";
 import { CooperativeReadinessDashboard } from "./components/CooperativeReadinessDashboard";
 import { PeerReviewQueue } from "./components/PeerReviewQueue";
 import { GtmPilotProject } from "./components/GtmPilotProject";
+import { ParticipantEvidenceWorkspace } from "./components/ParticipantEvidenceWorkspace";
 import { FirstLoginProfile } from "./components/FirstLoginProfile";
 import { RbacSettings } from "./components/RbacSettings";
 import { type StakeholderCategory } from "./lib/ovuMatrix";
@@ -38,6 +39,7 @@ type Screen =
   | "financials"
   | "action-trial"
   | "peer-review"
+  | "participant-evidence"
   | "gtm-pilot"
   | "requirements"
   | "sprints"
@@ -55,6 +57,7 @@ const NAV_ITEMS: Array<{ screen: Screen; label: string; icon: string }> = [
   { screen: "record", label: "Record", icon: "●" },
   { screen: "practice", label: "Practice", icon: "◌" },
   { screen: "progress", label: "Progress", icon: "▥" },
+  { screen: "participant-evidence", label: "Evidence", icon: "☑" },
   { screen: "gtm-pilot", label: "GTM Pilot", icon: "◇" },
   { screen: "requirements", label: "Requirements", icon: "≡" },
   { screen: "sprints", label: "Sprints", icon: "▥" },
@@ -385,6 +388,10 @@ function App() {
       setFullName("Developer");
       setUserRole("Student");
       setScreen("peer-review");
+    } else if (preview === "participant-evidence") {
+      setFullName("Developer");
+      setUserRole("Student");
+      setScreen("participant-evidence");
     } else if (preview === "gtm-pilot") {
       setEmail("client@example.com");
       setFullName("Pilot Client");
@@ -1614,6 +1621,12 @@ function App() {
             userName={fullName}
             userEmail={email}
             userRole={userRole || "Student"}
+            onBack={() => navigate("templates")}
+          />
+        )}
+        {screen === "participant-evidence" && (
+          <ParticipantEvidenceWorkspace
+            isReviewer={hasFinancialAccess || userRole === "CodeWithKris Administrator"}
             onBack={() => navigate("templates")}
           />
         )}
